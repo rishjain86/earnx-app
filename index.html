@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* === ORIGINAL PREMIUM UI CSS === */
         :root {
             --bg-dark: #0f172a;
             --bg-darker: #020617;
@@ -36,28 +37,36 @@
         .screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; margin-bottom: 15px; }
-        .btn { background: var(--primary-grad); color: white; border: none; padding: 14px 20px; border-radius: 12px; font-size: 1rem; font-weight: 600; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
+        /* Premium Components */
+        .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .btn { background: var(--primary-grad); color: white; border: none; padding: 14px 20px; border-radius: 12px; font-size: 1rem; font-weight: 600; width: 100%; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:active { transform: scale(0.98); }
         .btn:disabled { background: var(--card-border); color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
-        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); box-shadow: none; }
-        .btn-google { background: white; color: #333; margin-top: 10px; box-shadow: none; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-google { background: white; color: #333; margin-top: 10px; }
         
-        input { width: 100%; background: var(--bg-darker); border: 1px solid var(--card-border); color: white; padding: 14px; border-radius: 10px; margin-bottom: 15px; outline: none; }
+        input { width: 100%; background: var(--bg-darker); border: 1px solid var(--card-border); color: white; padding: 14px; border-radius: 10px; margin-bottom: 15px; outline: none; transition: border 0.3s; }
+        input:focus { border-color: var(--primary); }
+
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: var(--card-bg); border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
+        .nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
         .nav-item.active { color: var(--primary); }
 
         .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--card-border); margin-bottom: 20px; }
         .coin-badge { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 20px; font-weight: 600; color: var(--primary); }
         .hero-card { text-align: center; background: linear-gradient(to bottom right, var(--card-bg), var(--bg-darker)); }
+
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+        .stat-item { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid var(--card-border); }
+        .stat-item i { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
+
+        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--card-bg); border: 1px solid var(--primary); padding: 12px 25px; border-radius: 30px; color: white; z-index: 10000; display: none; font-weight: 600; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         
+        /* Spin Wheel Original UI */
         .wheel-container { position: relative; width: 280px; height: 280px; margin: 30px auto; }
-        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--card-bg); position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1); background: conic-gradient( #10b981 0 60deg, #059669 60deg 120deg, #10b981 120deg 180deg, #059669 180deg 240deg, #10b981 240deg 300deg, #059669 300deg 360deg ); }
-        .wheel-label { position: absolute; top: 15%; left: 50%; transform-origin: 50% 100px; transform: translateX(-50%); color: white; font-weight: bold; }
-        
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card-border); }
-        #ad-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; text-align: center; }
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--card-bg); border: 1px solid var(--primary); padding: 12px 20px; border-radius: 8px; color: white; z-index: 10000; display: none; font-weight: 600; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--card-bg); position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1); background: conic-gradient( #10b981 0 60deg, #059669 60deg 120deg, #10b981 120deg 180deg, #059669 180deg 240deg, #10b981 240deg 300deg, #059669 300deg 360deg ); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+        .wheel-label { position: absolute; top: 15%; left: 50%; transform-origin: 50% 100px; transform: translateX(-50%); color: white; font-weight: bold; font-size: 1.1rem; }
     </style>
 </head>
 <body>
@@ -65,42 +74,65 @@
 <div id="app">
     <div id="toast">Message</div>
 
-    <div id="ad-modal">
-        <h2 style="color:var(--warning)">Advertisement</h2>
-        <p>Please wait <span id="ad-timer" class="text-green">3</span> seconds...</p>
+    <div id="ad-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 20px;">
+        <h2 style="color:var(--warning); font-size: 2rem;">Sponsored Ad</h2>
+        <p style="margin-top:10px;">Closing in <span id="ad-timer" class="text-green" style="font-weight:bold; font-size:1.5rem;">3</span> seconds...</p>
     </div>
 
     <div id="screen-login" class="screen active">
-        <div style="text-align: center; margin-top: 60px; margin-bottom: 40px;">
-            <i class="fa-solid fa-coins" style="font-size: 4rem; color: var(--primary); margin-bottom: 15px;"></i>
-            <h1>EarnX</h1>
-            <p>Login to start earning rewards.</p>
+        <div style="text-align: center; margin-top: 80px; margin-bottom: 40px;">
+            <i class="fa-solid fa-shield-halved" style="font-size: 5rem; color: var(--primary); margin-bottom: 20px;"></i>
+            <h1 style="font-size: 2.5rem;">EarnX</h1>
+            <p style="color: var(--text-muted);">Secure rewards platform for everyone.</p>
         </div>
         <div class="card">
-            <button class="btn btn-google" onclick="loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
+            <button class="btn btn-google" onclick="loginWithGoogle()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width:20px;">
+                Continue with Google
+            </button>
         </div>
+        <p style="text-align: center; font-size: 0.8rem; margin-top: 20px; color: var(--text-muted);">By joining, you agree to our <br><span class="text-green">Terms & Conditions</span>.</p>
     </div>
 
     <div id="screen-home" class="screen">
         <div class="header">
-            <div style="font-size: 1.5rem; font-weight:700;">EarnX</div>
-            <div class="coin-badge"><i class="fa-solid fa-gem"></i> <span class="global-coin-display">0</span></div>
+            <div style="font-size: 1.6rem; font-weight:700; color: white;">Command Center</div>
+            <div class="coin-badge"><i class="fa-solid fa-coins"></i> <span class="global-coin-display">0</span></div>
         </div>
+        
         <div class="card hero-card">
-            <div style="color:var(--text-muted); font-size:0.9rem;">Total Balance</div>
-            <div style="font-size: 2.5rem; font-weight: 700; margin: 10px 0;"><i class="fa-solid fa-coins" style="color: gold;"></i> <span class="global-coin-display">0</span></div>
-            <div style="color:var(--primary); font-weight:600;">≈ ₹<span id="rupee-display">0.00</span></div>
-            <button class="btn mt-2" id="btn-checkin" onclick="dailyCheckIn()">Daily Claim 50</button>
+            <div style="color:var(--text-muted); font-size:0.85rem; text-transform:uppercase; letter-spacing:1px;">Available Balance</div>
+            <div style="font-size: 3rem; font-weight: 800; margin: 10px 0; color: #fff;"><span class="global-coin-display">0</span></div>
+            <div style="color:var(--primary); font-weight:600; font-size: 1.1rem;">≈ ₹<span id="rupee-display">0.00</span></div>
+            <button class="btn" style="margin-top:20px;" id="btn-checkin" onclick="dailyCheckIn()">
+                <i class="fa-solid fa-calendar-check"></i> Daily Check-in (+50)
+            </button>
         </div>
-        <h3>Quick Actions</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;" class="mt-1">
-            <div class="card" style="text-align:center;" onclick="nav('tasks')"><i class="fa-solid fa-list-check" style="color:var(--primary)"></i><div class="mt-1">Tasks</div></div>
-            <div class="card" style="text-align:center;" onclick="nav('spin')"><i class="fa-solid fa-dharmachakra" style="color:var(--primary)"></i><div class="mt-1">Spin</div></div>
-            <div class="card" style="text-align:center;" onclick="nav('referral')"><i class="fa-solid fa-users" style="color:var(--primary)"></i><div class="mt-1">Refer</div></div>
-            <div class="card" style="text-align:center;" onclick="nav('withdraw')"><i class="fa-solid fa-wallet" style="color:var(--primary)"></i><div class="mt-1">Withdraw</div></div>
+
+        <h3 style="margin: 20px 0 10px 5px; font-size: 1.1rem;">Ways to Earn</h3>
+        <div class="stat-grid">
+            <div class="stat-item" onclick="nav('tasks')">
+                <i class="fa-solid fa-list-check"></i>
+                <div style="font-weight: 600;">Tasks</div>
+            </div>
+            <div class="stat-item" onclick="nav('spin')">
+                <i class="fa-solid fa-dharmachakra"></i>
+                <div style="font-weight: 600;">Spin</div>
+            </div>
+            <div class="stat-item" onclick="nav('referral')">
+                <i class="fa-solid fa-user-plus"></i>
+                <div style="font-weight: 600;">Refer</div>
+            </div>
+            <div class="stat-item" onclick="nav('withdraw')">
+                <i class="fa-solid fa-wallet"></i>
+                <div style="font-weight: 600;">Withdraw</div>
+            </div>
         </div>
-        <h3 class="mt-2">Activity</h3>
-        <div class="card" id="home-withdrawals-list"></div>
+
+        <h3 style="margin: 25px 0 10px 5px; font-size: 1.1rem;">Recent Activity</h3>
+        <div class="card" id="home-withdrawals-list" style="padding: 10px 20px;">
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.9rem; padding: 10px;">No recent transactions.</p>
+        </div>
     </div>
 
     <div id="screen-referral" class="screen">
@@ -109,11 +141,12 @@
             <div class="coin-badge"><span class="global-coin-display">0</span></div>
         </div>
         <div class="card" style="text-align: center;">
-            <i class="fa-solid fa-gift" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
-            <h3>Your Referral Code</h3>
-            <div style="background: var(--bg-darker); border: 2px dashed var(--primary); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; margin: 15px 0;" id="my-ref-code">------</div>
+            <i class="fa-solid fa-gift" style="font-size: 4rem; color: var(--primary); margin-bottom: 15px;"></i>
+            <h3>Invite Friends</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Earn 100 coins for every friend who joins.</p>
+            <div style="background: var(--bg-darker); border: 2px dashed var(--primary); padding: 18px; border-radius: 12px; font-size: 1.8rem; font-weight: 800; letter-spacing: 3px; margin-bottom: 20px;" id="my-ref-code">------</div>
             
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 12px;">
                 <button class="btn btn-outline" style="flex: 1;" onclick="copyReferral()">
                     <i class="fa-regular fa-copy"></i> Copy
                 </button>
@@ -123,26 +156,36 @@
             </div>
         </div>
         <div class="card" id="enter-ref-section">
-            <p class="mb-1">Have a code? Get 100 coins.</p>
-            <input type="text" id="ref-input" placeholder="Enter code" style="text-transform: uppercase;">
-            <button class="btn" onclick="applyReferralFirebase()">Apply Code</button>
+            <h3 style="font-size: 1rem; margin-bottom: 10px;">Redeem a Code</h3>
+            <input type="text" id="ref-input" placeholder="Enter Friend's Code" style="text-transform: uppercase;">
+            <button class="btn" onclick="applyReferralFirebase()">Claim Bonus Coins</button>
         </div>
     </div>
 
     <div id="screen-withdraw" class="screen">
-        <div class="header"><h2>Withdraw</h2></div>
-        <div class="card">
-            <p class="mb-1">Min: 10,000 Coins (₹100)</p>
-            <input type="text" id="upi-input" placeholder="UPI ID (name@upi)">
-            <button class="btn" id="btn-withdraw" onclick="submitWithdraw()">Withdraw Now</button>
+        <div class="header">
+            <h2>Withdraw</h2>
+            <div class="coin-badge"><span class="global-coin-display">0</span></div>
         </div>
-        <div class="card" id="my-withdrawals-list"></div>
+        <div class="card">
+            <h3 style="font-size: 1rem; margin-bottom: 5px;">Payment Details</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px;">Minimum Payout: 10,000 Coins (₹100)</p>
+            <input type="text" id="upi-input" placeholder="Enter UPI ID (e.g. name@upi)">
+            <button class="btn" id="btn-withdraw" onclick="submitWithdraw()">
+                <i class="fa-solid fa-paper-plane"></i> Submit Request
+            </button>
+        </div>
+        <h3 style="margin: 20px 0 10px 5px; font-size: 1.1rem;">Transaction History</h3>
+        <div class="card" id="my-withdrawals-list" style="padding: 10px 20px;"></div>
     </div>
 
     <div id="screen-spin" class="screen">
-        <div class="header"><h2>Spin & Earn</h2></div>
+        <div class="header">
+            <h2>Spin & Earn</h2>
+            <div class="coin-badge"><span class="global-coin-display">0</span></div>
+        </div>
         <div class="card" style="text-align: center;">
-            <p>Spins Left: <strong id="spin-count-display">5</strong></p>
+            <p style="margin-bottom: 15px;">Daily Spins Left: <strong id="spin-count-display" class="text-green">5</strong></p>
             <div class="wheel-container">
                 <div class="wheel" id="wheel-inner">
                     <div class="wheel-label" style="transform: translateX(-50%) rotate(30deg);">100</div>
@@ -152,29 +195,58 @@
                     <div class="wheel-label" style="transform: translateX(-50%) rotate(270deg);">10</div>
                     <div class="wheel-label" style="transform: translateX(-50%) rotate(330deg);">5</div>
                 </div>
+                <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid var(--warning); z-index: 10;"></div>
             </div>
-            <button class="btn" id="btn-spin" onclick="spinWheel()">SPIN NOW</button>
+            <button class="btn" id="btn-spin" onclick="spinWheel()">
+                <i class="fa-solid fa-play"></i> START SPINNING
+            </button>
         </div>
     </div>
 
     <div id="screen-tasks" class="screen">
-        <div class="header"><h2>Tasks</h2></div>
-        <div class="card">
-            <div class="flex-between"><div>Watch Ad</div><div id="watch-timer-display">Ready</div></div>
-            <button class="btn mt-1" id="btn-watch" onclick="doWatchTask()">Watch</button>
+        <div class="header">
+            <h2>Earn Tasks</h2>
+            <div class="coin-badge"><span class="global-coin-display">0</span></div>
         </div>
         <div class="card">
-            <div class="flex-between"><div>Tap Task</div><div id="tap-timer-display">Ready</div></div>
-            <div class="flex-between mt-1"><span id="tap-count">0</span> / 20 <button class="btn" style="width:auto" onclick="doTapTask()">TAP</button></div>
+            <div class="flex-between">
+                <div>
+                    <h3 style="font-size: 1rem;">Watch Video Ad</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Reward: 100 Coins</p>
+                </div>
+                <div id="watch-timer-display" style="font-weight: bold; color: var(--warning);">Ready</div>
+            </div>
+            <button class="btn mt-1" id="btn-watch" onclick="doWatchTask()">Watch Now</button>
+        </div>
+        <div class="card">
+            <div class="flex-between">
+                <div>
+                    <h3 style="font-size: 1rem;">Fast Tapping</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">Tap 20 times for 150 coins</p>
+                </div>
+                <div id="tap-timer-display" style="font-weight: bold; color: var(--warning);">Ready</div>
+            </div>
+            <div class="flex-between mt-1" style="background: var(--bg-darker); padding: 10px; border-radius: 8px; margin-top:15px;">
+                <span style="font-weight:bold;"><span id="tap-count">0</span> / 20</span>
+                <button class="btn" style="width:auto; padding: 10px 25px;" onclick="doTapTask()">TAP</button>
+            </div>
         </div>
     </div>
 
     <div id="screen-profile" class="screen">
-        <div class="header"><h2>Profile</h2></div>
+        <div class="header"><h2>My Account</h2></div>
         <div class="card" style="text-align:center;">
-            <h3 id="profile-phone">Loading...</h3>
-            <p id="profile-uid">UID: ---</p>
-            <button class="btn btn-outline mt-2" onclick="logout()" style="color:var(--danger); border-color:var(--danger)">Logout</button>
+            <div style="width: 80px; height: 80px; background: var(--card-border); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; font-size: 2.5rem;">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <h3 id="profile-phone" style="margin-bottom: 5px;">Loading...</h3>
+            <p id="profile-uid" style="color: var(--text-muted); font-size: 0.8rem; font-family: monospace;">UID: ---</p>
+            
+            <div style="border-top: 1px solid var(--card-border); margin-top: 20px; padding-top: 20px;">
+                <button class="btn btn-outline" onclick="logout()" style="color:var(--danger); border-color:var(--danger)">
+                    <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                </button>
+            </div>
         </div>
     </div>
 
@@ -188,7 +260,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, getRedirectResult } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -253,7 +325,8 @@
 <script>
     const COIN_RATE = 100; const COOLDOWN_MS = 180000; const MAX_DAILY_COINS = 5000;
     let lastAdTime = 0; let withdrawLock = false; let rewardLock = false; let referralLock = false;
-    
+    let lastCoinRewardTime = 0;
+
     window.state = { user: null, tasks: { lastWatch:0, lastStay:0, lastTap:0, tapCount:0 }, spin: { spinsLeft:5, lastRefill:0 }, withdrawals: [] };
 
     function init() {
@@ -300,13 +373,14 @@
 
     function rewardCoins(amt, msg) {
         if(rewardLock || !navigator.onLine || !window.state.user) return;
+        const now = Date.now();
+        if(now - lastCoinRewardTime < 10000) return;
+        lastCoinRewardTime = now;
         rewardLock = true; setTimeout(() => rewardLock = false, 2000);
-        if(amt > 200) return;
         window.state.user.coins += amt;
         saveCoinsToFirebase(); window.saveState(); window.showToast(`${amt} Coins Added`);
     }
 
-    // ✅ REFERRAL COPY & SHARE FUNCTIONS
     window.copyReferral = function() {
         const code = window.state.user.refCode;
         navigator.clipboard.writeText(code).then(() => {
@@ -355,11 +429,20 @@
         document.getElementById('rupee-display').innerText = (window.state.user.coins / 100).toFixed(2);
         document.getElementById('my-ref-code').innerText = window.state.user.refCode;
         document.getElementById('profile-phone').innerText = window.state.user.phone;
-        document.getElementById('profile-uid').innerText = "UID: " + window.state.user.id.substring(0,10) + "...";
+        document.getElementById('profile-uid').innerText = "UID: " + window.state.user.id.substring(0,12) + "...";
         document.getElementById('spin-count-display').innerText = window.state.spin.spinsLeft;
         
-        const list = document.getElementById('home-withdrawals-list');
-        list.innerHTML = window.state.withdrawals.map(w => `<div class="history-item"><span>₹${w.amount}</span><span style="color:var(--warning)">${w.status}</span></div>`).join('');
+        const html = window.state.withdrawals.map(w => `
+            <div class="history-item">
+                <div style="display:flex; flex-direction:column;">
+                    <span style="font-weight:bold;">₹${w.amount}</span>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">${w.upi}</span>
+                </div>
+                <span class="coin-badge" style="background:rgba(245,158,11,0.1); color:var(--warning); border-color:var(--warning)">${w.status}</span>
+            </div>
+        `).join('');
+        document.getElementById('my-withdrawals-list').innerHTML = html || '<p style="text-align:center; color:var(--text-muted);">No history</p>';
+        document.getElementById('home-withdrawals-list').innerHTML = html || '<p style="text-align:center; color:var(--text-muted);">No activity</p>';
     }
 
     function spinWheel() {
@@ -380,8 +463,11 @@
     function doTapTask() {
         if(window.state.tasks.tapCount >= 20) return;
         window.state.tasks.tapCount++;
+        document.getElementById('tap-count').innerText = window.state.tasks.tapCount;
         if(window.state.tasks.tapCount === 10) {
             const m = document.getElementById('ad-modal'); m.style.display = 'flex';
+            let sec = 3; document.getElementById('ad-timer').innerText = sec;
+            const itv = setInterval(() => { sec--; document.getElementById('ad-timer').innerText = sec; if(sec<=0) clearInterval(itv); }, 1000);
             setTimeout(()=> m.style.display = 'none', 3000);
         }
         if(window.state.tasks.tapCount >= 20) {
@@ -391,19 +477,16 @@
     }
 
     window.logout = () => { localStorage.clear(); location.reload(); };
-    window.startTimers = () => setInterval(() => {
-        // Cooldown UI Logic would go here
-    }, 1000);
+    window.startTimers = () => setInterval(() => { /* Timer UI Logic */ }, 1000);
 
     window.onload = init;
 </script>
 
 <script>
-    // 🔥 FRONTEND SECURITY SHIELD
+    /* SECURITY SHIELD */
     if (window.top !== window.self) window.top.location = window.self.location;
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('keydown', e => { if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) e.preventDefault(); });
-    
     let lastV = Date.now();
     setInterval(() => {
         if(document.hidden) { lastV = Date.now(); return; }
