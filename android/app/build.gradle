@@ -1,0 +1,17 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.earnx.rewards'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.earnx.rewards"
+        minSdk 21
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+    }
+}
+
