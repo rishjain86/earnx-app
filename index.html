@@ -141,20 +141,10 @@
             <p>Your ultimate rewards platform.</p>
         </div>
         <div class="card" id="login-step-1">
-            <h3>Login / Sign Up</h3>
-            <p class="mb-2">Enter mobile number to continue</p>
-            <input type="number" id="phone-input" placeholder="Mobile Number (e.g. 9876543210)">
-            <button class="btn" onclick="sendOTP()">Send OTP</button>
-            <div class="flex-center mt-2 mb-2"><span style="color:var(--text-muted); font-size:0.8rem;">OR</span></div>
+            <h3>Login to Continue</h3>
+            <p class="mb-2" style="font-size: 0.85rem;">Use your Google Account for secure access and guaranteed withdrawals.</p>
             
             <button class="btn btn-google" onclick="loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
-        </div>
-        <div class="card" id="login-step-2" style="display: none;">
-            <h3>Verify OTP</h3>
-            <p class="mb-2">Enter the code sent to your number</p>
-            <input type="number" id="otp-input" placeholder="Enter 4-digit OTP (Try: 1234)">
-            <button class="btn" onclick="verifyOTP()">Verify & Login</button>
-            <button class="btn btn-outline mt-1" onclick="resetLogin()">Back</button>
         </div>
         <p style="text-align: center; font-size: 0.75rem; margin-top: 20px;">By continuing, you agree to our <span class="text-green" onclick="nav('terms')">Terms & Conditions</span>.</p>
     </div>
@@ -197,19 +187,8 @@
         </div>
 
         <h3>Recent Activity</h3>
-        <div class="card">
-            <div class="history-item">
-                <div class="h-info"><span class="h-upi">₹100 &rarr; ra****@upi</span><span class="h-time">2 mins ago</span></div>
-                <div class="h-status status-pending">Pending</div>
-            </div>
-            <div class="history-item">
-                <div class="h-info"><span class="h-upi">₹500 &rarr; su****@ybl</span><span class="h-time">15 mins ago</span></div>
-                <div class="h-status status-pending">Pending</div>
-            </div>
-            <div class="history-item">
-                <div class="h-info"><span class="h-upi">₹100 &rarr; ak****@okicici</span><span class="h-time">1 hr ago</span></div>
-                <div class="h-status status-pending">Pending</div>
-            </div>
+        <div class="card" id="home-withdrawals-list">
+            <p style="text-align: center; color: var(--text-muted);">No recent activity.</p>
         </div>
     </div>
 
@@ -338,7 +317,7 @@
             <div style="width: 80px; height: 80px; background: var(--card-border); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; font-size: 2.5rem;">
                 <i class="fa-solid fa-user-astronaut"></i>
             </div>
-            <h3 id="profile-phone">+91 --------</h3>
+            <h3 id="profile-phone">Loading...</h3>
             <p>User ID: <span id="profile-uid">-----</span></p>
         </div>
 
@@ -413,7 +392,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, getRedirectResult } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -428,273 +407,583 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    
-    // EXPOSE DB SO DYNAMIC IMPORTS BELOW CAN FIND IT
     window.db = db;
 
-    // 🔥 LOGIN FUNCTION
-    window.loginWithGoogle = async function(){
-        const provider = new GoogleAuthProvider();
+    let loginHandled = false;
+    let loginLoading = false;
 
-        try {
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
+    // Handle Redirect Result
+    (async () => {
+        try{
+            const result = await getRedirectResult(auth);
+            if(result && result.user){
+                const user = result.user;
+                window.currentUser = user;
+
+                const ref = doc(db, "earnx_users", user.uid);
+                const snap = await getDoc(ref);
+
+                if(snap.exists()){
+                    const data = snap.data();
+
+                    window.state.user = {
+                        ...(window.state.user || {}),
+                        id: user.uid,
+                        phone: user.email,
+                        coins: data.coins || 0,
+                        refCode: data.refCode,
+                        referredBy: data.referredBy || false
+                    };
+
+                    window.saveState();
+                    window.nav('home');
+                    window.startTimers();
+                    window.loadWithdrawals();
+                }
+            }
+        }catch(e){
+            console.log("Redirect error", e);
+        }
+    })();
+
+    // Handle Auth State Changes
+    onAuthStateChanged(auth, async (user) => {
+        if(user && !loginHandled){
+            loginHandled = true;
+
+            if(!window.state){
+                window.state = {
+                    user: null,
+                    tasks: { lastWatch:0,lastStay:0,lastTap:0,tapCount:0,checkInTime:0 },
+                    spin: { spinsLeft:5,lastRefill:0,totalSpins:0 },
+                    withdrawals: []
+                };
+            }
+
+            window.currentUser = user;
 
             const ref = doc(db, "earnx_users", user.uid);
             const snap = await getDoc(ref);
 
-            // 🔥 USER CREATE (first time) - FIX 1: UNIQUE REFERRAL CODE
+            if(snap.exists()){
+                const data = snap.data();
+
+                window.state.user = {
+                    ...(window.state.user || {}),
+                    id: user.uid,
+                    phone: user.email,
+                    coins: data.coins || 0,
+                    refCode: data.refCode,
+                    referredBy: data.referredBy || false
+                };
+
+                window.saveState();
+                window.nav('home');
+                window.startTimers();
+                window.loadWithdrawals();
+            } else {
+                console.log("User data not found");
+            }
+        }
+    });
+
+    window.loginWithGoogle = async function(){
+        if(loginLoading) return;
+        loginLoading = true;
+        
+        const provider = new GoogleAuthProvider();
+
+        try {
+            let result;
+            try {
+                result = await signInWithPopup(auth, provider);
+            } catch (e) {
+                const { signInWithRedirect } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js");
+                await signInWithRedirect(auth, provider);
+                return;
+            }
+
+            const user = result.user;
+            window.currentUser = user;
+
+            const ref = doc(db, "earnx_users", user.uid);
+            const snap = await getDoc(ref);
+
+            // ANTI-REFERRAL ABUSE FIX 1: DEVICE ID
+            let deviceId = localStorage.getItem("earnx_device_id");
+            if(!deviceId){
+                deviceId = "DEV_" + crypto.randomUUID();
+                localStorage.setItem("earnx_device_id", deviceId);
+            }
+
             if(!snap.exists()){
                 const newRefCode = user.uid.substring(0,4).toUpperCase() + Math.floor(Math.random()*9000+1000);
-                await setDoc(ref, {
+
+                const data = {
                     coins: 0,
-                    refCode: newRefCode, 
+                    refCode: newRefCode,
+                    deviceId: deviceId, // SAVE DEVICE ID
                     createdAt: Date.now()
-                });
+                };
+
+                await setDoc(ref, data);
+
+                window.state.user = {
+                    id: user.uid,
+                    phone: user.email,
+                    coins: 0,
+                    refCode: newRefCode,
+                    referredBy: false
+                };
+
+            } else {
+                const data = snap.data();
+
+                window.state.user = {
+                    ...(window.state.user || {}),
+                    id: user.uid,
+                    phone: user.email,
+                    coins: data.coins || 0,
+                    refCode: data.refCode,
+                    referredBy: data.referredBy || false
+                };
             }
 
-            // 🔥 LOAD COINS & DATA
-            const data = (await getDoc(ref)).data();
-
-            if(document.getElementById("coins")){
-                document.getElementById("coins").innerText = data.coins;
-            }
-
-            // 🔥 SET STATE (IMPORTANT - use same refCode)
-            state.user = { 
-                id: user.uid, 
-                phone: user.email, 
-                coins: data.coins, 
-                refCode: data.refCode, 
-                referredBy: data.referredBy || false 
-            };
-            
-            saveState(); 
-            nav('home'); 
-            startTimers(); 
-            showToast("Google Login Successful!");
+            window.saveState();
+            window.nav('home'); 
+            window.startTimers();
+            window.loadWithdrawals();
+            window.showToast("Login Successful");
 
         } catch(err) {
-            alert(err.message);
+            if (err.message) window.showToast("Login Error");
+        } finally {
+            loginLoading = false;
         }
     };
 </script>
 
 <script>
-    /* === STATE & CONSTANTS === */
+    /* === GLOBAL VARIABLES === */
     const COIN_RATE = 100; 
     const COOLDOWN_MS = 3 * 60 * 1000;
     const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; 
+    const MAX_DAILY_COINS = 5000;
+
     let lastAdTime = 0; 
     let timerInterval = null;
-    
-    let state = {
-        user: null, 
-        tasks: { lastWatch: 0, lastStay: 0, lastTap: 0, tapCount: 0, checkInTime: 0 },
-        spin: { spinsLeft: 5, lastRefill: 0, totalSpins: 0 },
-        withdrawals: [] 
-    };
+    let withdrawLock = false; 
+    let referralLock = false;
+    let rewardLock = false; // Hard lock
+    let toastTimeout;
+    let saving = false;
+    let coinSaveTimeout;
+    let appLoaded = false;
+    let lastCoinRewardTime = 0;
 
-    console.log("✅ FINAL SAFE FIX APPLIED");
-
-    /* === INITIALIZATION === */
-    function init() {
-        const saved = localStorage.getItem('earnx_state');
-        if (saved) {
-            state = JSON.parse(saved);
-            if(typeof state.tasks.checkInTime === 'undefined') state.tasks.checkInTime = 0;
-            updateUI();
-            nav('home');
-            startTimers();
-        } else {
-            nav('login');
-        }
+    // Prevent Fast Reload Farming
+    let lastLoad = sessionStorage.getItem("lastLoad");
+    if(lastLoad && Date.now() - lastLoad < 2000){
+        alert("Please slow down");
+        throw "Reload blocked";
     }
+    sessionStorage.setItem("lastLoad", Date.now());
 
-    function saveState() {
-        localStorage.setItem('earnx_state', JSON.stringify(state));
-        updateUI();
-    }
-
-    function nav(screenId) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(`screen-${screenId}`).classList.add('active');
-        
-        const bNav = document.getElementById('bottom-nav');
-        if (['login'].includes(screenId)) bNav.style.display = 'none';
-        else bNav.style.display = 'flex';
-
-        if(['home', 'tasks', 'spin', 'profile'].includes(screenId)) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            document.querySelector(`.nav-item[data-target="${screenId}"]`).classList.add('active');
-        }
-    }
-
-    /* === AUTHENTICATION (Simulated OTP) === */
-    function sendOTP() {
-        const phone = document.getElementById('phone-input').value;
-        if(phone.length < 10) return showToast("Enter a valid 10-digit number");
-        document.getElementById('login-step-1').style.display = 'none';
-        document.getElementById('login-step-2').style.display = 'block';
-        showToast("OTP Sent: 1234");
-    }
-
-    function verifyOTP() {
-        const otp = document.getElementById('otp-input').value;
-        if(otp !== '1234') return showToast("Invalid OTP");
-        const phone = document.getElementById('phone-input').value;
-        loginFake('phone', phone);
-    }
-
-    function resetLogin() {
-        document.getElementById('login-step-2').style.display = 'none';
-        document.getElementById('login-step-1').style.display = 'block';
-    }
-
-    function loginFake(method, id = "Verified User") {
-        const uid = 'EX' + Math.floor(Math.random() * 90000 + 10000);
-        state.user = { id: uid, phone: id, coins: 0, refCode: uid.substring(2) + 'R', referredBy: false };
-        saveState(); nav('home'); startTimers(); showToast("Login Successful!");
-    }
-
-    function logout() { localStorage.removeItem('earnx_state'); location.reload(); }
-
-    /* === SAFE COINS SAVE LOGIC === */
-    async function saveCoinsToFirebase(){
-        if(!state.user || !state.user.id) return;
-
+    // Safe LocalStorage Recovery
+    function safeLoadState(){
         try{
-            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-            const ref = doc(window.db, "earnx_users", state.user.id);
-
-            await updateDoc(ref, {
-                coins: state.user.coins
-            });
-
-        }catch(e){
-            console.log("Firebase save error", e);
+            const saved = localStorage.getItem('earnx_state');
+            return saved ? JSON.parse(saved) : null;
+        }catch{
+            localStorage.removeItem('earnx_state');
+            return null;
         }
     }
 
-    /* === UI UPDATER === */
-    function updateUI() {
-        if(!state.user) return;
-        document.querySelectorAll('.global-coin-display').forEach(el => el.innerText = state.user.coins.toLocaleString());
-        document.getElementById('rupee-display').innerText = (state.user.coins / (10000 / COIN_RATE)).toFixed(2);
-        
-        document.getElementById('profile-phone').innerText = state.user.phone;
-        document.getElementById('profile-uid').innerText = state.user.id;
-        document.getElementById('my-ref-code').innerText = state.user.refCode;
-        if(state.user.referredBy) document.getElementById('enter-ref-section').style.display = 'none';
+    // Init logic
+    function init() {
+        if(appLoaded) return;
+        appLoaded = true;
 
-        document.getElementById('tap-count').innerText = state.tasks.tapCount;
-        document.getElementById('spin-count-display').innerText = state.spin.spinsLeft;
-        
-        renderWithdrawals();
+        if(!window.db){
+            console.error("Firebase DB not initialized");
+        }
 
-        const lastCheckin = state.tasks.checkInTime || 0;
-        const btnCheckin = document.getElementById('btn-checkin');
-        if(Date.now() - lastCheckin < 86400000) {
-            btnCheckin.disabled = true; btnCheckin.innerText = "Claimed";
+        const saved = safeLoadState();
+
+        if(saved){
+            window.state = saved;
+        }
+
+        if(!window.state){
+            window.state = {
+                user:null,
+                tasks:{ lastWatch:0,lastStay:0,lastTap:0,tapCount:0,checkInTime:0 },
+                spin:{ spinsLeft:5,lastRefill:0,totalSpins:0 },
+                withdrawals:[]
+            };
+        }
+
+        if(!window.state.spin.lastRefill && window.state.spin.spinsLeft < 5){
+            window.state.spin.lastRefill = Date.now();
+        }
+
+        window.updateUI();
+        window.nav('login');
+    }
+
+    // Safe DOM Load
+    document.addEventListener("DOMContentLoaded", () => {
+        init();
+    });
+
+    // Cross-tab block
+    window.addEventListener("storage", (e) => {
+        if(e.key === "earnx_state"){
+            location.reload();
+        }
+    });
+
+    // Memory Leak Prevent
+    window.addEventListener("beforeunload", () => {
+        if(timerInterval) clearInterval(timerInterval);
+    });
+
+    // Multi click block
+    document.addEventListener("click", (e) => {
+        if(e.target.tagName === "BUTTON"){
+            if(e.target.disabled) e.stopImmediatePropagation();
+        }
+    });
+
+    // Anti-Nan Coin sanitize
+    function sanitizeCoins(){
+        if(!window.state || !window.state.user) return;
+        let c = Number(window.state.user.coins);
+        if(isNaN(c) || c < 0) c = 0;
+        window.state.user.coins = c;
+    }
+
+    // LocalStorage Manipulation Guard
+    function validateState(){
+        if(!window.state || !window.state.user) return;
+        if(window.state.user.coins > 1000000){
+            window.state.user.coins = 0;
+        }
+    }
+
+    window.saveState = function() {
+        sanitizeCoins();
+        validateState();
+        localStorage.setItem('earnx_state', JSON.stringify(window.state));
+        window.updateUI();
+    }
+
+    // Safe Nav
+    window.nav = function(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+        const target = document.getElementById(`screen-${screenId}`);
+        if(target) {
+            target.classList.add('active');
         } else {
-            btnCheckin.disabled = false; btnCheckin.innerText = "Claim 50";
+            console.error("Screen not found:", screenId);
+            return;
         }
+
+        const bNav = document.getElementById('bottom-nav');
+        if (bNav) {
+            if (['login'].includes(screenId)) bNav.style.display = 'none';
+            else bNav.style.display = 'flex';
+        }
+
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+
+        const activeItem = document.querySelector(`.nav-item[data-target="${screenId}"]`);
+        if(activeItem) activeItem.classList.add('active');
     }
 
-    function renderWithdrawals() {
-        const list = document.getElementById('my-withdrawals-list');
-        if(state.withdrawals.length === 0) return;
-        list.innerHTML = '';
-        const sorted = [...state.withdrawals].reverse();
-        sorted.forEach(w => {
-            const dateStr = new Date(w.date).toLocaleDateString();
-            const maskedUpi = maskUPI(w.upi);
-            const statusClass = w.status === 'Pending' ? 'status-pending' : 'status-pending'; 
-            list.innerHTML += `
-                <div class="history-item">
-                    <div class="h-info"><span class="h-upi">₹${w.amount} &rarr; ${maskedUpi}</span><span class="h-time">${dateStr}</span></div>
-                    <div class="h-status ${statusClass}">${w.status}</div>
-                </div>`;
+    // Logout Sync Reset
+    window.logout = function() {
+        import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js")
+        .then(({ getAuth, signOut }) => {
+            signOut(getAuth());
+            window.currentUser = null;
+            localStorage.clear();
+            location.reload();
         });
     }
 
+    /* === FIREBASE SYNC === */
+    // Safe Network Call Wrapper
+    async function safeFirebaseCall(fn){
+        try{
+            return await fn();
+        }catch(e){
+            console.log("Offline / Firebase error", e);
+            window.showToast("Network issue or sync error");
+        }
+    }
+
+    // DB Sync - Firebase Save (Fix 3, 13, 27)
+    async function saveCoinsToFirebase(){
+        if(!navigator.onLine) return; 
+        if(!window.state.user || !window.state.user.id || saving) return;
+        saving = true;
+
+        await safeFirebaseCall(async () => {
+            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            const ref = doc(window.db, "earnx_users", window.state.user.id);
+            
+            await updateDoc(ref, {
+                coins: Number(window.state.user.coins) || 0
+            });
+        });
+
+        saving = false;
+    }
+
+    // Debounce writing
+    function saveCoinsToFirebaseDebounced(){
+        clearTimeout(coinSaveTimeout);
+        coinSaveTimeout = setTimeout(()=>{
+            saveCoinsToFirebase();
+        }, 2000);
+    }
+
+    // Generic Debounce
+    function debounce(fn, delay=300){
+        let t;
+        return (...args)=>{
+            clearTimeout(t);
+            t = setTimeout(()=>fn(...args), delay);
+        }
+    }
+
+    window.loadWithdrawals = debounce(async function(){
+        if(!window.currentUser) return;
+
+        await safeFirebaseCall(async () => {
+            const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            const q = query(
+                collection(window.db, "earnx_withdrawals"),
+                where("userId", "==", window.currentUser.uid)
+            );
+            const snap = await getDocs(q);
+
+            window.state.withdrawals = [];
+            snap.forEach(doc=>{
+                const d = doc.data();
+                window.state.withdrawals.push({
+                    amount: (d.coins / 10000) * 100,
+                    upi: d.upiId,
+                    date: d.createdAt ? (d.createdAt.seconds * 1000) : Date.now(),
+                    status: d.status
+                });
+            });
+
+            window.saveState();
+        });
+    }, 300);
+
+    /* === UI UPDATES === */
+    function safeSetText(id, value){
+        const el = document.getElementById(id);
+        if(el) el.innerText = value;
+    }
+
+    const updateUICore = function() {
+        if(!window.state || !window.state.user) return;
+        sanitizeCoins();
+
+        document.querySelectorAll('.global-coin-display').forEach(el => {
+            el.innerText = window.state.user.coins.toLocaleString();
+        });
+
+        safeSetText('rupee-display', (window.state.user.coins / (10000 / COIN_RATE)).toFixed(2));
+        safeSetText('profile-phone', window.state.user.phone);
+        safeSetText('profile-uid', window.state.user.id);
+        safeSetText('my-ref-code', window.state.user.refCode);
+        safeSetText('tap-count', window.state.tasks.tapCount);
+        safeSetText('spin-count-display', window.state.spin.spinsLeft);
+
+        if(window.state.user.referredBy){
+            const el = document.getElementById('enter-ref-section');
+            if(el) el.style.display = 'none';
+        }
+
+        renderWithdrawals();
+
+        const btnCheckin = document.getElementById('btn-checkin');
+        if(btnCheckin){
+            const last = window.state.tasks.checkInTime || 0;
+            if(Date.now() - last < 86400000){
+                btnCheckin.disabled = true;
+                btnCheckin.innerText = "Claimed";
+            } else {
+                btnCheckin.disabled = false;
+                btnCheckin.innerText = "Claim 50";
+            }
+        }
+    }
+    window.updateUI = debounce(updateUICore, 50);
+
+    function renderWithdrawals() {
+        const list1 = document.getElementById('my-withdrawals-list');
+        const list2 = document.getElementById('home-withdrawals-list');
+        
+        if(!window.state || !window.state.withdrawals) return;
+
+        if(window.state.withdrawals.length === 0) {
+            if(list1) list1.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No withdrawals yet.</p>';
+            if(list2) list2.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No recent activity.</p>';
+            return;
+        }
+
+        let htmlContent = '';
+        const sorted = [...window.state.withdrawals].sort((a,b) => b.date - a.date); 
+        
+        sorted.forEach(w => {
+            const dateStr = new Date(w.date).toLocaleDateString();
+            const maskedUpi = maskUPI(w.upi);
+            let statusClass = 'status-pending';
+            if(w.status === 'Approved') statusClass = 'text-green';
+            if(w.status === 'Rejected') statusClass = 'text-danger';
+            
+            htmlContent += `
+                <div class="history-item">
+                    <div class="h-info"><span class="h-upi">₹${w.amount} &rarr; ${maskedUpi}</span><span class="h-time">${dateStr}</span></div>
+                    <div class="h-status ${statusClass}" style="${w.status === 'Approved' || w.status === 'Rejected' ? 'background:transparent; padding:0;' : ''}">${w.status}</div>
+                </div>`;
+        });
+
+        if(list1) list1.innerHTML = htmlContent;
+        if(list2) list2.innerHTML = htmlContent; 
+    }
+
     function maskUPI(upi) {
+        if(!upi || !upi.includes('@')) return upi;
         const parts = upi.split('@');
-        if(parts.length !== 2) return upi;
         return parts[0].substring(0, 2) + "****@" + parts[1];
     }
 
-    function showToast(msg) {
+    window.showToast = function(msg) {
         const toast = document.getElementById('toast');
-        toast.innerText = msg; toast.style.display = 'block';
-        setTimeout(() => toast.style.display = 'none', 3000);
+        if(!toast) return;
+
+        clearTimeout(toastTimeout);
+        toast.innerText = msg;
+        toast.style.display = 'block';
+
+        toastTimeout = setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
     }
 
+    // Client-side Hacks Prevention (Rate Limiting + Caps)
     function rewardCoins(amount, msg) {
-        state.user.coins += amount;
-        saveCoinsToFirebase();
-        saveState(); 
-        showToast(`${amount} Coins Added: ${msg}`);
+        if(rewardLock) return;
+        rewardLock = true;
+
+        setTimeout(()=> rewardLock = false, 2000);
+
+        if(!navigator.onLine){
+            return window.showToast("No internet");
+        }
+
+        if(!window.state || !window.state.user){
+            return window.showToast("Login required");
+        }
+
+        if(amount <= 0 || amount > 200){
+            return window.showToast("Invalid reward");
+        }
+
+        const now = Date.now();
+        if(now - lastCoinRewardTime < 10000) return;
+        lastCoinRewardTime = now;
+
+        let today = new Date().toDateString();
+
+        if(window.state.lastRewardDate !== today){
+            window.state.dailyCoins = 0;
+            window.state.lastRewardDate = today;
+        }
+
+        if((window.state.dailyCoins || 0) >= MAX_DAILY_COINS){
+            return window.showToast("Daily limit reached");
+        }
+
+        window.state.dailyCoins += amount;
+        window.state.user.coins += amount;
+
+        saveCoinsToFirebaseDebounced();
+        window.saveState();
+        window.showToast(`${amount} Coins Added`);
     }
 
-    /* === SAFE ADS SIMULATION === */
+    // Safe Ads
     function showAd(callback) {
-        let now = Date.now();
-        if(now - lastAdTime < 60000){
-            showToast("Wait before next ad");
+        if(Date.now() - lastAdTime < 60000){
+            window.showToast("Wait 1 min before next ad");
             return;
         }
-        lastAdTime = now;
+        lastAdTime = Date.now();
 
         const modal = document.getElementById('ad-modal');
-        const timerEl = document.getElementById('ad-timer');
+        if(!modal) return;
         modal.style.display = 'flex';
-        let timeLeft = 3; 
-        timerEl.innerText = timeLeft;
         
-        const adInt = setInterval(() => {
-            timeLeft--; timerEl.innerText = timeLeft;
-            if(timeLeft <= 0) {
-                clearInterval(adInt); modal.style.display = 'none';
-                if(callback) callback();
-            }
-        }, 1000);
+        setTimeout(() => {
+            modal.style.display = 'none';
+            if(callback) callback();
+        }, 3000);
     }
 
     /* === TASK SYSTEM === */
     function dailyCheckIn() {
-        const last = state.tasks.checkInTime || 0;
+        const last = window.state.tasks.checkInTime || 0;
         if(Date.now() - last < 86400000){
-            return showToast("Already claimed today");
+            return window.showToast("Already claimed today");
         }
-        state.tasks.checkInTime = Date.now();
+        window.state.tasks.checkInTime = Date.now();
         rewardCoins(50, "Daily Check-in");
     }
 
+    function checkTimeManipulation() {
+        const now = Date.now();
+        if(now < (window.state.tasks.lastWatch || 0)) window.state.tasks.lastWatch = now;
+        if(now < (window.state.tasks.lastStay || 0)) window.state.tasks.lastStay = now;
+        if(now < (window.state.tasks.lastTap || 0)) window.state.tasks.lastTap = now;
+    }
+
     function doWatchTask() {
-        if(Date.now() - state.tasks.lastWatch < COOLDOWN_MS) return;
-        if(Date.now() - lastAdTime < 60000) return showToast("Wait before next ad");
+        checkTimeManipulation();
+        if(Date.now() - window.state.tasks.lastWatch < COOLDOWN_MS) return;
         
         showAd(() => {
-            state.tasks.lastWatch = Date.now();
+            window.state.tasks.lastWatch = Date.now();
             rewardCoins(100, "Watched Ad"); updateTimersUI();
         });
     }
 
     function doStayTask() {
-        if(Date.now() - state.tasks.lastStay < COOLDOWN_MS) return;
-        if(Date.now() - lastAdTime < 60000) return showToast("Wait before next ad");
+        checkTimeManipulation();
+        if(Date.now() - window.state.tasks.lastStay < COOLDOWN_MS) return;
 
         showAd(() => {
             const sModal = document.getElementById('stay-modal');
             const sTime = document.getElementById('stay-countdown');
+            if(!sModal || !sTime) return;
+
             sModal.style.display = 'flex';
             let timeLeft = 15; sTime.innerText = timeLeft;
+
             const sInt = setInterval(() => {
                 timeLeft--; sTime.innerText = timeLeft;
                 if(timeLeft <= 0) {
                     clearInterval(sInt); sModal.style.display = 'none';
-                    state.tasks.lastStay = Date.now();
+                    window.state.tasks.lastStay = Date.now();
                     rewardCoins(200, "Stay Task Complete"); updateTimersUI();
                 }
             }, 1000);
@@ -702,149 +991,191 @@
     }
 
     function doTapTask() {
-        if(state.tasks.tapCount >= 20) return; 
-        if(Date.now() - state.tasks.lastTap < COOLDOWN_MS) return;
+        if(!window.state || !window.state.tasks) return;
 
-        let nextTap = state.tasks.tapCount + 1;
+        if(window.state.tasks.tapCount >= 20) return;
 
-        if(nextTap === 10) {
-            let now = Date.now();
-            if(now - lastAdTime < 60000) {
-                showToast("Ad not ready, try again");
-                return;
+        if(Date.now() - window.state.tasks.lastTap < COOLDOWN_MS) return;
+
+        let next = window.state.tasks.tapCount + 1;
+
+        if(next === 10){
+            if(Date.now() - lastAdTime < 60000){
+                return window.showToast("Ad not ready");
             }
+            showAd(()=>{});
         }
-        
-        state.tasks.tapCount++; saveState(); 
-        if(state.tasks.tapCount === 10) showAd(); 
-        else if (state.tasks.tapCount >= 20) {
-            state.tasks.tapCount = 0; state.tasks.lastTap = Date.now();
-            rewardCoins(150, "Tap Task Complete"); updateTimersUI();
+
+        window.state.tasks.tapCount++;
+
+        if(window.state.tasks.tapCount >= 20){
+            window.state.tasks.tapCount = 0;
+            window.state.tasks.lastTap = Date.now();
+            rewardCoins(150, "Tap Task");
         }
+
+        window.saveState();
     }
 
-    /* === SPIN WHEEL SYSTEM === */
+    // Spin Wheel
     const prizeMap = [100, 75, 50, 20, 10, 5]; 
     function spinWheel() {
         const btn = document.getElementById('btn-spin');
-        if(btn.disabled) return; 
-        if(state.spin.spinsLeft <= 0) return showToast("No spins left. Wait for refill.");
+        if(!btn || btn.disabled) return; 
+        if(window.state.spin.spinsLeft <= 0) return window.showToast("No spins left.");
         
         btn.disabled = true;
-        state.spin.spinsLeft--; state.spin.totalSpins++;
-        if(state.spin.spinsLeft === 4) state.spin.lastRefill = Date.now();
-        saveState();
+        window.state.spin.spinsLeft--; window.state.spin.totalSpins++;
+        if(window.state.spin.spinsLeft === 4) window.state.spin.lastRefill = Date.now();
+        window.saveState();
 
-        const prizeIndex = Math.floor(Math.random() * 6);
+        const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6);
+        const prizeIndex = safeRandom;
         const baseDeg = 360 * 5; 
         const targetDeg = baseDeg + (360 - (prizeIndex * 60)) + (Math.random() * 40 - 20);
 
         const wheel = document.getElementById('wheel-inner');
-        wheel.style.transition = 'none'; wheel.style.transform = `rotate(0deg)`;
-        void wheel.offsetWidth;
-        wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)';
-        wheel.style.transform = `rotate(${targetDeg}deg)`;
+        if(wheel) {
+            wheel.style.transition = 'none'; wheel.style.transform = `rotate(0deg)`;
+            void wheel.offsetWidth;
+            wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)';
+            wheel.style.transform = `rotate(${targetDeg}deg)`;
+        }
 
         setTimeout(() => {
             const won = prizeMap[prizeIndex]; rewardCoins(won, "Spin Wheel");
-            
-            if(state.spin.totalSpins % 3 === 0) {
-                let now = Date.now();
-                if(now - lastAdTime >= 60000) {
-                    setTimeout(() => showAd(), 500);
-                }
+            if(window.state.spin.totalSpins % 3 === 0) {
+                if(Date.now() - lastAdTime >= 60000) { setTimeout(() => showAd(), 500); }
             }
         }, 4200);
 
-        setTimeout(() => {
-            btn.disabled = false;
-        }, 4500);
+        setTimeout(() => { btn.disabled = false; }, 4500);
     }
 
-    /* === SAFE REFERRAL (NO LOOP / NO DUPLICATE) === */
-    async function applyReferralFirebase(){
+    /* === SAFE REFERRAL === */
+    window.applyReferralFirebase = async function(){
+        if(referralLock) return;
+        referralLock = true;
 
-        if(!state.user) return showToast("Login first");
+        try {
+            if(!navigator.onLine) return window.showToast("No internet connection");
+            if(!window.state.user) return window.showToast("Login first");
 
-        const code = document.getElementById('ref-input').value.trim().toUpperCase();
+            const el = document.getElementById('ref-input');
+            if(!el) return;
+            const code = el.value.trim().toUpperCase();
 
-        if(!code) return showToast("Enter referral code");
-        if(state.user.referredBy) return showToast("Already used referral");
-        if(code === state.user.refCode.toUpperCase()) return showToast("Cannot use your own code");
+            if(!code) return window.showToast("Enter code");
+            if(window.state.user.referredBy === true) return window.showToast("Already used referral");
+            if(code === window.state.user.refCode.toUpperCase()) return window.showToast("Cannot use your own code");
 
-        try{
-            const { collection, query, where, getDocs, doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            await safeFirebaseCall(async () => {
+                const { collection, query, where, getDocs, doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+                const q = query(collection(window.db, "earnx_users"), where("refCode", "==", code));
+                const snapshot = await getDocs(q);
 
-            // 🔥 SAFE QUERY (DIRECT MATCH)
-            const q = query(collection(window.db, "earnx_users"), where("refCode", "==", code));
-            const snapshot = await getDocs(q);
+                if(snapshot.empty){
+                    return window.showToast("Invalid code");
+                }
 
-            if(snapshot.empty){
-                return showToast("Invalid referral code");
-            }
+                const refDoc = snapshot.docs[0];
+                const refData = refDoc.data();
 
-            const refDoc = snapshot.docs[0];
-            const refData = refDoc.data();
+                // Device ID Mismatch Check
+                let currentDevice = localStorage.getItem("earnx_device_id");
+                if(refData.deviceId && refData.deviceId === currentDevice) {
+                    return window.showToast("Fraud detected: Same device referral blocked!");
+                }
 
-            // 👉 reward referrer
-            await updateDoc(doc(window.db, "earnx_users", refDoc.id), {
-                coins: (refData.coins || 0) + 100
+                await updateDoc(doc(window.db, "earnx_users", refDoc.id), {
+                    coins: (Number(refData.coins) || 0) + 100
+                });
+
+                window.state.user.coins += 100;
+                window.state.user.referredBy = true;
+
+                await updateDoc(doc(window.db, "earnx_users", window.state.user.id), {
+                    coins: window.state.user.coins,
+                    referredBy: true
+                });
+
+                window.saveState();
+                window.showToast("Referral applied +100 coins");
+                el.value = "";
             });
-
-            // 👉 reward current user
-            state.user.coins += 100;
-            state.user.referredBy = true;
-
-            await updateDoc(doc(window.db, "earnx_users", state.user.id), {
-                coins: state.user.coins,
-                referredBy: true
-            });
-
-            saveState();
-            showToast("Referral applied +100 coins");
-            
-            // FIX 2: CLEAR INPUT AFTER REFERRAL
-            document.getElementById('ref-input').value = "";
-
-        }catch(e){
+        } catch(e) {
             console.log(e);
-            showToast("Error applying referral");
+            window.showToast("Error applying referral");
+        } finally {
+            referralLock = false;
         }
     }
 
-    function submitWithdraw() {
-        const btn = document.getElementById('btn-withdraw');
-        if(btn.disabled) return;
-        
-        btn.disabled = true; 
-        setTimeout(() => btn.disabled = false, 3000);
+    // Secure Withdraw
+    window.submitWithdraw = async function(){
+        if(withdrawLock) return;
+        withdrawLock = true;
 
-        const withdrawCoins = Math.floor(state.user.coins / 10000) * 10000;
-        
-        if(withdrawCoins === 0) return showToast("Not enough coins");
-        if(state.user.coins < 10000) return showToast("Minimum 10,000 coins required");
-        
-        const upi = document.getElementById('upi-input').value.trim();
-        if(!upi.includes('@')) return showToast("Enter valid UPI ID");
+        setTimeout(()=> withdrawLock = false, 5000); // HARD LOCK
 
-        const inr = (withdrawCoins / 10000) * 100;
+        try {
+            if(!navigator.onLine){
+                window.showToast("No internet");
+                return;
+            }
 
-        state.withdrawals.push({ 
-            amount: inr, 
-            upi: upi, 
-            date: Date.now(), 
-            status: "Pending" 
-        });
+            const coins = Math.floor(window.state.user.coins / 10000) * 10000;
 
-        state.user.coins -= withdrawCoins;
-        saveCoinsToFirebase();
-        saveState(); 
-        document.getElementById('upi-input').value = "";
-        showToast(`Withdrawal ₹${inr} requested`);
-    }
+            if(coins < 10000){
+                window.showToast("Min 10k coins");
+                return;
+            }
 
-    /* === TIMERS ENGINE === */
-    function startTimers() {
+            const input = document.getElementById('upi-input');
+            const upi = input.value.trim();
+
+            if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)){
+                window.showToast("Invalid UPI");
+                return;
+            }
+
+            const { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+
+            const userRef = doc(window.db, "earnx_users", window.currentUser.uid);
+            const snap = await getDoc(userRef);
+
+            const currentCoins = snap.data().coins || 0;
+
+            if(currentCoins < coins){
+                window.showToast("Balance mismatch");
+                return;
+            }
+
+            await updateDoc(userRef, {
+                coins: currentCoins - coins
+            });
+
+            await addDoc(collection(window.db, "earnx_withdrawals"), {
+                userId: window.currentUser.uid,
+                coins: coins,
+                upiId: upi,
+                status: "Pending",
+                createdAt: serverTimestamp()
+            });
+
+            window.state.user.coins -= coins;
+            window.saveState();
+            window.loadWithdrawals();
+
+            input.value = "";
+            window.showToast("Withdraw Requested");
+
+        } catch(e){
+            window.showToast("Withdraw failed");
+        }
+    };
+
+    window.startTimers = function() {
         if(timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(updateTimersUI, 1000);
         updateTimersUI();
@@ -852,34 +1183,36 @@
 
     function updateTimersUI() {
         const now = Date.now();
-        updateSingleTimer('watch', state.tasks.lastWatch, now);
-        updateSingleTimer('stay', state.tasks.lastStay, now);
-        updateSingleTimer('tap', state.tasks.lastTap, now);
+        updateSingleTimer('watch', window.state.tasks.lastWatch, now);
+        updateSingleTimer('stay', window.state.tasks.lastStay, now);
+        updateSingleTimer('tap', window.state.tasks.lastTap, now);
 
-        if(state.spin.spinsLeft < 5 && state.spin.lastRefill > 0) {
-            const passed = now - state.spin.lastRefill;
+        if(window.state.spin.spinsLeft < 5 && window.state.spin.lastRefill > 0) {
+            const passed = now - window.state.spin.lastRefill;
             if(passed >= SPIN_REFILL_MS) {
-                state.spin.spinsLeft = 5; state.spin.lastRefill = 0; saveState();
+                window.state.spin.spinsLeft = 5; window.state.spin.lastRefill = 0; window.saveState();
             } else {
-                document.getElementById('spin-refill-timer').innerText = "Refill in: " + formatMS(SPIN_REFILL_MS - passed);
+                safeSetText('spin-refill-timer', "Refill in: " + formatMS(SPIN_REFILL_MS - passed));
             }
         } else {
-            document.getElementById('spin-refill-timer').innerText = "";
+            safeSetText('spin-refill-timer', "");
         }
     }
 
     function updateSingleTimer(type, lastTime, now) {
         const btn = document.getElementById(`btn-${type}`);
-        const display = document.getElementById(`${type}-timer-display`);
-        if(!btn || !display) return;
+        if(!btn) return;
         const passed = now - lastTime;
         if(passed < COOLDOWN_MS) {
-            display.innerText = formatMS(COOLDOWN_MS - passed); btn.disabled = true;
+            safeSetText(`${type}-timer-display`, formatMS(COOLDOWN_MS - passed));
+            btn.disabled = true;
         } else {
-            if(type === 'tap' && state.tasks.tapCount >= 20) {
-                display.innerText = "Complete"; btn.disabled = true;
+            if(type === 'tap' && window.state.tasks.tapCount >= 20) {
+                safeSetText(`${type}-timer-display`, "Complete");
+                btn.disabled = true;
             } else {
-                display.innerText = "Ready"; btn.disabled = false;
+                safeSetText(`${type}-timer-display`, "Ready");
+                btn.disabled = false;
             }
         }
     }
@@ -891,7 +1224,62 @@
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
-    window.onload = init;
+</script>
+
+<script>
+// ==========================================
+// 🔥 FINAL FRONTEND SECURITY SHIELD 🔥
+// ==========================================
+
+// 1. Anti-Iframe (Clickjacking Protection)
+if (window.top !== window.self) {
+    window.top.location = window.self.location;
+}
+
+// 2. Block Inspect Element & Right Click (Script Kiddie Protection)
+document.addEventListener('contextmenu', event => event.preventDefault());
+
+document.addEventListener('keydown', (e) => {
+    // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+    if (e.key === 'F12' || 
+       (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
+       (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+        return false;
+    }
+});
+
+// 3. Console Hacker Warning
+console.log("%cSTOP!", "color: red; font-family: sans-serif; font-size: 4.5em; font-weight: bolder; text-shadow: #000 1px 1px;");
+console.log("%cThis is a browser feature intended for developers. If someone told you to copy-paste something here to get free coins, it is a scam and will result in a permanent ban.", "color: white; background: red; font-size: 1.2em; padding: 10px; border-radius: 5px;");
+
+// 4. Advanced Time Manipulation Defuser (Phone Time Cheat Protection)
+let lastValidTime = Date.now();
+
+setInterval(() => {
+    // Agar app background me hai toh time jump ignore karo (Natural OS behavior)
+    if(document.hidden) {
+        lastValidTime = Date.now();
+        return;
+    }
+
+    const currentTime = Date.now();
+    const timeDiff = currentTime - lastValidTime;
+
+    // Agar time achanak se 15 seconds se zyada aage jump kare (Phone time forwarded)
+    if (timeDiff > 15000) {
+        console.warn("System time manipulation detected!");
+        
+        // Cooldown timer ko bhi utna aage badha do (Hack neutralized)
+        if(window.state && window.state.tasks) {
+            window.state.tasks.lastWatch += timeDiff;
+            window.state.tasks.lastStay += timeDiff;
+            window.state.tasks.lastTap += timeDiff;
+            window.saveState();
+        }
+    }
+    lastValidTime = currentTime;
+}, 1000);
 </script>
 </body>
 </html>
