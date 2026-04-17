@@ -18,9 +18,15 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
-      # Humne 'android/gradlew' path specify kiya hai yahan
+      # Ye step 'gradlew' file ko sahi se setup karega
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      # Ye command khud missing wrapper files generate karegi
+      - name: Generate Wrapper
+        run: cd android && gradle wrapper
+
       - name: Fix Gradlew Permissions
         run: chmod +x android/gradlew
 
