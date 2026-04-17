@@ -1,0 +1,6 @@
+{
+  "appId": "com.earnx.rewards",
+  "appName": "EarnX",
+  "webDir": ".",
+  "bundledWebRuntime": false
+}
