@@ -3,7 +3,7 @@ name: EarnX Build Engine
 on:
   push:
     branches: [ main ]
-  workflow_dispatch: # Isse aap manually bhi build start kar sakte hain
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,23 +20,28 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Grant Execute Permission for Gradlew
-        run: chmod +x gradlew
+      # Humne 'android/gradlew' path specify kiya hai yahan
+      - name: Fix Gradlew Permissions
+        run: chmod +x android/gradlew
 
       - name: Build Release APK
-        run: ./gradlew assembleRelease
+        run: |
+          cd android
+          ./gradlew assembleRelease
 
       - name: Build Release Bundle (AAB)
-        run: ./gradlew bundleRelease
+        run: |
+          cd android
+          ./gradlew bundleRelease
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: EarnX-Release-APK
-          path: app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/apk/release/*.apk
 
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
           name: EarnX-Release-Bundle
-          path: app/build/outputs/bundle/release/*.aab
+          path: android/app/build/outputs/bundle/release/*.aab
