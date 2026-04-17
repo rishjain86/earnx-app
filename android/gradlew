@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+# Gradle startup script for UN*X
+exec "$@"
+
