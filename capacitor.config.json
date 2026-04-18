@@ -1,5 +1,11 @@
 {
-  "appId": "com.earnx.rewards",
+  "appId": "com.earnx.app",
   "appName": "EarnX",
-  "webDir": "www"
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "hostname": "dukaan-platform.firebaseapp.com",
+    "allowNavigation": ["dukaan-platform.firebaseapp.com", "accounts.google.com"]
+  }
 }
