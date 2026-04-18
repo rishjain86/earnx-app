@@ -16,10 +16,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Dependencies
+      - name: Install Dependencies & Remove Buggy Plugin
         run: |
           npm install
-          npm install @capacitor/share@5 --legacy-peer-deps
+          npm uninstall @capacitor/share
           npm install @capacitor-community/admob@5 --legacy-peer-deps
 
       - name: Prepare Web Folder
@@ -39,9 +39,7 @@ jobs:
           const fs = require('fs');
           const path = 'android/app/src/main/AndroidManifest.xml';
           let xml = fs.readFileSync(path, 'utf8');
-          // Inject App ID
           xml = xml.replace('</application>', '    <meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"ca-app-pub-3940256099942544~3347511713\"/>\n    </application>');
-          // Inject Android 14 Ad Permission
           xml = xml.replace('</manifest>', '    <uses-permission android:name=\"com.google.android.gms.permission.AD_ID\"/>\n</manifest>');
           fs.writeFileSync(path, xml);
           console.log('AdMob setup completed flawlessly by Node.js!');
