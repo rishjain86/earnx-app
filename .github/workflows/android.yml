@@ -50,10 +50,10 @@ jobs:
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
+          buildToolsVersion: 33.0.0
 
       - name: Upload Final Signed APK
         uses: actions/upload-artifact@v4
         with:
           name: EarnX-Signed-App
           path: ${{steps.sign_app.outputs.signedReleaseFile}}
-          
