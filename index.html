@@ -151,11 +151,14 @@
 
             <div id="app-login-section" style="display: none;">
                 <input type="email" id="email-input" placeholder="Enter Email ID" style="margin-bottom: 10px;">
-                <input type="password" id="password-input" placeholder="Enter Password (Min 6 chars)" style="margin-bottom: 15px;">
+                <input type="password" id="password-input" placeholder="Enter Password (Min 6 chars)" style="margin-bottom: 5px;">
+                <p style="font-size: 0.8rem; color: var(--primary); text-align: right; margin-bottom: 15px; cursor: pointer;" onclick="resetPassword()">Forgot Password?</p>
+                
                 <button class="btn" onclick="loginWithEmail()">Login / Sign Up</button>
                 <p style="font-size: 0.75rem; text-align: center; margin-top: 10px; color: var(--text-muted);">If email is not registered, a new account will be created automatically.</p>
             </div>
         </div>
+
         <p style="text-align: center; font-size: 0.75rem; margin-top: 20px;">By continuing, you agree to our <span class="text-green" onclick="nav('terms')">Terms & Conditions</span>.</p>
     </div>
 
@@ -390,7 +393,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -410,7 +413,7 @@
     let loginHandled = false;
     let loginLoading = false;
 
-    // App vs Web Detector UI Set karna
+    // App vs Web Detector UI
     setTimeout(() => {
         if (window.Capacitor) {
             const webSec = document.getElementById('web-login-section');
@@ -420,7 +423,7 @@
         }
     }, 200);
 
-    // Centralized Login Handler
+    // Centralized Login Handler (WITH TASK SYNC)
     window.handleSuccessfulLogin = async function(user) {
         window.currentUser = user;
         const ref = doc(db, "earnx_users", user.uid);
@@ -432,16 +435,24 @@
             localStorage.setItem("earnx_device_id", deviceId);
         }
 
+        const defaultTasks = { lastWatch:0, lastStay:0, lastTap:0, tapCount:0, checkInTime:0 };
+        const defaultSpin = { spinsLeft:5, lastRefill:0, totalSpins:0 };
+
         if(!snap.exists()){
             const newRefCode = user.uid.substring(0,4).toUpperCase() + Math.floor(Math.random()*9000+1000);
             const data = {
                 coins: 0,
                 refCode: newRefCode,
                 deviceId: deviceId,
-                createdAt: Date.now()
+                createdAt: Date.now(),
+                tasks: defaultTasks,
+                spin: defaultSpin
             };
             await setDoc(ref, data);
+            
             window.state.user = { id: user.uid, phone: user.email, coins: 0, refCode: newRefCode, referredBy: false };
+            window.state.tasks = defaultTasks;
+            window.state.spin = defaultSpin;
         } else {
             const data = snap.data();
             window.state.user = {
@@ -452,6 +463,9 @@
                 refCode: data.refCode,
                 referredBy: data.referredBy || false
             };
+            // LOAD TASKS AND SPINS FROM FIREBASE DATABASE
+            window.state.tasks = data.tasks || defaultTasks;
+            window.state.spin = data.spin || defaultSpin;
         }
 
         window.saveState();
@@ -477,7 +491,7 @@
         }
     });
 
-    // 1. WEB KE LIYE GOOGLE LOGIN
+    // Web Google Login
     window.loginWithGoogle = async function(){
         if(loginLoading) return;
         loginLoading = true;
@@ -492,7 +506,7 @@
         }
     };
 
-    // 2. APP KE LIYE EMAIL LOGIN
+    // App Email Login
     window.loginWithEmail = async function() {
         if(loginLoading) return;
         
@@ -506,24 +520,40 @@
         window.showToast("Authenticating...");
         
         try {
-            // Pehle existing account se login try karega
             const result = await signInWithEmailAndPassword(auth, email, password);
             await window.handleSuccessfulLogin(result.user);
         } catch(err) {
-            // Agar account nahi mila, toh automatically naya account bana dega
             if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
                 try {
                     window.showToast("Creating new account...");
                     const result = await createUserWithEmailAndPassword(auth, email, password);
                     await window.handleSuccessfulLogin(result.user);
                 } catch(regErr) {
-                    window.showToast("Error: " + (regErr.message.split('/')[1] || "Registration failed"));
+                    if (regErr.code === 'auth/email-already-in-use') {
+                        window.showToast("Account exists. Use 'Forgot Password' to set password.");
+                    } else {
+                        window.showToast("Error: " + (regErr.message.split('/')[1] || "Registration failed"));
+                    }
                     loginLoading = false;
                 }
             } else {
                 window.showToast("Error: " + (err.message.split('/')[1] || "Login failed"));
                 loginLoading = false;
             }
+        }
+    };
+
+    // Forgot Password Logic
+    window.resetPassword = async function() {
+        const email = document.getElementById('email-input').value.trim();
+        if(!email) {
+            return window.showToast("Please enter your email above first.");
+        }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            window.showToast("Password Reset Link sent to your Email!");
+        } catch(err) {
+            window.showToast("Error: " + (err.message.split('/')[1] || "Could not send link"));
         }
     };
 </script>
@@ -637,11 +667,42 @@
         }
     }
 
+    // DB Sync
+    async function saveCoinsToFirebase(){
+        if(!navigator.onLine) return; 
+        if(!window.state.user || !window.state.user.id || saving) return;
+        saving = true;
+
+        try {
+            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            const ref = doc(window.db, "earnx_users", window.state.user.id);
+            
+            await updateDoc(ref, {
+                coins: Number(window.state.user.coins) || 0,
+                tasks: window.state.tasks || {},
+                spin: window.state.spin || {}
+            });
+        } catch(e) {
+            console.log("Firebase sync error", e);
+        }
+
+        saving = false;
+    }
+
+    // Debounce writing
+    function saveCoinsToFirebaseDebounced(){
+        clearTimeout(coinSaveTimeout);
+        coinSaveTimeout = setTimeout(()=>{
+            saveCoinsToFirebase();
+        }, 2000);
+    }
+
     window.saveState = function() {
         sanitizeCoins();
         validateState();
         localStorage.setItem('earnx_state', JSON.stringify(window.state));
         window.updateUI();
+        saveCoinsToFirebaseDebounced(); // FORCE CLOUD SYNC ON EVERY STATE CHANGE
     }
 
     // Safe Nav
@@ -679,43 +740,6 @@
         });
     }
 
-    /* === FIREBASE SYNC === */
-    // Safe Network Call Wrapper
-    async function safeFirebaseCall(fn){
-        try{
-            return await fn();
-        }catch(e){
-            console.log("Offline / Firebase error", e);
-            window.showToast("Network issue or sync error");
-        }
-    }
-
-    // DB Sync
-    async function saveCoinsToFirebase(){
-        if(!navigator.onLine) return; 
-        if(!window.state.user || !window.state.user.id || saving) return;
-        saving = true;
-
-        await safeFirebaseCall(async () => {
-            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-            const ref = doc(window.db, "earnx_users", window.state.user.id);
-            
-            await updateDoc(ref, {
-                coins: Number(window.state.user.coins) || 0
-            });
-        });
-
-        saving = false;
-    }
-
-    // Debounce writing
-    function saveCoinsToFirebaseDebounced(){
-        clearTimeout(coinSaveTimeout);
-        coinSaveTimeout = setTimeout(()=>{
-            saveCoinsToFirebase();
-        }, 2000);
-    }
-
     // Generic Debounce
     function debounce(fn, delay=300){
         let t;
@@ -728,7 +752,7 @@
     window.loadWithdrawals = debounce(async function(){
         if(!window.currentUser) return;
 
-        await safeFirebaseCall(async () => {
+        try {
             const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const q = query(
                 collection(window.db, "earnx_withdrawals"),
@@ -748,7 +772,7 @@
             });
 
             window.saveState();
-        });
+        } catch(e) {}
     }, 300);
 
     /* === UI UPDATES === */
@@ -882,7 +906,6 @@
         window.state.dailyCoins += amount;
         window.state.user.coins += amount;
 
-        saveCoinsToFirebaseDebounced();
         window.saveState();
         window.showToast(`${amount} Coins Added`);
     }
@@ -1054,40 +1077,36 @@
             if(window.state.user.referredBy === true) return window.showToast("Already used referral");
             if(code === window.state.user.refCode.toUpperCase()) return window.showToast("Cannot use your own code");
 
-            await safeFirebaseCall(async () => {
-                const { collection, query, where, getDocs, doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-                const q = query(collection(window.db, "earnx_users"), where("refCode", "==", code));
-                const snapshot = await getDocs(q);
+            const { collection, query, where, getDocs, doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            const q = query(collection(window.db, "earnx_users"), where("refCode", "==", code));
+            const snapshot = await getDocs(q);
 
-                if(snapshot.empty){
-                    return window.showToast("Invalid code");
-                }
+            if(snapshot.empty){
+                window.showToast("Invalid code");
+                return;
+            }
 
-                const refDoc = snapshot.docs[0];
-                const refData = refDoc.data();
+            const refDoc = snapshot.docs[0];
+            const refData = refDoc.data();
 
-                // Device ID Mismatch Check
-                let currentDevice = localStorage.getItem("earnx_device_id");
-                if(refData.deviceId && refData.deviceId === currentDevice) {
-                    return window.showToast("Fraud detected: Same device referral blocked!");
-                }
+            // Device ID Mismatch Check
+            let currentDevice = localStorage.getItem("earnx_device_id");
+            if(refData.deviceId && refData.deviceId === currentDevice) {
+                window.showToast("Fraud detected: Same device referral blocked!");
+                return;
+            }
 
-                await updateDoc(doc(window.db, "earnx_users", refDoc.id), {
-                    coins: (Number(refData.coins) || 0) + 100
-                });
-
-                window.state.user.coins += 100;
-                window.state.user.referredBy = true;
-
-                await updateDoc(doc(window.db, "earnx_users", window.state.user.id), {
-                    coins: window.state.user.coins,
-                    referredBy: true
-                });
-
-                window.saveState();
-                window.showToast("Referral applied +100 coins");
-                el.value = "";
+            await updateDoc(doc(window.db, "earnx_users", refDoc.id), {
+                coins: (Number(refData.coins) || 0) + 100
             });
+
+            window.state.user.coins += 100;
+            window.state.user.referredBy = true;
+
+            window.saveState();
+            window.showToast("Referral applied +100 coins");
+            el.value = "";
+            
         } catch(e) {
             console.log(e);
             window.showToast("Error applying referral");
