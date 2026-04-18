@@ -41,20 +41,26 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
 
-      - name: Sign APK with Keystore
-        uses: r0adkll/sign-android-release@v1
-        id: sign_app
-        env:
-          BUILD_TOOLS_VERSION: "33.0.2"
-        with:
-          releaseDirectory: android/app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
+      - name: Sign APK Manually (Pro Method)
+        run: |
+          # 1. Secret text ko wapas Mohar (File) mein badlo
+          echo "${{ secrets.KEYSTORE_BASE64 }}" > base64.txt
+          base64 --decode base64.txt > earnx.jks
+          
+          # 2. Server pe jo bhi latest Android tool ho, use pakdo
+          BUILD_TOOLS=$(ls -d $ANDROID_HOME/build-tools/* | tail -1)
+          
+          # 3. APK file dhoondho
+          APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
+          
+          # 4. APK ko Zipalign (Optimize) karo
+          $BUILD_TOOLS/zipalign -v -p 4 $APK_PATH EarnX-Signed.apk
+          
+          # 5. Apni Mohar se APK par Sign karo
+          $BUILD_TOOLS/apksigner sign --ks earnx.jks --ks-key-alias "${{ secrets.KEY_ALIAS }}" --ks-pass "pass:${{ secrets.STORE_PASSWORD }}" --key-pass "pass:${{ secrets.KEY_PASSWORD }}" EarnX-Signed.apk
 
       - name: Upload Final Signed APK
         uses: actions/upload-artifact@v4
         with:
           name: EarnX-Signed-App
-          path: ${{steps.sign_app.outputs.signedReleaseFile}}
+          path: EarnX-Signed.apk
