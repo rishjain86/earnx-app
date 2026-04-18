@@ -471,7 +471,7 @@
         }
     });
 
-    window.loginWithGoogle = async function(){
+        window.loginWithGoogle = async function(){
         if(loginLoading) return;
         loginLoading = true;
         
@@ -479,14 +479,14 @@
         provider.setCustomParameters({ prompt: 'select_account' });
 
         try {
-            // Detect if running inside the App (WebView)
-            const isApp = window.Capacitor !== undefined || (document.URL.indexOf('http://') === -1 && document.URL.indexOf('https://') === -1);
+            // Mobile Device Sensor
+            const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
             
-            if (isApp) {
-                // Force Redirect for APK
+            if (isMobile) {
+                // Mobile App mein popup block hote hain, isliye Force Redirect
                 await signInWithRedirect(auth, provider);
             } else {
-                // Standard Popup for Browser
+                // PC/Browser ke liye normal Popup
                 const result = await signInWithPopup(auth, provider);
                 await window.handleSuccessfulLogin(result.user);
             }
@@ -496,6 +496,7 @@
             loginLoading = false;
         }
     };
+
 </script>
 
 <script>
