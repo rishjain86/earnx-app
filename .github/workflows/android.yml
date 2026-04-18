@@ -27,6 +27,7 @@ jobs:
         run: |
           mkdir -p www
           cp index.html www/
+          cp -r assets www/assets/
 
       - name: Generate Android Project
         run: npx cap add android
