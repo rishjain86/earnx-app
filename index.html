@@ -471,7 +471,7 @@
         }
     });
 
-        window.loginWithGoogle = async function(){
+            window.loginWithGoogle = async function(){
         if(loginLoading) return;
         loginLoading = true;
         
@@ -479,23 +479,22 @@
         provider.setCustomParameters({ prompt: 'select_account' });
 
         try {
-            // Mobile Device Sensor
-            const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
-            
-            if (isMobile) {
-                // Mobile App mein popup block hote hain, isliye Force Redirect
+            // 100% Perfect App vs Web Detector
+            if (window.Capacitor) {
+                // Agar App ke andar hai, toh Redirect use karo (Kyunki WebView mein popup block hota hai)
                 await signInWithRedirect(auth, provider);
             } else {
-                // PC/Browser ke liye normal Popup
+                // Agar Web Browser (Chrome/PC) par hai, toh Popup use karo
                 const result = await signInWithPopup(auth, provider);
                 await window.handleSuccessfulLogin(result.user);
             }
         } catch(err) {
             console.error(err);
-            if (err.message) window.showToast("Login Error: Please try again");
+            window.showToast("Login Error: Please try again");
             loginLoading = false;
         }
     };
+
 
 </script>
 
