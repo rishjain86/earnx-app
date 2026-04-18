@@ -10,9 +10,17 @@
     <style>
         /* === CORE THEME VARIABLES === */
         :root {
-            --bg-dark: #0f172a; --bg-darker: #020617; --card-bg: #1e293b; --card-border: #334155;
-            --primary: #10b981; --primary-dark: #059669; --primary-grad: linear-gradient(135deg, #10b981, #059669);
-            --text-light: #f8fafc; --text-muted: #94a3b8; --danger: #ef4444; --warning: #f59e0b;
+            --bg-dark: #0f172a;
+            --bg-darker: #020617;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-grad: linear-gradient(135deg, #10b981, #059669);
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --warning: #f59e0b;
         }
 
         /* === GLOBAL RESETS === */
@@ -20,7 +28,18 @@
         body { font-family: 'Inter', sans-serif; background: #000; color: var(--text-light); display: flex; justify-content: center; overflow: hidden; }
         
         /* === MOBILE APP CONTAINER === */
-        #app { width: 100%; max-width: 480px; height: 100vh; height: 100dvh; background: var(--bg-dark); position: relative; overflow-y: auto; overflow-x: hidden; padding-bottom: 70px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        #app {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh; height: 100dvh;
+            background: var(--bg-dark);
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 70px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        
         #app::-webkit-scrollbar { display: none; }
         
         /* === TYPOGRAPHY & UTILS === */
@@ -38,6 +57,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 15px; }
+        
         .btn { background: var(--primary-grad); color: white; border: none; padding: 14px 20px; border-radius: 12px; font-size: 1rem; font-weight: 600; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
         .btn:active { transform: scale(0.98); }
         .btn:disabled { background: var(--card-border); color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
@@ -92,20 +112,25 @@
         .timer-display { font-family: monospace; font-size: 1.1rem; color: var(--warning); font-weight: bold; }
 
         /* === SPLASH AND LOGO CSS === */
-        #custom-splash { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 999999; transition: opacity 0.5s ease-out; }
+        #custom-splash {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--bg-dark); display: flex; justify-content: center; align-items: center;
+            z-index: 999999; transition: opacity 0.5s ease-out;
+        }
+
         #custom-splash img { width: 70vw; max-width: 400px; height: auto; object-fit: contain; animation: pulse-splash 1.5s infinite alternate; }
+
         @keyframes pulse-splash { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.05); opacity: 1; } }
+
         .app-logo { width: 60vw; max-width: 300px; height: auto; margin-bottom: 20px; object-fit: contain; filter: drop-shadow(0px 10px 15px rgba(16, 185, 129, 0.4)); }
     </style>
 </head>
 <body>
 
-<div id="custom-splash">
-    <img src="assets/splash.png" alt="EarnX Splash Logo">
-</div>
+<div id="custom-splash"><img src="assets/splash.png" alt="EarnX Splash Logo"></div>
 
 <div id="app">
-
     <div id="toast">Message</div>
 
     <div id="ad-modal">
@@ -143,12 +168,10 @@
                 <input type="email" id="email-input" placeholder="Enter Email ID" style="margin-bottom: 10px;">
                 <input type="password" id="password-input" placeholder="Enter Password (Min 6 chars)" style="margin-bottom: 5px;">
                 <p style="font-size: 0.8rem; color: var(--primary); text-align: right; margin-bottom: 15px; cursor: pointer;" onclick="resetPassword()">Forgot Password?</p>
-                
                 <button class="btn" onclick="loginWithEmail()">Login / Sign Up</button>
                 <p style="font-size: 0.75rem; text-align: center; margin-top: 10px; color: var(--text-muted);">If email is not registered, a new account will be created automatically.</p>
             </div>
         </div>
-
         <p style="text-align: center; font-size: 0.75rem; margin-top: 20px;">By continuing, you agree to our <span class="text-green" onclick="nav('terms')">Terms & Conditions</span>.</p>
     </div>
 
@@ -171,22 +194,10 @@
 
         <h3>Quick Actions</h3>
         <div class="grid-actions mb-2">
-            <div class="action-card" onclick="nav('tasks')">
-                <i class="fa-solid fa-list-check"></i>
-                <div style="font-weight: 600;">Tasks</div>
-            </div>
-            <div class="action-card" onclick="nav('spin')">
-                <i class="fa-solid fa-dharmachakra"></i>
-                <div style="font-weight: 600;">Spin Wheel</div>
-            </div>
-            <div class="action-card" onclick="nav('referral')">
-                <i class="fa-solid fa-users"></i>
-                <div style="font-weight: 600;">Referrals</div>
-            </div>
-            <div class="action-card" onclick="nav('withdraw')">
-                <i class="fa-solid fa-wallet"></i>
-                <div style="font-weight: 600;">Withdraw</div>
-            </div>
+            <div class="action-card" onclick="nav('tasks')"><i class="fa-solid fa-list-check"></i><div style="font-weight: 600;">Tasks</div></div>
+            <div class="action-card" onclick="nav('spin')"><i class="fa-solid fa-dharmachakra"></i><div style="font-weight: 600;">Spin Wheel</div></div>
+            <div class="action-card" onclick="nav('referral')"><i class="fa-solid fa-users"></i><div style="font-weight: 600;">Referrals</div></div>
+            <div class="action-card" onclick="nav('withdraw')"><i class="fa-solid fa-wallet"></i><div style="font-weight: 600;">Withdraw</div></div>
         </div>
 
         <h3>Recent Activity</h3>
@@ -203,10 +214,7 @@
 
         <div class="card">
             <div class="flex-between mb-1">
-                <div>
-                    <h3 style="margin-bottom: 2px;">Watch Ad</h3>
-                    <p>Reward: 100 Coins</p>
-                </div>
+                <div><h3 style="margin-bottom: 2px;">Watch Ad</h3><p>Reward: 100 Coins</p></div>
                 <div class="timer-display" id="watch-timer-display">Ready</div>
             </div>
             <button class="btn" id="btn-watch" onclick="doWatchTask()">Watch Ad</button>
@@ -214,10 +222,7 @@
 
         <div class="card">
             <div class="flex-between mb-1">
-                <div>
-                    <h3 style="margin-bottom: 2px;">Stay Task</h3>
-                    <p>Wait 15s. Reward: 200 Coins</p>
-                </div>
+                <div><h3 style="margin-bottom: 2px;">Stay Task</h3><p>Wait 15s. Reward: 200 Coins</p></div>
                 <div class="timer-display" id="stay-timer-display">Ready</div>
             </div>
             <button class="btn" id="btn-stay" onclick="doStayTask()">Start Task</button>
@@ -225,10 +230,7 @@
 
         <div class="card">
             <div class="flex-between mb-1">
-                <div>
-                    <h3 style="margin-bottom: 2px;">Tap Task</h3>
-                    <p>Tap 20 times. Reward: 150 Coins</p>
-                </div>
+                <div><h3 style="margin-bottom: 2px;">Tap Task</h3><p>Tap 20 times. Reward: 150 Coins</p></div>
                 <div class="timer-display" id="tap-timer-display">Ready</div>
             </div>
             <div class="flex-between">
@@ -261,7 +263,6 @@
                 </div>
                 <div class="wheel-center"></div>
             </div>
-
             <button class="btn" id="btn-spin" onclick="spinWheel()">SPIN NOW</button>
         </div>
     </div>
@@ -275,7 +276,6 @@
         <div class="card">
             <h3>Withdraw Details</h3>
             <p class="mb-2">Minimum withdrawal: 10,000 Coins (₹100)</p>
-            
             <input type="text" id="upi-input" placeholder="Enter UPI ID (e.g. name@upi)">
             <p style="font-size: 0.8rem; margin-bottom: 15px; color: var(--danger);"><i class="fa-solid fa-circle-info"></i> All withdrawals are subject to verification (48-72 hours).</p>
             <button class="btn" id="btn-withdraw" onclick="submitWithdraw()">Withdraw Now</button>
@@ -297,17 +297,11 @@
             <i class="fa-solid fa-gift" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
             <h3>Your Referral Code</h3>
             <p class="mb-2">Share to earn bonuses when friends join.</p>
-            <div style="background: var(--bg-darker); border: 2px dashed var(--primary); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; margin-bottom: 15px;" id="my-ref-code">
-                ------
-            </div>
+            <div style="background: var(--bg-darker); border: 2px dashed var(--primary); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; margin-bottom: 15px;" id="my-ref-code">------</div>
             
             <div style="display: flex; gap: 10px;">
-                <button class="btn btn-outline" style="flex: 1;" onclick="copyReferral()">
-                    <i class="fa-regular fa-copy"></i> Copy
-                </button>
-                <button class="btn" style="flex: 1;" onclick="shareReferral()">
-                    <i class="fa-solid fa-share-nodes"></i> Share Link
-                </button>
+                <button class="btn btn-outline" style="flex: 1;" onclick="copyReferral()"><i class="fa-regular fa-copy"></i> Copy</button>
+                <button class="btn" style="flex: 1;" onclick="shareReferral()"><i class="fa-solid fa-share-nodes"></i> Share Link</button>
             </div>
         </div>
 
@@ -361,22 +355,10 @@
     </div>
 
     <div class="bottom-nav" id="bottom-nav" style="display: none;">
-        <div class="nav-item active" onclick="nav('home')" data-target="home">
-            <i class="fa-solid fa-house"></i>
-            <span>Home</span>
-        </div>
-        <div class="nav-item" onclick="nav('tasks')" data-target="tasks">
-            <i class="fa-solid fa-list-check"></i>
-            <span>Tasks</span>
-        </div>
-        <div class="nav-item" onclick="nav('spin')" data-target="spin">
-            <i class="fa-solid fa-dharmachakra"></i>
-            <span>Spin</span>
-        </div>
-        <div class="nav-item" onclick="nav('profile')" data-target="profile">
-            <i class="fa-solid fa-user"></i>
-            <span>Profile</span>
-        </div>
+        <div class="nav-item active" onclick="nav('home')" data-target="home"><i class="fa-solid fa-house"></i><span>Home</span></div>
+        <div class="nav-item" onclick="nav('tasks')" data-target="tasks"><i class="fa-solid fa-list-check"></i><span>Tasks</span></div>
+        <div class="nav-item" onclick="nav('spin')" data-target="spin"><i class="fa-solid fa-dharmachakra"></i><span>Spin</span></div>
+        <div class="nav-item" onclick="nav('profile')" data-target="profile"><i class="fa-solid fa-user"></i><span>Profile</span></div>
     </div>
 
 </div>
@@ -403,7 +385,6 @@
     let loginHandled = false;
     let loginLoading = false;
 
-    // App vs Web Detector UI - Ekdum sahi tareeke se hide/show karega
     setTimeout(() => {
         if (window.Capacitor) {
             const webSec = document.getElementById('web-login-section');
@@ -413,7 +394,6 @@
         }
     }, 200);
 
-    // Centralized Login Handler (WITH TASK SYNC)
     window.handleSuccessfulLogin = async function(user) {
         try {
             window.currentUser = user;
@@ -435,7 +415,7 @@
                     coins: 0,
                     refCode: newRefCode,
                     deviceId: deviceId,
-                    createdAt: window.getTrueTime(),
+                    createdAt: window.getTrueTime(), 
                     tasks: defaultTasks,
                     spin: defaultSpin
                 };
@@ -488,7 +468,6 @@
         }
     });
 
-    // Web Google Login
     window.loginWithGoogle = async function(){
         if(loginLoading) return;
         loginLoading = true;
@@ -505,7 +484,6 @@
         }
     };
 
-    // App Email Login
     window.loginWithEmail = async function() {
         if(loginLoading) return;
         
@@ -529,7 +507,7 @@
                     await window.handleSuccessfulLogin(result.user);
                 } catch(regErr) {
                     if (regErr.code === 'auth/email-already-in-use') {
-                        window.showToast("Account exists. Use 'Forgot Password' to set password.");
+                        window.showToast("Account exists. Use 'Forgot Password'.");
                     } else {
                         window.showToast("Error: " + (regErr.message.split('/')[1] || "Registration failed"));
                     }
@@ -542,12 +520,9 @@
         }
     };
 
-    // Forgot Password Logic
     window.resetPassword = async function() {
         const email = document.getElementById('email-input').value.trim();
-        if(!email) {
-            return window.showToast("Please enter your email above first.");
-        }
+        if(!email) return window.showToast("Please enter your email above first.");
         try {
             await sendPasswordResetEmail(auth, email);
             window.showToast("Password Reset Link sent to your Email!");
@@ -560,8 +535,8 @@
 <script>
     /* === GLOBAL VARIABLES === */
     const COIN_RATE = 100; 
-    const COOLDOWN_MS = 3 * 60 * 1000;
-    const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; 
+    const COOLDOWN_MS = 3 * 60 * 1000; // 3 Minutes
+    const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; // 3 Hours
     const MAX_DAILY_COINS = 5000;
 
     let admobLoaded = false;
@@ -589,15 +564,15 @@
             const data = await response.json();
             serverTimeOffset = new Date(data.datetime).getTime() - Date.now();
             isTimeLocked = false;
-            retryCount = 0; // Reset retry count
-            console.log("Anti-Cheat Active: Time secured.");
+            retryCount = 0; 
+            console.log("Anti-Cheat Active: Time secured via Server.");
         } catch (error) {
             retryCount++;
             if (retryCount <= 2) {
                 setTimeout(syncSecureTime, 1000); 
             } else {
                 serverTimeOffset = 0; 
-                isTimeLocked = false; // Fallback so app doesn't freeze
+                isTimeLocked = false; 
                 console.log("Time sync failed, using safe local fallback.");
             }
         }
@@ -616,7 +591,6 @@
         }
     });
 
-    // Prevent Fast Reload Farming
     let lastLoad = sessionStorage.getItem("lastLoad");
     let nowTime = Date.now();
     if(lastLoad && (nowTime - lastLoad < 500)){ 
@@ -624,33 +598,20 @@
     }
     sessionStorage.setItem("lastLoad", nowTime);
 
-    // Safe LocalStorage Recovery
     function safeLoadState(){
-        try{
-            const saved = localStorage.getItem('earnx_state');
-            return saved ? JSON.parse(saved) : null;
-        }catch{
-            localStorage.removeItem('earnx_state');
-            return null;
-        }
+        try{ const saved = localStorage.getItem('earnx_state'); return saved ? JSON.parse(saved) : null;
+        }catch{ localStorage.removeItem('earnx_state'); return null; }
     }
 
-    // Init logic
-    function init() {
+    async function init() {
         if(appLoaded) return;
         appLoaded = true;
         
-        syncSecureTime();
+        await syncSecureTime(); 
 
-        if(!window.db){
-            console.error("Firebase DB not initialized");
-        }
-
+        if(!window.db) console.error("Firebase DB not initialized");
         const saved = safeLoadState();
-
-        if(saved){
-            window.state = saved;
-        }
+        if(saved) window.state = saved;
 
         if(!window.state){
             window.state = {
@@ -669,43 +630,24 @@
         window.nav('login');
     }
 
-    // Safe DOM Load & AdMob Init
     document.addEventListener("DOMContentLoaded", () => {
         init();
-
-        // AdMob Background Initialization
         setTimeout(() => {
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
                 window.Capacitor.Plugins.AdMob.initialize({
-                    initializeForTesting: true // Test mode on
-                }).then(() => {
-                    admobLoaded = true;
-                    console.log("AdMob Ready!");
-                }).catch(e => console.log("AdMob Init Error", e));
+                    initializeForTesting: false // 🔥 REAL ADS ENABLED 
+                }).then(() => { admobLoaded = true; }).catch(e => console.log("AdMob Init Error"));
             }
         }, 1000);
     });
 
-    // Cross-tab block
-    window.addEventListener("storage", (e) => {
-        if(e.key === "earnx_state"){
-            location.reload();
-        }
-    });
+    window.addEventListener("storage", (e) => { if(e.key === "earnx_state") location.reload(); });
+    window.addEventListener("beforeunload", () => { if(timerInterval) clearInterval(timerInterval); });
 
-    // Memory Leak Prevent
-    window.addEventListener("beforeunload", () => {
-        if(timerInterval) clearInterval(timerInterval);
-    });
-
-    // Multi click block
     document.addEventListener("click", (e) => {
-        if(e.target.tagName === "BUTTON"){
-            if(e.target.disabled) e.stopImmediatePropagation();
-        }
+        if(e.target.tagName === "BUTTON"){ if(e.target.disabled) e.stopImmediatePropagation(); }
     });
 
-    // Anti-Nan Coin sanitize
     function sanitizeCoins(){
         if(!window.state || !window.state.user) return;
         let c = Number(window.state.user.coins);
@@ -713,136 +655,78 @@
         window.state.user.coins = c;
     }
 
-    // LocalStorage Manipulation Guard
     function validateState(){
         if(!window.state || !window.state.user) return;
-        if(window.state.user.coins > 1000000){
-            window.state.user.coins = 0;
-        }
+        if(window.state.user.coins > 1000000) window.state.user.coins = 0;
     }
 
-    // DB Sync
     async function saveCoinsToFirebase(){
-        if(!navigator.onLine) return; 
-        if(!window.state.user || !window.state.user.id || saving) return;
+        if(!navigator.onLine || !window.state.user || !window.state.user.id || saving) return;
         saving = true;
-
         try {
             const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const ref = doc(window.db, "earnx_users", window.state.user.id);
-            
-            await updateDoc(ref, {
-                coins: Number(window.state.user.coins) || 0,
-                tasks: window.state.tasks || {},
-                spin: window.state.spin || {}
-            });
-        } catch(e) {
-            console.log("Firebase sync error", e);
-        }
-
+            await updateDoc(ref, { coins: Number(window.state.user.coins) || 0, tasks: window.state.tasks || {}, spin: window.state.spin || {} });
+        } catch(e) {}
         saving = false;
     }
 
-    // Debounce writing
     function saveCoinsToFirebaseDebounced(){
-        clearTimeout(coinSaveTimeout);
-        coinSaveTimeout = setTimeout(()=>{
-            saveCoinsToFirebase();
-        }, 2000);
+        clearTimeout(coinSaveTimeout); coinSaveTimeout = setTimeout(()=>{ saveCoinsToFirebase(); }, 2000);
     }
 
     window.saveState = function() {
-        sanitizeCoins();
-        validateState();
+        sanitizeCoins(); validateState();
         localStorage.setItem('earnx_state', JSON.stringify(window.state));
-        window.updateUI();
-        saveCoinsToFirebaseDebounced();
+        window.updateUI(); saveCoinsToFirebaseDebounced();
     }
 
-    // Safe Nav
     window.nav = function(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-
         const target = document.getElementById(`screen-${screenId}`);
-        if(target) {
-            target.classList.add('active');
-        } else {
-            console.error("Screen not found:", screenId);
-            return;
-        }
-
+        if(target) target.classList.add('active');
+        
         const bNav = document.getElementById('bottom-nav');
         if (bNav) {
             if (['login'].includes(screenId)) bNav.style.display = 'none';
             else bNav.style.display = 'flex';
         }
-
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-
         const activeItem = document.querySelector(`.nav-item[data-target="${screenId}"]`);
         if(activeItem) activeItem.classList.add('active');
     }
 
-    // Logout Sync Reset
     window.logout = function() {
-        import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js")
-        .then(({ getAuth, signOut }) => {
-            signOut(getAuth());
-            window.currentUser = null;
-            localStorage.clear();
-            location.reload();
+        import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js").then(({ getAuth, signOut }) => {
+            signOut(getAuth()); window.currentUser = null; localStorage.clear(); location.reload();
         });
     }
 
-    // Generic Debounce
     function debounce(fn, delay=300){
-        let t;
-        return (...args)=>{
-            clearTimeout(t);
-            t = setTimeout(()=>fn(...args), delay);
-        }
+        let t; return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn(...args), delay); }
     }
 
     window.loadWithdrawals = debounce(async function(){
         if(!window.currentUser) return;
-
         try {
             const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-            const q = query(
-                collection(window.db, "earnx_withdrawals"),
-                where("userId", "==", window.currentUser.uid)
-            );
+            const q = query(collection(window.db, "earnx_withdrawals"), where("userId", "==", window.currentUser.uid));
             const snap = await getDocs(q);
-
             window.state.withdrawals = [];
             snap.forEach(doc=>{
                 const d = doc.data();
-                window.state.withdrawals.push({
-                    amount: (d.coins / 10000) * 100,
-                    upi: d.upiId,
-                    date: d.createdAt ? (d.createdAt.seconds * 1000) : window.getTrueTime(),
-                    status: d.status
-                });
+                window.state.withdrawals.push({ amount: (d.coins / 10000) * 100, upi: d.upiId, date: d.createdAt ? (d.createdAt.seconds * 1000) : window.getTrueTime(), status: d.status });
             });
-
             window.saveState();
         } catch(e) {}
     }, 300);
 
-    /* === UI UPDATES === */
-    function safeSetText(id, value){
-        const el = document.getElementById(id);
-        if(el) el.innerText = value;
-    }
+    function safeSetText(id, value){ const el = document.getElementById(id); if(el) el.innerText = value; }
 
     const updateUICore = function() {
         if(!window.state || !window.state.user) return;
         sanitizeCoins();
-
-        document.querySelectorAll('.global-coin-display').forEach(el => {
-            el.innerText = window.state.user.coins.toLocaleString();
-        });
-
+        document.querySelectorAll('.global-coin-display').forEach(el => { el.innerText = window.state.user.coins.toLocaleString(); });
         safeSetText('rupee-display', (window.state.user.coins / (10000 / COIN_RATE)).toFixed(2));
         safeSetText('profile-phone', window.state.user.phone);
         safeSetText('profile-uid', window.state.user.id);
@@ -861,11 +745,9 @@
         if(btnCheckin){
             const last = window.state.tasks.checkInTime || 0;
             if(window.getTrueTime() - last < 86400000){
-                btnCheckin.disabled = true;
-                btnCheckin.innerText = "Claimed";
+                btnCheckin.disabled = true; btnCheckin.innerText = "Claimed";
             } else {
-                btnCheckin.disabled = false;
-                btnCheckin.innerText = "Claim 50";
+                btnCheckin.disabled = false; btnCheckin.innerText = "Claim 50";
             }
         }
     }
@@ -874,9 +756,7 @@
     function renderWithdrawals() {
         const list1 = document.getElementById('my-withdrawals-list');
         const list2 = document.getElementById('home-withdrawals-list');
-        
         if(!window.state || !window.state.withdrawals) return;
-
         if(window.state.withdrawals.length === 0) {
             if(list1) list1.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No withdrawals yet.</p>';
             if(list2) list2.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No recent activity.</p>';
@@ -885,171 +765,105 @@
 
         let htmlContent = '';
         const sorted = [...window.state.withdrawals].sort((a,b) => b.date - a.date); 
-        
         sorted.forEach(w => {
             const dateStr = new Date(w.date).toLocaleDateString();
             const maskedUpi = maskUPI(w.upi);
             let statusClass = 'status-pending';
             if(w.status === 'Approved') statusClass = 'text-green';
             if(w.status === 'Rejected') statusClass = 'text-danger';
-            
-            htmlContent += `
-                <div class="history-item">
-                    <div class="h-info"><span class="h-upi">₹${w.amount} &rarr; ${maskedUpi}</span><span class="h-time">${dateStr}</span></div>
-                    <div class="h-status ${statusClass}" style="${w.status === 'Approved' || w.status === 'Rejected' ? 'background:transparent; padding:0;' : ''}">${w.status}</div>
-                </div>`;
+            htmlContent += `<div class="history-item"><div class="h-info"><span class="h-upi">₹${w.amount} &rarr; ${maskedUpi}</span><span class="h-time">${dateStr}</span></div><div class="h-status ${statusClass}" style="${w.status === 'Approved' || w.status === 'Rejected' ? 'background:transparent; padding:0;' : ''}">${w.status}</div></div>`;
         });
-
-        if(list1) list1.innerHTML = htmlContent;
-        if(list2) list2.innerHTML = htmlContent; 
+        if(list1) list1.innerHTML = htmlContent; if(list2) list2.innerHTML = htmlContent; 
     }
 
     function maskUPI(upi) {
         if(!upi || !upi.includes('@')) return upi;
-        const parts = upi.split('@');
-        return parts[0].substring(0, 2) + "****@" + parts[1];
+        const parts = upi.split('@'); return parts[0].substring(0, 2) + "****@" + parts[1];
     }
 
     window.showToast = function(msg) {
-        const toast = document.getElementById('toast');
-        if(!toast) return;
-
-        clearTimeout(toastTimeout);
-        toast.innerText = msg;
-        toast.style.display = 'block';
-
-        toastTimeout = setTimeout(() => {
-            toast.style.display = 'none';
-        }, 3000);
+        const toast = document.getElementById('toast'); if(!toast) return;
+        clearTimeout(toastTimeout); toast.innerText = msg; toast.style.display = 'block';
+        toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 3000);
     }
 
     function rewardCoins(amount, msg) {
-        if(rewardLock) return;
-        rewardLock = true;
-
+        if(rewardLock) return; rewardLock = true;
         setTimeout(()=> rewardLock = false, 2000);
 
-        if(!navigator.onLine){
-            return window.showToast("No internet");
-        }
-
-        if(!window.state || !window.state.user){
-            return window.showToast("Login required");
-        }
-
-        if(amount <= 0 || amount > 200){
-            return window.showToast("Invalid reward");
-        }
+        if(!navigator.onLine) return window.showToast("No internet");
+        if(!window.state || !window.state.user) return window.showToast("Login required");
+        if(amount <= 0 || amount > 200) return window.showToast("Invalid reward");
 
         const now = window.getTrueTime();
         if(now - lastCoinRewardTime < 10000) return;
         lastCoinRewardTime = now;
 
         let today = new Date().toDateString();
+        if(window.state.lastRewardDate !== today){ window.state.dailyCoins = 0; window.state.lastRewardDate = today; }
+        if((window.state.dailyCoins || 0) >= MAX_DAILY_COINS) return window.showToast("Daily limit reached");
 
-        if(window.state.lastRewardDate !== today){
-            window.state.dailyCoins = 0;
-            window.state.lastRewardDate = today;
-        }
-
-        if((window.state.dailyCoins || 0) >= MAX_DAILY_COINS){
-            return window.showToast("Daily limit reached");
-        }
-
-        window.state.dailyCoins += amount;
-        window.state.user.coins += amount;
-
-        window.saveState();
-        window.showToast(`${amount} Coins Added`);
+        window.state.dailyCoins += amount; window.state.user.coins += amount;
+        window.saveState(); window.showToast(`${amount} Coins Added`);
     }
 
-    // === REAL ADMOB REWARDED VIDEO ADS ===
     async function showAd(callback) {
-        if(window.getTrueTime() - lastAdTime < 60000){
-            window.showToast("Wait 1 min before next ad");
-            return;
-        }
-
+        if(window.getTrueTime() - lastAdTime < 60000){ window.showToast("Wait 1 min before next ad"); return; }
         if (admobLoaded && window.Capacitor) {
             try {
                 window.showToast("Loading Ad...");
                 const { AdMob } = window.Capacitor.Plugins;
-
                 const adId = "ca-app-pub-6519206650027176/8005768127"; 
-
                 await AdMob.prepareRewardVideoAd({ adId: adId });
-
                 AdMob.addListener('onRewardedVideoAdRewarded', (rewardItem) => {
                     lastAdTime = window.getTrueTime();
-                    if(callback) callback();
-                    AdMob.removeAllListeners(); 
+                    if(callback) callback(); AdMob.removeAllListeners(); 
                 });
-
                 await AdMob.showRewardVideoAd();
-
             } catch (error) {
-                console.error(error);
-                window.showToast("Ad not available right now.");
-                fallbackFakeAd(callback);
+                console.error(error); window.showToast("Ad not available right now."); fallbackFakeAd(callback);
             }
-        } else {
-            fallbackFakeAd(callback);
-        }
+        } else { fallbackFakeAd(callback); }
     }
 
     function fallbackFakeAd(callback) {
         lastAdTime = window.getTrueTime();
-        const modal = document.getElementById('ad-modal');
-        if(!modal) return;
+        const modal = document.getElementById('ad-modal'); if(!modal) return;
         modal.style.display = 'flex';
-        setTimeout(() => {
-            modal.style.display = 'none';
-            if(callback) callback();
-        }, 3000);
+        setTimeout(() => { modal.style.display = 'none'; if(callback) callback(); }, 3000);
     }
 
-    /* === TASK SYSTEM === */
+    /* === TASKS (PROTECTED BY TRUE TIME) === */
     function dailyCheckIn() {
         if(isTimeLocked) return window.showToast("Securing Time... Please wait");
         const last = window.state.tasks.checkInTime || 0;
-        if(window.getTrueTime() - last < 86400000){
-            return window.showToast("Already claimed today");
-        }
+        if(window.getTrueTime() - last < 86400000) return window.showToast("Already claimed today");
         window.state.tasks.checkInTime = window.getTrueTime();
         rewardCoins(50, "Daily Check-in");
     }
 
     function checkTimeManipulation() {
-        const now = window.getTrueTime();
-        if(now < (window.state.tasks.lastWatch || 0)) window.state.tasks.lastWatch = now;
-        if(now < (window.state.tasks.lastStay || 0)) window.state.tasks.lastStay = now;
-        if(now < (window.state.tasks.lastTap || 0)) window.state.tasks.lastTap = now;
+        const trueNow = window.getTrueTime();
+        if(trueNow < (window.state.tasks.lastWatch || 0)) window.state.tasks.lastWatch = trueNow;
+        if(trueNow < (window.state.tasks.lastStay || 0)) window.state.tasks.lastStay = trueNow;
+        if(trueNow < (window.state.tasks.lastTap || 0)) window.state.tasks.lastTap = trueNow;
     }
 
     function doWatchTask() {
         if(isTimeLocked) return window.showToast("Securing Time... Please wait");
         checkTimeManipulation();
-        if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_MS) return window.showToast("Wait for timer!");
-        
-        showAd(() => {
-            window.state.tasks.lastWatch = window.getTrueTime();
-            rewardCoins(100, "Watched Ad"); updateTimersUI();
-        });
+        if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_MS) return;
+        showAd(() => { window.state.tasks.lastWatch = window.getTrueTime(); rewardCoins(100, "Watched Ad"); updateTimersUI(); });
     }
 
     function doStayTask() {
         if(isTimeLocked) return window.showToast("Securing Time... Please wait");
         checkTimeManipulation();
-        if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_MS) return window.showToast("Wait for timer!");
-
+        if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_MS) return;
         showAd(() => {
-            const sModal = document.getElementById('stay-modal');
-            const sTime = document.getElementById('stay-countdown');
+            const sModal = document.getElementById('stay-modal'); const sTime = document.getElementById('stay-countdown');
             if(!sModal || !sTime) return;
-
-            sModal.style.display = 'flex';
-            let timeLeft = 15; sTime.innerText = timeLeft;
-
+            sModal.style.display = 'flex'; let timeLeft = 15; sTime.innerText = timeLeft;
             const sInt = setInterval(() => {
                 timeLeft--; sTime.innerText = timeLeft;
                 if(timeLeft <= 0) {
@@ -1064,33 +878,22 @@
     function doTapTask() {
         if(isTimeLocked) return window.showToast("Securing Time... Please wait");
         if(!window.state || !window.state.tasks) return;
-
         if(window.state.tasks.tapCount >= 20) return;
-
         checkTimeManipulation();
-        if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_MS) return window.showToast("Wait for timer!");
+        if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_MS) return;
 
         let next = window.state.tasks.tapCount + 1;
-
         if(next === 10){
-            if(window.getTrueTime() - lastAdTime < 60000){
-                return window.showToast("Ad not ready");
-            }
+            if(window.getTrueTime() - lastAdTime < 60000) return window.showToast("Ad not ready");
             showAd(()=>{});
         }
-
         window.state.tasks.tapCount++;
-
         if(window.state.tasks.tapCount >= 20){
-            window.state.tasks.tapCount = 0;
-            window.state.tasks.lastTap = window.getTrueTime();
-            rewardCoins(150, "Tap Task");
+            window.state.tasks.tapCount = 0; window.state.tasks.lastTap = window.getTrueTime(); rewardCoins(150, "Tap Task");
         }
-
         window.saveState();
     }
 
-    // Spin Wheel
     const prizeMap = [100, 75, 50, 20, 10, 5]; 
     function spinWheel() {
         if(isTimeLocked) return window.showToast("Securing Time... Please wait");
@@ -1104,72 +907,43 @@
         window.saveState();
 
         const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6);
-        const prizeIndex = safeRandom;
-        const baseDeg = 360 * 5; 
-        const targetDeg = baseDeg + (360 - (prizeIndex * 60)) + (Math.random() * 40 - 20);
-
+        const targetDeg = (360 * 5) + (360 - (safeRandom * 60)) + (Math.random() * 40 - 20);
         const wheel = document.getElementById('wheel-inner');
         if(wheel) {
-            wheel.style.transition = 'none'; wheel.style.transform = `rotate(0deg)`;
-            void wheel.offsetWidth;
-            wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)';
-            wheel.style.transform = `rotate(${targetDeg}deg)`;
+            wheel.style.transition = 'none'; wheel.style.transform = `rotate(0deg)`; void wheel.offsetWidth;
+            wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)'; wheel.style.transform = `rotate(${targetDeg}deg)`;
         }
 
         setTimeout(() => {
-            const won = prizeMap[prizeIndex]; rewardCoins(won, "Spin Wheel");
+            rewardCoins(prizeMap[safeRandom], "Spin Wheel");
             if(window.state.spin.totalSpins % 3 === 0) {
                 if(window.getTrueTime() - lastAdTime >= 60000) { setTimeout(() => showAd(), 500); }
             }
         }, 4200);
-
         setTimeout(() => { btn.disabled = false; }, 4500);
     }
 
     window.copyReferral = function() {
         const code = window.state.user.refCode;
-        navigator.clipboard.writeText(code).then(() => {
-            window.showToast("Code Copied: " + code);
+        navigator.clipboard.writeText(code).then(() => { window.showToast("Code Copied: " + code);
         }).catch(() => {
-            const t = document.createElement("textarea"); t.value = code; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t);
-            window.showToast("Code Copied!");
+            const t = document.createElement("textarea"); t.value = code; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); window.showToast("Code Copied!");
         });
     }
 
     window.shareReferral = async function() {
-        const code = window.state.user.refCode;
-        const shareLink = "https://dukaan-platform.firebaseapp.com"; 
+        const code = window.state.user.refCode; const shareLink = "https://dukaan-platform.firebaseapp.com"; 
         const text = `Hey! Join EarnX and earn real rewards. Use my code: ${code}\nLink: ${shareLink}`;
-        
-        try {
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
-                await window.Capacitor.Plugins.Share.share({
-                    title: 'EarnX Rewards',
-                    text: text,
-                    url: shareLink,
-                    dialogTitle: 'Share EarnX with friends'
-                });
-            } else if (navigator.share) {
-                await navigator.share({ title: 'EarnX Rewards', text: text, url: shareLink });
-            } else {
-                throw new Error("Share not supported");
-            }
-        } catch(e) {
-            window.copyReferral(); 
-            window.showToast("Code Copied! Share link manually."); 
-        }
+        window.copyReferral(); window.showToast("Code Copied! Share manually."); 
     }
 
     window.applyReferralFirebase = async function(){
-        if(referralLock) return;
-        referralLock = true;
-
+        if(referralLock) return; referralLock = true;
         try {
             if(!navigator.onLine) return window.showToast("No internet connection");
             if(!window.state.user) return window.showToast("Login first");
 
-            const el = document.getElementById('ref-input');
-            if(!el) return;
+            const el = document.getElementById('ref-input'); if(!el) return;
             const code = el.value.trim().toUpperCase();
 
             if(!code) return window.showToast("Enter code");
@@ -1180,100 +954,43 @@
             const q = query(collection(window.db, "earnx_users"), where("refCode", "==", code));
             const snapshot = await getDocs(q);
 
-            if(snapshot.empty){
-                window.showToast("Invalid code");
-                return;
-            }
-
-            const refDoc = snapshot.docs[0];
-            const refData = refDoc.data();
+            if(snapshot.empty){ window.showToast("Invalid code"); return; }
+            const refDoc = snapshot.docs[0]; const refData = refDoc.data();
 
             let currentDevice = localStorage.getItem("earnx_device_id");
-            if(refData.deviceId && refData.deviceId === currentDevice) {
-                window.showToast("Fraud detected: Same device referral blocked!");
-                return;
-            }
+            if(refData.deviceId && refData.deviceId === currentDevice) { window.showToast("Fraud detected!"); return; }
 
-            await updateDoc(doc(window.db, "earnx_users", refDoc.id), {
-                coins: (Number(refData.coins) || 0) + 100
-            });
-
-            window.state.user.coins += 100;
-            window.state.user.referredBy = true;
-
-            window.saveState();
-            window.showToast("Referral applied +100 coins");
-            el.value = "";
-            
-        } catch(e) {
-            console.log(e);
-            window.showToast("Error applying referral");
-        } finally {
-            referralLock = false;
-        }
+            await updateDoc(doc(window.db, "earnx_users", refDoc.id), { coins: (Number(refData.coins) || 0) + 100 });
+            window.state.user.coins += 100; window.state.user.referredBy = true;
+            window.saveState(); window.showToast("Referral applied +100 coins"); el.value = "";
+        } catch(e) { window.showToast("Error applying referral");
+        } finally { referralLock = false; }
     }
 
     window.submitWithdraw = async function(){
-        if(withdrawLock) return;
-        withdrawLock = true;
-
+        if(withdrawLock) return; withdrawLock = true;
         setTimeout(()=> withdrawLock = false, 5000); 
-
         try {
-            if(!navigator.onLine){
-                window.showToast("No internet");
-                return;
-            }
-
+            if(!navigator.onLine) return window.showToast("No internet");
             const coins = Math.floor(window.state.user.coins / 10000) * 10000;
+            if(coins < 10000) return window.showToast("Min 10k coins");
 
-            if(coins < 10000){
-                window.showToast("Min 10k coins");
-                return;
-            }
-
-            const input = document.getElementById('upi-input');
-            const upi = input.value.trim();
-
-            if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)){
-                window.showToast("Invalid UPI");
-                return;
-            }
+            const input = document.getElementById('upi-input'); const upi = input.value.trim();
+            if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)) return window.showToast("Invalid UPI");
 
             const { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-
             const userRef = doc(window.db, "earnx_users", window.currentUser.uid);
             const snap = await getDoc(userRef);
-
             const currentCoins = snap.data().coins || 0;
 
-            if(currentCoins < coins){
-                window.showToast("Balance mismatch");
-                return;
-            }
+            if(currentCoins < coins) return window.showToast("Balance mismatch");
 
-            await updateDoc(userRef, {
-                coins: currentCoins - coins
-            });
+            await updateDoc(userRef, { coins: currentCoins - coins });
+            await addDoc(collection(window.db, "earnx_withdrawals"), { userId: window.currentUser.uid, coins: coins, upiId: upi, status: "Pending", createdAt: serverTimestamp() });
 
-            await addDoc(collection(window.db, "earnx_withdrawals"), {
-                userId: window.currentUser.uid,
-                coins: coins,
-                upiId: upi,
-                status: "Pending",
-                createdAt: serverTimestamp()
-            });
-
-            window.state.user.coins -= coins;
-            window.saveState();
-            window.loadWithdrawals();
-
-            input.value = "";
-            window.showToast("Withdraw Requested");
-
-        } catch(e){
-            window.showToast("Withdraw failed");
-        }
+            window.state.user.coins -= coins; window.saveState(); window.loadWithdrawals();
+            input.value = ""; window.showToast("Withdraw Requested");
+        } catch(e){ window.showToast("Withdraw failed"); }
     };
 
     window.startTimers = function() {
@@ -1287,7 +1004,6 @@
             safeSetText('watch-timer-display', "Syncing...");
             safeSetText('stay-timer-display', "Syncing...");
             safeSetText('tap-timer-display', "Syncing...");
-            safeSetText('spin-refill-timer', "Syncing...");
             return;
         }
 
@@ -1300,81 +1016,36 @@
             const passed = now - window.state.spin.lastRefill;
             if(passed >= SPIN_REFILL_MS) {
                 window.state.spin.spinsLeft = 5; window.state.spin.lastRefill = 0; window.saveState();
-            } else {
-                safeSetText('spin-refill-timer', "Refill in: " + formatMS(SPIN_REFILL_MS - passed));
-            }
-        } else {
-            safeSetText('spin-refill-timer', "");
-        }
+            } else { safeSetText('spin-refill-timer', "Refill in: " + formatMS(SPIN_REFILL_MS - passed)); }
+        } else { safeSetText('spin-refill-timer', ""); }
     }
 
     function updateSingleTimer(type, lastTime, now) {
-        const btn = document.getElementById(`btn-${type}`);
-        if(!btn) return;
+        const btn = document.getElementById(`btn-${type}`); if(!btn) return;
         const passed = now - lastTime;
         if(passed < COOLDOWN_MS) {
-            safeSetText(`${type}-timer-display`, formatMS(COOLDOWN_MS - passed));
-            btn.disabled = true;
+            safeSetText(`${type}-timer-display`, formatMS(COOLDOWN_MS - passed)); btn.disabled = true;
         } else {
-            if(type === 'tap' && window.state.tasks.tapCount >= 20) {
-                safeSetText(`${type}-timer-display`, "Complete");
-                btn.disabled = true;
-            } else {
-                safeSetText(`${type}-timer-display`, "Ready");
-                btn.disabled = false;
-            }
+            if(type === 'tap' && window.state.tasks.tapCount >= 20) { safeSetText(`${type}-timer-display`, "Complete"); btn.disabled = true;
+            } else { safeSetText(`${type}-timer-display`, "Ready"); btn.disabled = false; }
         }
     }
 
     function formatMS(ms) {
         const totalSec = Math.floor(ms / 1000);
-        const m = Math.floor(totalSec / 60);
-        const s = totalSec % 60;
+        const m = Math.floor(totalSec / 60); const s = totalSec % 60;
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
-</script>
-
-<script>
-// 4. Advanced Time Manipulation Defuser (Phone Time Cheat Protection)
-let lastValidTime = window.getTrueTime();
-
-setInterval(() => {
-    if(document.hidden) {
-        lastValidTime = window.getTrueTime();
-        return;
-    }
-
-    const currentTime = window.getTrueTime();
-    const timeDiff = currentTime - lastValidTime;
-
-    if (timeDiff > 15000) {
-        console.warn("System time manipulation detected!");
-        if(window.state && window.state.tasks) {
-            window.state.tasks.lastWatch += timeDiff;
-            window.state.tasks.lastStay += timeDiff;
-            window.state.tasks.lastTap += timeDiff;
-            window.saveState();
+    document.addEventListener("DOMContentLoaded", function() {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
+            window.Capacitor.Plugins.SplashScreen.hide();
         }
-    }
-    lastValidTime = currentTime;
-}, 1000);
-
-/* === SPLASH SCREEN JAVASCRIPT LOGIC === */
-document.addEventListener("DOMContentLoaded", function() {
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
-        window.Capacitor.Plugins.SplashScreen.hide();
-    }
-    setTimeout(function() {
-        let splash = document.getElementById('custom-splash');
-        if(splash) {
-            splash.style.opacity = '0';
-            setTimeout(function() {
-                splash.style.display = 'none';
-            }, 600); 
-        }
-    }, 2500); 
-});
+        setTimeout(function() {
+            let splash = document.getElementById('custom-splash');
+            if(splash) { splash.style.opacity = '0'; setTimeout(function() { splash.style.display = 'none'; }, 600); }
+        }, 2500); 
+    });
 </script>
 </body>
 </html>
