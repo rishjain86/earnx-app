@@ -32,7 +32,7 @@ jobs:
         run: npx cap add android
 
       - name: Generate App Logo and Splash Screen
-        run: npx @capacitor/assets generate --android
+        run: npx --yes @capacitor/assets generate --android
 
       - name: Setup Java
         uses: actions/setup-java@v4
