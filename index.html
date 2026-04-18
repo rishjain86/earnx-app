@@ -1041,7 +1041,7 @@
         setTimeout(() => { btn.disabled = false; }, 4500);
     }
 
-    /* === SAFE REFERRAL FUNCTIONS === */
+    /* === SAFE REFERRAL FUNCTIONS WITH NATIVE SHARE === */
     window.copyReferral = function() {
         const code = window.state.user.refCode;
         navigator.clipboard.writeText(code).then(() => {
@@ -1054,11 +1054,29 @@
 
     window.shareReferral = async function() {
         const code = window.state.user.refCode;
-        const shareLink = window.location.origin + window.location.pathname; 
+        // App ke andar location.origin localhost hota hai, isliye hum actual link hardcode kar rahe hain
+        const shareLink = "https://dukaan-platform.firebaseapp.com"; 
         const text = `Hey! Join EarnX and earn real rewards. Use my code: ${code}\nLink: ${shareLink}`;
-        if(navigator.share) {
-            try { await navigator.share({ title: 'EarnX Rewards', text: text, url: shareLink }); } catch(e) {}
-        } else { window.copyReferral(); alert("Referral Link Copied!"); }
+        
+        try {
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
+                // App ke liye Native Share Plugin
+                await window.Capacitor.Plugins.Share.share({
+                    title: 'EarnX Rewards',
+                    text: text,
+                    url: shareLink,
+                    dialogTitle: 'Share EarnX with friends'
+                });
+            } else if (navigator.share) {
+                // Web ke liye Standard Share
+                await navigator.share({ title: 'EarnX Rewards', text: text, url: shareLink });
+            } else {
+                throw new Error("Share not supported");
+            }
+        } catch(e) {
+            window.copyReferral(); 
+            window.showToast("Code Copied! Share link manually."); 
+        }
     }
 
     window.applyReferralFirebase = async function(){
