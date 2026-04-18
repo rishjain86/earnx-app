@@ -111,7 +111,7 @@
         
         .timer-display { font-family: monospace; font-size: 1.1rem; color: var(--warning); font-weight: bold; }
 
-        /* === SPLASH AND LOGO CSS (ADDED) === */
+        /* === SPLASH AND LOGO CSS === */
         #custom-splash {
             position: fixed;
             top: 0;
@@ -125,9 +125,10 @@
             z-index: 999999;
             transition: opacity 0.5s ease-out;
         }
-                        #custom-splash img {
-            width: 70vw; /* Ye logo ko phone ki screen ka 70% bada kar dega */
-            max-width: 400px; /* Badi screen par zyada se zyada itna bada hoga */
+
+        #custom-splash img {
+            width: 70vw; 
+            max-width: 400px; 
             height: auto;
             object-fit: contain;
             animation: pulse-splash 1.5s infinite alternate;
@@ -137,10 +138,11 @@
             0% { transform: scale(0.95); opacity: 0.8; }
             100% { transform: scale(1.05); opacity: 1; }
         }
-                .app-logo {
-            width: auto;
-            max-width: 200px;
-            height: 80px;
+
+        .app-logo {
+            width: 60vw; 
+            max-width: 300px;
+            height: auto;
             margin-bottom: 20px;
             object-fit: contain;
             filter: drop-shadow(0px 10px 15px rgba(16, 185, 129, 0.4));
@@ -604,6 +606,7 @@
     const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; 
     const MAX_DAILY_COINS = 5000;
 
+    let admobLoaded = false;
     let lastAdTime = 0; 
     let timerInterval = null;
     let withdrawLock = false; 
@@ -666,9 +669,21 @@
         window.nav('login');
     }
 
-    // Safe DOM Load
+    // Safe DOM Load & AdMob Init
     document.addEventListener("DOMContentLoaded", () => {
         init();
+
+        // AdMob Background Initialization
+        setTimeout(() => {
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+                window.Capacitor.Plugins.AdMob.initialize({
+                    initializeForTesting: true // Test mode on
+                }).then(() => {
+                    admobLoaded = true;
+                    console.log("AdMob Ready!");
+                }).catch(e => console.log("AdMob Init Error", e));
+            }
+        }, 1000);
     });
 
     // Cross-tab block
@@ -949,18 +964,50 @@
         window.showToast(`${amount} Coins Added`);
     }
 
-    // Safe Ads
-    function showAd(callback) {
+    // === REAL ADMOB REWARDED VIDEO ADS ===
+    async function showAd(callback) {
         if(Date.now() - lastAdTime < 60000){
             window.showToast("Wait 1 min before next ad");
             return;
         }
-        lastAdTime = Date.now();
 
+        // If in App and AdMob is loaded
+        if (admobLoaded && window.Capacitor) {
+            try {
+                window.showToast("Loading Ad...");
+                const { AdMob } = window.Capacitor.Plugins;
+
+                // Google Test Rewarded Ad ID
+                const adId = "ca-app-pub-3940256099942544/5224354917"; 
+
+                await AdMob.prepareRewardVideoAd({ adId: adId });
+
+                // Only reward if the user watches the full ad
+                AdMob.addListener('onRewardedVideoAdRewarded', (rewardItem) => {
+                    lastAdTime = Date.now();
+                    if(callback) callback();
+                    AdMob.removeAllListeners(); // Free memory
+                });
+
+                await AdMob.showRewardVideoAd();
+
+            } catch (error) {
+                console.error(error);
+                window.showToast("Ad not available right now.");
+                fallbackFakeAd(callback);
+            }
+        } else {
+            // Web fallback
+            fallbackFakeAd(callback);
+        }
+    }
+
+    // Fallback for Web preview or if AdMob fails
+    function fallbackFakeAd(callback) {
+        lastAdTime = Date.now();
         const modal = document.getElementById('ad-modal');
         if(!modal) return;
         modal.style.display = 'flex';
-        
         setTimeout(() => {
             modal.style.display = 'none';
             if(callback) callback();
@@ -1288,13 +1335,16 @@
 // 🔥 FINAL FRONTEND SECURITY SHIELD 🔥
 // ==========================================
 
+// 1. Anti-Iframe (Clickjacking Protection)
 if (window.top !== window.self) {
     window.top.location = window.self.location;
 }
 
+// 2. Block Inspect Element & Right Click (Script Kiddie Protection)
 document.addEventListener('contextmenu', event => event.preventDefault());
 
 document.addEventListener('keydown', (e) => {
+    // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
     if (e.key === 'F12' || 
        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
        (e.ctrlKey && e.key === 'U')) {
@@ -1303,12 +1353,15 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// 3. Console Hacker Warning
 console.log("%cSTOP!", "color: red; font-family: sans-serif; font-size: 4.5em; font-weight: bolder; text-shadow: #000 1px 1px;");
 console.log("%cThis is a browser feature intended for developers. If someone told you to copy-paste something here to get free coins, it is a scam and will result in a permanent ban.", "color: white; background: red; font-size: 1.2em; padding: 10px; border-radius: 5px;");
 
+// 4. Advanced Time Manipulation Defuser (Phone Time Cheat Protection)
 let lastValidTime = Date.now();
 
 setInterval(() => {
+    // Agar app background me hai toh time jump ignore karo (Natural OS behavior)
     if(document.hidden) {
         lastValidTime = Date.now();
         return;
@@ -1317,8 +1370,11 @@ setInterval(() => {
     const currentTime = Date.now();
     const timeDiff = currentTime - lastValidTime;
 
+    // Agar time achanak se 15 seconds se zyada aage jump kare (Phone time forwarded)
     if (timeDiff > 15000) {
         console.warn("System time manipulation detected!");
+        
+        // Cooldown timer ko bhi utna aage badha do (Hack neutralized)
         if(window.state && window.state.tasks) {
             window.state.tasks.lastWatch += timeDiff;
             window.state.tasks.lastStay += timeDiff;
@@ -1329,7 +1385,7 @@ setInterval(() => {
     lastValidTime = currentTime;
 }, 1000);
 
-/* === SPLASH SCREEN JAVASCRIPT LOGIC (ADDED) === */
+/* === SPLASH SCREEN JAVASCRIPT LOGIC === */
 document.addEventListener("DOMContentLoaded", function() {
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
         window.Capacitor.Plugins.SplashScreen.hide();
