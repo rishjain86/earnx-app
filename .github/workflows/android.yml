@@ -20,7 +20,7 @@ jobs:
         run: |
           npm install
           npm install @capacitor/share@5 --legacy-peer-deps
-          npm install @capacitor-community/admob --legacy-peer-deps
+          npm install @capacitor-community/admob@5 --legacy-peer-deps
 
       - name: Prepare Web Folder
         run: |
@@ -43,7 +43,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Build Release APK
