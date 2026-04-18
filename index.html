@@ -140,11 +140,21 @@
             <h1 style="font-size: 2.5rem;">EarnX</h1>
             <p>Your ultimate rewards platform.</p>
         </div>
+        
         <div class="card" id="login-step-1">
             <h3>Login to Continue</h3>
-            <p class="mb-2" style="font-size: 0.85rem;">Use your Google Account for secure access and guaranteed withdrawals.</p>
+            <p class="mb-2" style="font-size: 0.85rem;">Secure access for your EarnX account.</p>
             
-            <button class="btn btn-google" onclick="loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
+            <div id="web-login-section">
+                <button class="btn btn-google" onclick="loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
+            </div>
+
+            <div id="app-login-section" style="display: none;">
+                <input type="email" id="email-input" placeholder="Enter Email ID" style="margin-bottom: 10px;">
+                <input type="password" id="password-input" placeholder="Enter Password (Min 6 chars)" style="margin-bottom: 15px;">
+                <button class="btn" onclick="loginWithEmail()">Login / Sign Up</button>
+                <p style="font-size: 0.75rem; text-align: center; margin-top: 10px; color: var(--text-muted);">If email is not registered, a new account will be created automatically.</p>
+            </div>
         </div>
         <p style="text-align: center; font-size: 0.75rem; margin-top: 20px;">By continuing, you agree to our <span class="text-green" onclick="nav('terms')">Terms & Conditions</span>.</p>
     </div>
@@ -380,7 +390,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, getRedirectResult, signInWithRedirect } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -400,7 +410,17 @@
     let loginHandled = false;
     let loginLoading = false;
 
-    // Centralized Logic to handle both Redirect and Popup
+    // App vs Web Detector UI Set karna
+    setTimeout(() => {
+        if (window.Capacitor) {
+            const webSec = document.getElementById('web-login-section');
+            const appSec = document.getElementById('app-login-section');
+            if(webSec) webSec.style.display = 'none';
+            if(appSec) appSec.style.display = 'block';
+        }
+    }, 200);
+
+    // Centralized Login Handler
     window.handleSuccessfulLogin = async function(user) {
         window.currentUser = user;
         const ref = doc(db, "earnx_users", user.uid);
@@ -442,20 +462,6 @@
         loginLoading = false;
     };
 
-    // Handle Redirect Result for Mobile App
-    (async () => {
-        try{
-            const result = await getRedirectResult(auth);
-            if(result && result.user){
-                await window.handleSuccessfulLogin(result.user);
-            }
-        }catch(e){
-            console.log("Redirect error", e);
-            loginLoading = false;
-        }
-    })();
-
-    // Handle Auth State Changes
     onAuthStateChanged(auth, async (user) => {
         if(user && !loginHandled){
             loginHandled = true;
@@ -471,23 +477,14 @@
         }
     });
 
-            window.loginWithGoogle = async function(){
+    // 1. WEB KE LIYE GOOGLE LOGIN
+    window.loginWithGoogle = async function(){
         if(loginLoading) return;
         loginLoading = true;
-        
         const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: 'select_account' });
-
         try {
-            // 100% Perfect App vs Web Detector
-            if (window.Capacitor) {
-                // Agar App ke andar hai, toh Redirect use karo (Kyunki WebView mein popup block hota hai)
-                await signInWithRedirect(auth, provider);
-            } else {
-                // Agar Web Browser (Chrome/PC) par hai, toh Popup use karo
-                const result = await signInWithPopup(auth, provider);
-                await window.handleSuccessfulLogin(result.user);
-            }
+            const result = await signInWithPopup(auth, provider);
+            await window.handleSuccessfulLogin(result.user);
         } catch(err) {
             console.error(err);
             window.showToast("Login Error: Please try again");
@@ -495,7 +492,40 @@
         }
     };
 
+    // 2. APP KE LIYE EMAIL LOGIN
+    window.loginWithEmail = async function() {
+        if(loginLoading) return;
+        
+        const email = document.getElementById('email-input').value.trim();
+        const password = document.getElementById('password-input').value.trim();
+        
+        if(!email || !password) return window.showToast("Enter Email and Password");
+        if(password.length < 6) return window.showToast("Password must be at least 6 characters");
 
+        loginLoading = true;
+        window.showToast("Authenticating...");
+        
+        try {
+            // Pehle existing account se login try karega
+            const result = await signInWithEmailAndPassword(auth, email, password);
+            await window.handleSuccessfulLogin(result.user);
+        } catch(err) {
+            // Agar account nahi mila, toh automatically naya account bana dega
+            if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
+                try {
+                    window.showToast("Creating new account...");
+                    const result = await createUserWithEmailAndPassword(auth, email, password);
+                    await window.handleSuccessfulLogin(result.user);
+                } catch(regErr) {
+                    window.showToast("Error: " + (regErr.message.split('/')[1] || "Registration failed"));
+                    loginLoading = false;
+                }
+            } else {
+                window.showToast("Error: " + (err.message.split('/')[1] || "Login failed"));
+                loginLoading = false;
+            }
+        }
+    };
 </script>
 
 <script>
@@ -517,13 +547,13 @@
     let lastCoinRewardTime = 0;
 
     // Prevent Fast Reload Farming
-let lastLoad = sessionStorage.getItem("lastLoad");
-let now = Date.now();
-if(lastLoad && (now - lastLoad < 500)){ 
-    console.warn("Fast reload detected");
-}
-sessionStorage.setItem("lastLoad", now);
-    
+    let lastLoad = sessionStorage.getItem("lastLoad");
+    let nowTime = Date.now();
+    if(lastLoad && (nowTime - lastLoad < 500)){ 
+        console.warn("Fast reload detected");
+    }
+    sessionStorage.setItem("lastLoad", nowTime);
+
     // Safe LocalStorage Recovery
     function safeLoadState(){
         try{
