@@ -44,13 +44,14 @@ jobs:
       - name: Sign APK with Keystore
         uses: r0adkll/sign-android-release@v1
         id: sign_app
+        env:
+          BUILD_TOOLS_VERSION: "33.0.2"
         with:
           releaseDirectory: android/app/build/outputs/apk/release
           signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
           alias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.STORE_PASSWORD }}
           keyPassword: ${{ secrets.KEY_PASSWORD }}
-          buildToolsVersion: 33.0.0
 
       - name: Upload Final Signed APK
         uses: actions/upload-artifact@v4
