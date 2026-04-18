@@ -5,6 +5,12 @@
   "bundledWebRuntime": false,
   "server": {
     "androidScheme": "http",
-    "cleartext": true
+    "cleartext": true,
+    "allowNavigation": [
+      "dukaan-platform.firebaseapp.com",
+      "*.firebaseapp.com",
+      "accounts.google.com",
+      "*.google.com"
+    ]
   }
 }
