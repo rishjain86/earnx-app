@@ -1,10 +1,8 @@
 name: Build Android APK
-
 on:
   push:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
-
+    branches:
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,6 +20,7 @@ jobs:
         run: |
           npm install
           npm install @capacitor/share@5 --legacy-peer-deps
+          npm install @capacitor-community/admob --legacy-peer-deps
 
       - name: Prepare Web Folder
         run: |
@@ -31,6 +30,10 @@ jobs:
 
       - name: Generate Android Project
         run: npx cap add android
+
+      - name: Inject AdMob Meta-data
+        run: |
+          sed -i '/<application/a \        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/>' android/app/src/main/AndroidManifest.xml
 
       - name: Generate App Logo and Splash Screen
         run: npx --yes @capacitor/assets generate --android --assetPath assets
@@ -52,10 +55,8 @@ jobs:
           BUILD_TOOLS=$(ls -d $ANDROID_HOME/build-tools/* | tail -1)
           APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
           $BUILD_TOOLS/zipalign -v -p 4 $APK_PATH EarnX-Signed.apk
-          
-          keytool -genkey -v -keystore earnx_new.jks -keyalg RSA -keysize 2048 -validity 10000 -alias earnx -dname "CN=EarnX, OU=App, O=EarnX, L=India, S=Delhi, C=IN" -storepass "EarnX@123" -keypass "EarnX@123"
-          
-          $BUILD_TOOLS/apksigner sign --ks earnx_new.jks --ks-pass pass:"EarnX@123" --out EarnX-Final.apk EarnX-Signed.apk
+          keytool -genkey -v -keystore earnx_new.jks -keyalg RSA -keysize 2048 -validity 10000 -alias earnx_alias -dname "CN=EarnX, OU=App, O=EarnX, L=City, S=State, C=IN" -storepass "EarnX@2024" -keypass "EarnX@2024"
+          $BUILD_TOOLS/apksigner sign --ks earnx_new.jks --ks-pass pass:"EarnX@2024" --out EarnX-Final.apk EarnX-Signed.apk
 
       - name: Upload Final Signed APK
         uses: actions/upload-artifact@v4
