@@ -415,7 +415,7 @@
                     coins: 0,
                     refCode: newRefCode,
                     deviceId: deviceId,
-                    createdAt: window.getTrueTime(), 
+                    createdAt: window.getTrueTime(),
                     tasks: defaultTasks,
                     spin: defaultSpin
                 };
@@ -486,16 +486,12 @@
 
     window.loginWithEmail = async function() {
         if(loginLoading) return;
-        
         const email = document.getElementById('email-input').value.trim();
         const password = document.getElementById('password-input').value.trim();
-        
         if(!email || !password) return window.showToast("Enter Email and Password");
         if(password.length < 6) return window.showToast("Password must be at least 6 characters");
-
         loginLoading = true;
         window.showToast("Authenticating...");
-        
         try {
             const result = await signInWithEmailAndPassword(auth, email, password);
             await window.handleSuccessfulLogin(result.user);
@@ -535,7 +531,7 @@
 <script>
     /* === GLOBAL VARIABLES === */
     const COIN_RATE = 100; 
-    const COOLDOWN_MS = 3 * 60 * 1000; 
+    const COOLDOWN_MS = 3 * 60 * 1000;
     const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; 
     const MAX_DAILY_COINS = 5000;
 
@@ -574,7 +570,6 @@
     });
     syncSecureTime();
 
-
     function safeLoadState(){
         try{ const saved = localStorage.getItem('earnx_state'); return saved ? JSON.parse(saved) : null;
         }catch{ localStorage.removeItem('earnx_state'); return null; }
@@ -583,13 +578,10 @@
     async function init() {
         if(appLoaded) return;
         appLoaded = true;
-        
-        await syncSecureTime(); 
-
+        await syncSecureTime();
         if(!window.db) console.error("Firebase DB not initialized");
         const saved = safeLoadState();
         if(saved) window.state = saved;
-
         if(!window.state){
             window.state = {
                 user:null,
@@ -598,11 +590,9 @@
                 withdrawals:[]
             };
         }
-
         if(!window.state.spin.lastRefill && window.state.spin.spinsLeft < 5){
             window.state.spin.lastRefill = window.getTrueTime();
         }
-
         window.updateUI();
         window.nav('login');
     }
@@ -661,7 +651,6 @@
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         const target = document.getElementById(`screen-${screenId}`);
         if(target) target.classList.add('active');
-        
         const bNav = document.getElementById('bottom-nav');
         if (bNav) {
             if (['login'].includes(screenId)) bNav.style.display = 'none';
@@ -709,14 +698,11 @@
         safeSetText('my-ref-code', window.state.user.refCode);
         safeSetText('tap-count', window.state.tasks.tapCount);
         safeSetText('spin-count-display', window.state.spin.spinsLeft);
-
         if(window.state.user.referredBy){
             const el = document.getElementById('enter-ref-section');
             if(el) el.style.display = 'none';
         }
-
         renderWithdrawals();
-
         const btnCheckin = document.getElementById('btn-checkin');
         if(btnCheckin){
             const last = window.state.tasks.checkInTime || 0;
@@ -738,7 +724,6 @@
             if(list2) list2.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No recent activity.</p>';
             return;
         }
-
         let htmlContent = '';
         const sorted = [...window.state.withdrawals].sort((a,b) => b.date - a.date); 
         sorted.forEach(w => {
@@ -766,19 +751,15 @@
     function rewardCoins(amount, msg) {
         if(rewardLock) return; rewardLock = true;
         setTimeout(()=> rewardLock = false, 2000);
-
         if(!navigator.onLine) return window.showToast("No internet");
         if(!window.state || !window.state.user) return window.showToast("Login required");
         if(amount <= 0 || amount > 200) return window.showToast("Invalid reward");
-
         const now = window.getTrueTime();
         if(now - lastCoinRewardTime < 10000) return;
         lastCoinRewardTime = now;
-
         let today = new Date().toDateString();
         if(window.state.lastRewardDate !== today){ window.state.dailyCoins = 0; window.state.lastRewardDate = today; }
         if((window.state.dailyCoins || 0) >= MAX_DAILY_COINS) return window.showToast("Daily limit reached");
-
         window.state.dailyCoins += amount; window.state.user.coins += amount;
         window.saveState(); window.showToast(`${amount} Coins Added`);
     }
@@ -791,6 +772,7 @@
 
         if (admobLoaded && window.Capacitor) {
             try {
+                window.showToast("Loading Ad...");
                 const { AdMob } = window.Capacitor.Plugins;
                 // ✅ AAPKI ASLI REWARDED ID
                 const adId = "ca-app-pub-6519206650027176/8005768127"; 
@@ -817,7 +799,6 @@
         setTimeout(() => { modal.style.display = 'none'; if(callback) callback(); }, 3000);
     }
 
-    /* === TASKS === */
     function dailyCheckIn() {
         const last = window.state.tasks.checkInTime || 0;
         if(window.getTrueTime() - last < 86400000) return window.showToast("Already claimed today");
@@ -861,7 +842,6 @@
         if(window.state.tasks.tapCount >= 20) return;
         validateTimestamps();
         if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_MS) return;
-
         let next = window.state.tasks.tapCount + 1;
         if(next === 10){
             if(window.getTrueTime() - lastAdTime < 60000) return window.showToast("Ad not ready");
@@ -879,12 +859,10 @@
         const btn = document.getElementById('btn-spin');
         if(!btn || btn.disabled) return; 
         if(window.state.spin.spinsLeft <= 0) return window.showToast("No spins left.");
-        
         btn.disabled = true;
         window.state.spin.spinsLeft--; window.state.spin.totalSpins++;
         if(window.state.spin.spinsLeft === 4) window.state.spin.lastRefill = window.getTrueTime();
         window.saveState();
-
         const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6);
         const targetDeg = (360 * 5) + (360 - (safeRandom * 60)) + (Math.random() * 40 - 20);
         const wheel = document.getElementById('wheel-inner');
@@ -892,7 +870,6 @@
             wheel.style.transition = 'none'; wheel.style.transform = `rotate(0deg)`; void wheel.offsetWidth;
             wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)'; wheel.style.transform = `rotate(${targetDeg}deg)`;
         }
-
         setTimeout(() => {
             rewardCoins(prizeMap[safeRandom], "Spin Wheel");
             if(window.state.spin.totalSpins % 3 === 0) {
@@ -921,24 +898,18 @@
         try {
             if(!navigator.onLine) return window.showToast("No internet connection");
             if(!window.state.user) return window.showToast("Login first");
-
             const el = document.getElementById('ref-input'); if(!el) return;
             const code = el.value.trim().toUpperCase();
-
             if(!code) return window.showToast("Enter code");
             if(window.state.user.referredBy === true) return window.showToast("Already used referral");
             if(code === window.state.user.refCode.toUpperCase()) return window.showToast("Cannot use your own code");
-
             const { collection, query, where, getDocs, doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const q = query(collection(window.db, "earnx_users"), where("refCode", "==", code));
             const snapshot = await getDocs(q);
-
             if(snapshot.empty){ window.showToast("Invalid code"); return; }
             const refDoc = snapshot.docs[0]; const refData = refDoc.data();
-
             let currentDevice = localStorage.getItem("earnx_device_id");
             if(refData.deviceId && refData.deviceId === currentDevice) { window.showToast("Fraud detected!"); return; }
-
             await updateDoc(doc(window.db, "earnx_users", refDoc.id), { coins: (Number(refData.coins) || 0) + 100 });
             window.state.user.coins += 100; window.state.user.referredBy = true;
             window.saveState(); window.showToast("Referral applied +100 coins"); el.value = "";
@@ -953,20 +924,15 @@
             if(!navigator.onLine) return window.showToast("No internet");
             const coins = Math.floor(window.state.user.coins / 10000) * 10000;
             if(coins < 10000) return window.showToast("Min 10k coins");
-
             const input = document.getElementById('upi-input'); const upi = input.value.trim();
             if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)) return window.showToast("Invalid UPI");
-
             const { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const userRef = doc(window.db, "earnx_users", window.currentUser.uid);
             const snap = await getDoc(userRef);
             const currentCoins = snap.data().coins || 0;
-
             if(currentCoins < coins) return window.showToast("Balance mismatch");
-
             await updateDoc(userRef, { coins: currentCoins - coins });
             await addDoc(collection(window.db, "earnx_withdrawals"), { userId: window.currentUser.uid, coins: coins, upiId: upi, status: "Pending", createdAt: serverTimestamp() });
-
             window.state.user.coins -= coins; window.saveState(); window.loadWithdrawals();
             input.value = ""; window.showToast("Withdraw Requested");
         } catch(e){ window.showToast("Withdraw failed"); }
@@ -983,7 +949,6 @@
         updateSingleTimer('watch', window.state.tasks.lastWatch, now);
         updateSingleTimer('stay', window.state.tasks.lastStay, now);
         updateSingleTimer('tap', window.state.tasks.lastTap, now);
-
         if(window.state.spin.spinsLeft < 5 && window.state.spin.lastRefill > 0) {
             const passed = now - window.state.spin.lastRefill;
             if(passed >= SPIN_REFILL_MS) {
@@ -1018,6 +983,30 @@
             if(splash) { splash.style.opacity = '0'; setTimeout(function() { splash.style.display = 'none'; }, 600); }
         }, 2500); 
     });
+</script>
+
+<script>
+// 4. Advanced Time Manipulation Defuser (Phone Time Cheat Protection)
+let lastValidTime = window.getTrueTime();
+
+setInterval(() => {
+    if(document.hidden) {
+        lastValidTime = window.getTrueTime();
+        return;
+    }
+    const currentTime = window.getTrueTime();
+    const timeDiff = currentTime - lastValidTime;
+    if (timeDiff > 15000) {
+        console.warn("System time manipulation detected!");
+        if(window.state && window.state.tasks) {
+            window.state.tasks.lastWatch += timeDiff;
+            window.state.tasks.lastStay += timeDiff;
+            window.state.tasks.lastTap += timeDiff;
+            window.saveState();
+        }
+    }
+    lastValidTime = currentTime;
+}, 1000);
 </script>
 </body>
 </html>
