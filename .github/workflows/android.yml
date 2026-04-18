@@ -41,8 +41,19 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
 
-      - name: Upload Final APK
+      - name: Sign APK with Keystore
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: android/app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload Final Signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: EarnX-App-Release
-          path: android/app/build/outputs/apk/release/*.apk
+          name: EarnX-Signed-App
+          path: ${{steps.sign_app.outputs.signedReleaseFile}}
+          
