@@ -56,8 +56,12 @@ jobs:
           # 4. APK ko Zipalign (Optimize) karo
           $BUILD_TOOLS/zipalign -v -p 4 $APK_PATH EarnX-Signed.apk
           
-          # 5. Apni Mohar se APK par Sign karo
-          $BUILD_TOOLS/apksigner sign --ks earnx.jks --ks-key-alias "${{ secrets.KEY_ALIAS }}" --ks-pass "pass:${{ secrets.STORE_PASSWORD }}" --key-pass "pass:${{ secrets.KEY_PASSWORD }}" EarnX-Signed.apk
+          # 5. Keystore ke andar se Asli Alias ka naam auto-detect karo
+          REAL_ALIAS=$(keytool -v -list -keystore earnx.jks -storepass "${{ secrets.STORE_PASSWORD }}" | grep "Alias name:" | cut -d: -f2 | xargs)
+          echo "Asli Alias mil gaya: $REAL_ALIAS"
+          
+          # 6. Us Asli Alias se APK par Sign karo
+          $BUILD_TOOLS/apksigner sign --ks earnx.jks --ks-key-alias "$REAL_ALIAS" --ks-pass "pass:${{ secrets.STORE_PASSWORD }}" --key-pass "pass:${{ secrets.KEY_PASSWORD }}" EarnX-Signed.apk
 
       - name: Upload Final Signed APK
         uses: actions/upload-artifact@v4
