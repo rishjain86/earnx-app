@@ -125,20 +125,24 @@
             z-index: 999999;
             transition: opacity 0.5s ease-out;
         }
-        #custom-splash img {
-            width: 120px;
+                #custom-splash img {
+            width: auto;
+            max-width: 250px;
+            height: 100px;
+            object-fit: contain;
             animation: pulse-splash 1.5s infinite alternate;
         }
+
         @keyframes pulse-splash {
             0% { transform: scale(0.95); opacity: 0.8; }
             100% { transform: scale(1.05); opacity: 1; }
         }
-        .app-logo {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 15px;
+                .app-logo {
+            width: auto;
+            max-width: 200px;
+            height: 80px;
+            margin-bottom: 20px;
             object-fit: contain;
-            border-radius: 20%;
             filter: drop-shadow(0px 10px 15px rgba(16, 185, 129, 0.4));
         }
     </style>
