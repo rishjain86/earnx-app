@@ -6,32 +6,26 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Install Dependencies & Remove Buggy Plugin
+      - name: Install Dependencies
         run: |
           npm install
           npm uninstall @capacitor/share
           npm install @capacitor-community/admob@5 --legacy-peer-deps
-
       - name: Prepare Web Folder
         run: |
           mkdir -p www
           cp index.html www/
           cp -r assets www/assets/
-
       - name: Generate Android Project
         run: npx cap add android
-
-      - name: Update SDK Version & Safely Inject AdMob ID
+      - name: Update SDK & Inject REAL AdMob ID
         run: |
           sed -i "s/compileSdkVersion = [0-9]*/compileSdkVersion = 34/g" android/variables.gradle
           sed -i "s/targetSdkVersion = [0-9]*/targetSdkVersion = 34/g" android/variables.gradle
@@ -39,36 +33,30 @@ jobs:
           const fs = require('fs');
           const path = 'android/app/src/main/AndroidManifest.xml';
           let xml = fs.readFileSync(path, 'utf8');
-          xml = xml.replace('</application>', '    <meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"ca-app-pub-3940256099942544~3347511713\"/>\n    </application>');
+          xml = xml.replace('</application>', '    <meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"ca-app-pub-6519206650027176~2459821619\"/>\n    </application>');
           xml = xml.replace('</manifest>', '    <uses-permission android:name=\"com.google.android.gms.permission.AD_ID\"/>\n</manifest>');
           fs.writeFileSync(path, xml);
-          console.log('AdMob setup completed flawlessly by Node.js!');
           "
-
-      - name: Generate App Logo and Splash Screen
+      - name: Generate Assets
         run: npx --yes @capacitor/assets generate --android --assetPath assets
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
       - name: Build Release APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease
-
-      - name: Sign APK with EarnX Password
+      - name: Sign APK
         run: |
           BUILD_TOOLS=$(ls -d $ANDROID_HOME/build-tools/* | tail -1)
           APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
           $BUILD_TOOLS/zipalign -v -p 4 $APK_PATH EarnX-Signed.apk
           keytool -genkey -v -keystore earnx_new.jks -keyalg RSA -keysize 2048 -validity 10000 -alias earnx_alias -dname "CN=EarnX, OU=App, O=EarnX, L=City, S=State, C=IN" -storepass "EarnX@2024" -keypass "EarnX@2024"
           $BUILD_TOOLS/apksigner sign --ks earnx_new.jks --ks-pass pass:"EarnX@2024" --out EarnX-Final.apk EarnX-Signed.apk
-
-      - name: Upload Final Signed APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: EarnX-App
