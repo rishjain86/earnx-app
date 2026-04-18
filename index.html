@@ -110,9 +110,44 @@
         #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--card-bg); border: 1px solid var(--primary); padding: 12px 20px; border-radius: 8px; color: white; z-index: 10000; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5); font-weight: 600; white-space: nowrap;}
         
         .timer-display { font-family: monospace; font-size: 1.1rem; color: var(--warning); font-weight: bold; }
+
+        /* === SPLASH AND LOGO CSS (ADDED) === */
+        #custom-splash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--bg-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+            transition: opacity 0.5s ease-out;
+        }
+        #custom-splash img {
+            width: 120px;
+            animation: pulse-splash 1.5s infinite alternate;
+        }
+        @keyframes pulse-splash {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            100% { transform: scale(1.05); opacity: 1; }
+        }
+        .app-logo {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 15px;
+            object-fit: contain;
+            border-radius: 20%;
+            filter: drop-shadow(0px 10px 15px rgba(16, 185, 129, 0.4));
+        }
     </style>
 </head>
 <body>
+
+<div id="custom-splash">
+    <img src="assets/icon.png" alt="EarnX Splash Logo">
+</div>
 
 <div id="app">
 
@@ -136,7 +171,7 @@
 
     <div id="screen-login" class="screen active">
         <div style="text-align: center; margin-top: 60px; margin-bottom: 40px;">
-            <i class="fa-solid fa-coins" style="font-size: 4rem; color: var(--primary); margin-bottom: 15px;"></i>
+            <img src="assets/icon.png" alt="EarnX Logo" class="app-logo">
             <h1 style="font-size: 2.5rem;">EarnX</h1>
             <p>Your ultimate rewards platform.</p>
         </div>
@@ -1054,13 +1089,11 @@
 
     window.shareReferral = async function() {
         const code = window.state.user.refCode;
-        // App ke andar location.origin localhost hota hai, isliye hum actual link hardcode kar rahe hain
         const shareLink = "https://dukaan-platform.firebaseapp.com"; 
         const text = `Hey! Join EarnX and earn real rewards. Use my code: ${code}\nLink: ${shareLink}`;
         
         try {
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
-                // App ke liye Native Share Plugin
                 await window.Capacitor.Plugins.Share.share({
                     title: 'EarnX Rewards',
                     text: text,
@@ -1068,7 +1101,6 @@
                     dialogTitle: 'Share EarnX with friends'
                 });
             } else if (navigator.share) {
-                // Web ke liye Standard Share
                 await navigator.share({ title: 'EarnX Rewards', text: text, url: shareLink });
             } else {
                 throw new Error("Share not supported");
@@ -1107,7 +1139,6 @@
             const refDoc = snapshot.docs[0];
             const refData = refDoc.data();
 
-            // Device ID Mismatch Check
             let currentDevice = localStorage.getItem("earnx_device_id");
             if(refData.deviceId && refData.deviceId === currentDevice) {
                 window.showToast("Fraud detected: Same device referral blocked!");
@@ -1138,7 +1169,7 @@
         if(withdrawLock) return;
         withdrawLock = true;
 
-        setTimeout(()=> withdrawLock = false, 5000); // HARD LOCK
+        setTimeout(()=> withdrawLock = false, 5000); 
 
         try {
             if(!navigator.onLine){
@@ -1253,16 +1284,13 @@
 // 🔥 FINAL FRONTEND SECURITY SHIELD 🔥
 // ==========================================
 
-// 1. Anti-Iframe (Clickjacking Protection)
 if (window.top !== window.self) {
     window.top.location = window.self.location;
 }
 
-// 2. Block Inspect Element & Right Click (Script Kiddie Protection)
 document.addEventListener('contextmenu', event => event.preventDefault());
 
 document.addEventListener('keydown', (e) => {
-    // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
     if (e.key === 'F12' || 
        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || 
        (e.ctrlKey && e.key === 'U')) {
@@ -1271,15 +1299,12 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// 3. Console Hacker Warning
 console.log("%cSTOP!", "color: red; font-family: sans-serif; font-size: 4.5em; font-weight: bolder; text-shadow: #000 1px 1px;");
 console.log("%cThis is a browser feature intended for developers. If someone told you to copy-paste something here to get free coins, it is a scam and will result in a permanent ban.", "color: white; background: red; font-size: 1.2em; padding: 10px; border-radius: 5px;");
 
-// 4. Advanced Time Manipulation Defuser (Phone Time Cheat Protection)
 let lastValidTime = Date.now();
 
 setInterval(() => {
-    // Agar app background me hai toh time jump ignore karo (Natural OS behavior)
     if(document.hidden) {
         lastValidTime = Date.now();
         return;
@@ -1288,11 +1313,8 @@ setInterval(() => {
     const currentTime = Date.now();
     const timeDiff = currentTime - lastValidTime;
 
-    // Agar time achanak se 15 seconds se zyada aage jump kare (Phone time forwarded)
     if (timeDiff > 15000) {
         console.warn("System time manipulation detected!");
-        
-        // Cooldown timer ko bhi utna aage badha do (Hack neutralized)
         if(window.state && window.state.tasks) {
             window.state.tasks.lastWatch += timeDiff;
             window.state.tasks.lastStay += timeDiff;
@@ -1302,6 +1324,22 @@ setInterval(() => {
     }
     lastValidTime = currentTime;
 }, 1000);
+
+/* === SPLASH SCREEN JAVASCRIPT LOGIC (ADDED) === */
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
+        window.Capacitor.Plugins.SplashScreen.hide();
+    }
+    setTimeout(function() {
+        let splash = document.getElementById('custom-splash');
+        if(splash) {
+            splash.style.opacity = '0';
+            setTimeout(function() {
+                splash.style.display = 'none';
+            }, 600); 
+        }
+    }, 2500); 
+});
 </script>
 </body>
 </html>
