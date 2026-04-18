@@ -1,8 +1,8 @@
-name: EarnX APK Builder
+name: Build Android APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
       - name: Install Dependencies
         run: |
           npm install
-          npm install @capacitor/share
+          npm install @capacitor/share@5 --legacy-peer-deps
 
       - name: Prepare Web Folder
         run: |
@@ -32,10 +32,7 @@ jobs:
         run: npx cap add android
 
       - name: Generate App Logo and Splash Screen
-        run: npx --yes @capacitor/assets generate --android
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
+        run: npx --yes @capacitor/assets@3 generate --android
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -64,15 +61,11 @@ jobs:
           # 4. APK ko Zipalign (Optimize) karo
           $BUILD_TOOLS/zipalign -v -p 4 $APK_PATH EarnX-Signed.apk
           
-          # 5. Keystore ke andar se Asli Alias ka naam auto-detect karo
-          REAL_ALIAS=$(keytool -v -list -keystore earnx.jks -storepass "${{ secrets.STORE_PASSWORD }}" | grep "Alias name:" | cut -d: -f2 | xargs)
-          echo "Asli Alias mil gaya: $REAL_ALIAS"
-          
-          # 6. Us Asli Alias se APK par Sign karo
-          $BUILD_TOOLS/apksigner sign --ks earnx.jks --ks-key-alias "$REAL_ALIAS" --ks-pass "pass:${{ secrets.STORE_PASSWORD }}" --key-pass "pass:${{ secrets.KEY_PASSWORD }}" EarnX-Signed.apk
+          # 5. Apni mohar se sign karo
+          $BUILD_TOOLS/apksigner sign --ks earnx.jks --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} --out EarnX-Final.apk EarnX-Signed.apk
 
       - name: Upload Final Signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: EarnX-Signed-App
-          path: EarnX-Signed.apk
+          name: EarnX-App
+          path: EarnX-Final.apk
