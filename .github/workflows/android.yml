@@ -32,8 +32,7 @@ jobs:
         run: npx cap add android
 
       - name: Generate App Logo and Splash Screen
-        run: |
-          npx --yes @capacitor/assets@3 generate --android --icon assets/icon.png --splash assets/splash.png
+        run: npx --yes @capacitor/assets generate --android --assetPath assets
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -53,7 +52,6 @@ jobs:
           APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
           $BUILD_TOOLS/zipalign -v -p 4 $APK_PATH EarnX-Signed.apk
           
-          # Magic Keystore setup
           keytool -genkey -v -keystore earnx_new.jks -keyalg RSA -keysize 2048 -validity 10000 -alias earnx -dname "CN=EarnX, OU=App, O=EarnX, L=India, S=Delhi, C=IN" -storepass "EarnX@123" -keypass "EarnX@123"
           
           $BUILD_TOOLS/apksigner sign --ks earnx_new.jks --ks-pass pass:"EarnX@123" --out EarnX-Final.apk EarnX-Signed.apk
