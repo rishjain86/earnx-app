@@ -517,13 +517,13 @@
     let lastCoinRewardTime = 0;
 
     // Prevent Fast Reload Farming
-    let lastLoad = sessionStorage.getItem("lastLoad");
-    if(lastLoad && Date.now() - lastLoad < 2000){
-        alert("Please slow down");
-        throw "Reload blocked";
-    }
-    sessionStorage.setItem("lastLoad", Date.now());
-
+let lastLoad = sessionStorage.getItem("lastLoad");
+let now = Date.now();
+if(lastLoad && (now - lastLoad < 500)){ 
+    console.warn("Fast reload detected");
+}
+sessionStorage.setItem("lastLoad", now);
+    
     // Safe LocalStorage Recovery
     function safeLoadState(){
         try{
