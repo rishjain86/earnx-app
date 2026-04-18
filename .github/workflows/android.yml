@@ -31,11 +31,21 @@ jobs:
       - name: Generate Android Project
         run: npx cap add android
 
-      - name: Update SDK Version & Inject AdMob Meta-data
+      - name: Update SDK Version & Safely Inject AdMob ID
         run: |
           sed -i "s/compileSdkVersion = [0-9]*/compileSdkVersion = 34/g" android/variables.gradle
           sed -i "s/targetSdkVersion = [0-9]*/targetSdkVersion = 34/g" android/variables.gradle
-          sed -i 's|</application>|<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713"/></application>|' android/app/src/main/AndroidManifest.xml
+          node -e "
+          const fs = require('fs');
+          const path = 'android/app/src/main/AndroidManifest.xml';
+          let xml = fs.readFileSync(path, 'utf8');
+          // Inject App ID
+          xml = xml.replace('</application>', '    <meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"ca-app-pub-3940256099942544~3347511713\"/>\n    </application>');
+          // Inject Android 14 Ad Permission
+          xml = xml.replace('</manifest>', '    <uses-permission android:name=\"com.google.android.gms.permission.AD_ID\"/>\n</manifest>');
+          fs.writeFileSync(path, xml);
+          console.log('AdMob setup completed flawlessly by Node.js!');
+          "
 
       - name: Generate App Logo and Splash Screen
         run: npx --yes @capacitor/assets generate --android --assetPath assets
