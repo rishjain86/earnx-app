@@ -105,8 +105,6 @@
         .tc-list li { position: relative; padding-left: 20px; margin-bottom: 12px; font-size: 0.9rem; color: var(--text-muted); }
         .tc-list li::before { content: "•"; color: var(--primary); position: absolute; left: 0; font-weight: bold; font-size: 1.2rem; top: -2px; }
 
-        #ad-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 20px; }
-        .ad-content h2 { color: var(--warning); font-size: 2rem; margin-bottom: 10px; }
         #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--card-bg); border: 1px solid var(--primary); padding: 12px 20px; border-radius: 8px; color: white; z-index: 10000; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5); font-weight: 600; white-space: nowrap;}
         
         .timer-display { font-family: monospace; font-size: 1.1rem; color: var(--warning); font-weight: bold; }
@@ -132,14 +130,6 @@
 
 <div id="app">
     <div id="toast">Message</div>
-
-    <div id="ad-modal">
-        <div class="ad-content">
-            <h2>Advertisement</h2>
-            <p>Please wait <span id="ad-timer" class="text-green" style="font-size: 1.5rem; font-weight:bold;">3</span> seconds...</p>
-            <p style="margin-top: 20px; font-size:0.8rem;">(This simulates AdMob network integration)</p>
-        </div>
-    </div>
 
     <div id="stay-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9998; flex-direction: column; justify-content: center; align-items: center; padding: 20px;">
         <i class="fa-solid fa-hourglass-half" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
@@ -547,21 +537,54 @@
     let appLoaded = false;
     let lastCoinRewardTime = 0;
 
-    /* === ANTI-CHEAT TIME ENGINE (MONOTONIC PERFORMANCE CLOCK) === */
-    // This is immune to phone time manipulation
-    let serverTimeOffset = Date.now() - performance.now();
+    // 🔥 MILITARY-GRADE ANTI-CHEAT TIME ENGINE (STRICT MODE) 🔥
+    let serverTimeOffset = 0;
+    let isTimeLocked = true; // App starts completely locked
 
-    // Async sync with server, doesn't block the UI
-    fetch("https://worldtimeapi.org/api/timezone/Etc/UTC")
-        .then(res => res.json())
-        .then(data => {
-            serverTimeOffset = new Date(data.datetime).getTime() - performance.now();
-        })
-        .catch(() => console.log("Using local monotonic clock for protection."));
+    async function syncSecureTime() {
+        try {
+            const response = await fetch("https://worldtimeapi.org/api/timezone/Etc/UTC");
+            if (!response.ok) throw new Error("API 1 down");
+            const data = await response.json();
+            serverTimeOffset = new Date(data.datetime).getTime() - Date.now();
+            isTimeLocked = false;
+            console.log("Anti-Cheat: Time secured via Server 1.");
+        } catch (error) {
+            try {
+                const response2 = await fetch("https://timeapi.io/api/Time/current/zone?timeZone=UTC");
+                if (!response2.ok) throw new Error("API 2 down");
+                const data2 = await response2.json();
+                serverTimeOffset = new Date(data2.dateTime).getTime() - Date.now();
+                isTimeLocked = false;
+                console.log("Anti-Cheat: Time secured via Server 2.");
+            } catch(e) {
+                // STRICT LOCK: Do NOT unlock if time cannot be fetched!
+                isTimeLocked = true;
+                console.log("Time sync failed. App remains locked to prevent cheating.");
+            }
+        }
+        updateTimersUI(); 
+    }
 
     window.getTrueTime = function() {
-        return performance.now() + serverTimeOffset;
-    };
+        return Date.now() + serverTimeOffset;
+    }
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            isTimeLocked = true;
+            updateTimersUI();
+        } else {
+            syncSecureTime();
+        }
+    });
+
+    let lastLoad = sessionStorage.getItem("lastLoad");
+    let nowTime = Date.now();
+    if(lastLoad && (nowTime - lastLoad < 500)){ 
+        console.warn("Fast reload detected");
+    }
+    sessionStorage.setItem("lastLoad", nowTime);
 
     function safeLoadState(){
         try{ const saved = localStorage.getItem('earnx_state'); return saved ? JSON.parse(saved) : null;
@@ -572,6 +595,8 @@
         if(appLoaded) return;
         appLoaded = true;
         
+        await syncSecureTime(); 
+
         if(!window.db) console.error("Firebase DB not initialized");
         const saved = safeLoadState();
         if(saved) window.state = saved;
@@ -595,24 +620,11 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         init();
-        
-        // Ensure AdMob is explicitly initialized
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-            window.Capacitor.Plugins.AdMob.initialize({ initializeForTesting: false })
-            .catch(e => console.log("AdMob Init Error: ", e));
-        }
-
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
-            window.Capacitor.Plugins.SplashScreen.hide();
-        }
-
-        setTimeout(function() {
-            let splash = document.getElementById('custom-splash');
-            if(splash) { 
-                splash.style.opacity = '0'; 
-                setTimeout(function() { splash.style.display = 'none'; }, 600); 
+        setTimeout(() => {
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+                window.Capacitor.Plugins.AdMob.initialize().catch(e => console.log("AdMob Init Error"));
             }
-        }, 2500);
+        }, 1000);
     });
 
     window.addEventListener("storage", (e) => { if(e.key === "earnx_state") location.reload(); });
@@ -781,8 +793,10 @@
         window.saveState(); window.showToast(`${amount} Coins Added`);
     }
 
-    // === REAL ADMOB REWARDED VIDEO ADS ===
+    // === REAL ADMOB REWARDED VIDEO ADS (STRICT MODE) ===
     async function showAd(callback) {
+        if(isTimeLocked) return window.showToast("Please ensure correct phone time & active internet.");
+        
         if(window.getTrueTime() - lastAdTime < 60000){
             window.showToast("Wait 1 min before next ad");
             return;
@@ -818,8 +832,9 @@
         }
     }
 
-    /* === TASKS (PROTECTED BY TRUE TIME) === */
+    /* === TASKS (PROTECTED BY STRICT TIME ENGINE) === */
     function dailyCheckIn() {
+        if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         const last = window.state.tasks.checkInTime || 0;
         if(window.getTrueTime() - last < 86400000) return window.showToast("Already claimed today");
         window.state.tasks.checkInTime = window.getTrueTime();
@@ -827,11 +842,13 @@
     }
 
     function doWatchTask() {
+        if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_MS) return window.showToast("Wait for timer!");
         showAd(() => { window.state.tasks.lastWatch = window.getTrueTime(); rewardCoins(100, "Watched Ad"); updateTimersUI(); });
     }
 
     function doStayTask() {
+        if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_MS) return window.showToast("Wait for timer!");
         showAd(() => {
             const sModal = document.getElementById('stay-modal'); const sTime = document.getElementById('stay-countdown');
@@ -849,6 +866,7 @@
     }
 
     function doTapTask() {
+        if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(!window.state || !window.state.tasks) return;
         if(window.state.tasks.tapCount >= 20) return;
         if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_MS) return window.showToast("Wait for timer!");
@@ -867,6 +885,7 @@
 
     const prizeMap = [100, 75, 50, 20, 10, 5]; 
     function spinWheel() {
+        if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         const btn = document.getElementById('btn-spin');
         if(!btn || btn.disabled) return; 
         if(window.state.spin.spinsLeft <= 0) return window.showToast("No spins left.");
@@ -977,6 +996,13 @@
     }
 
     function updateTimersUI() {
+        if(isTimeLocked) {
+            safeSetText('watch-timer-display', "Syncing...");
+            safeSetText('stay-timer-display', "Syncing...");
+            safeSetText('tap-timer-display', "Syncing...");
+            return;
+        }
+
         const now = window.getTrueTime();
         updateSingleTimer('watch', window.state.tasks.lastWatch, now);
         updateSingleTimer('stay', window.state.tasks.lastStay, now);
@@ -1007,6 +1033,21 @@
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
+/* === SPLASH SCREEN JAVASCRIPT LOGIC === */
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
+        window.Capacitor.Plugins.SplashScreen.hide();
+    }
+    setTimeout(function() {
+        let splash = document.getElementById('custom-splash');
+        if(splash) {
+            splash.style.opacity = '0';
+            setTimeout(function() {
+                splash.style.display = 'none';
+            }, 600); 
+        }
+    }, 2500); 
+});
 </script>
 </body>
 </html>
