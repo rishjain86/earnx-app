@@ -1,7 +1,28 @@
-// === GLOBAL VARIABLES ===
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCpS_rr77wh23C2LYl6xCSTyptMKlITauk",
+    authDomain: "dukaan-platform.firebaseapp.com",
+    projectId: "dukaan-platform",
+    storageBucket: "dukaan-platform.firebasestorage.app",
+    messagingSenderId: "75765851780",
+    appId: "1:75765851780:web:b6782abb897594b89c84d1"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+window.db = db;
+
+let loginHandled = false;
+let loginLoading = false;
+
+/* === GLOBAL VARIABLES === */
 const COIN_RATE = 100; 
-const COOLDOWN_MS = 3 * 60 * 1000; // 3 Minutes
-const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; // 3 Hours
+const COOLDOWN_MS = 3 * 60 * 1000; 
+const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; 
 const MAX_DAILY_COINS = 5000;
 
 let admobLoaded = false;
@@ -16,9 +37,17 @@ let coinSaveTimeout;
 let appLoaded = false;
 let lastCoinRewardTime = 0;
 
-// 🔥 MILITARY-GRADE ANTI-CHEAT TIME ENGINE (STRICT MODE) 🔥
 let serverTimeOffset = 0;
-let isTimeLocked = true; // App starts completely locked
+let isTimeLocked = true;
+
+setTimeout(() => {
+    if (window.Capacitor) {
+        const webSec = document.getElementById('web-login-section');
+        const appSec = document.getElementById('app-login-section');
+        if(webSec) webSec.style.display = 'none';
+        if(appSec) appSec.style.display = 'block';
+    }
+}, 200);
 
 async function syncSecureTime() {
     try {
@@ -27,7 +56,6 @@ async function syncSecureTime() {
         const data = await response.json();
         serverTimeOffset = new Date(data.datetime).getTime() - Date.now();
         isTimeLocked = false;
-        console.log("Anti-Cheat: Time secured via Server 1.");
     } catch (error) {
         try {
             const response2 = await fetch("https://timeapi.io/api/Time/current/zone?timeZone=UTC");
@@ -35,11 +63,8 @@ async function syncSecureTime() {
             const data2 = await response2.json();
             serverTimeOffset = new Date(data2.dateTime).getTime() - Date.now();
             isTimeLocked = false;
-            console.log("Anti-Cheat: Time secured via Server 2.");
         } catch(e) {
-            // STRICT LOCK: Do NOT unlock if time cannot be fetched!
             isTimeLocked = true;
-            console.log("Time sync failed. App remains locked to prevent cheating.");
         }
     }
     updateTimersUI(); 
@@ -60,9 +85,6 @@ document.addEventListener("visibilitychange", () => {
 
 let lastLoad = sessionStorage.getItem("lastLoad");
 let nowTime = Date.now();
-if(lastLoad && (nowTime - lastLoad < 500)){ 
-    console.warn("Fast reload detected");
-}
 sessionStorage.setItem("lastLoad", nowTime);
 
 function safeLoadState(){
@@ -73,10 +95,8 @@ function safeLoadState(){
 async function init() {
     if(appLoaded) return;
     appLoaded = true;
-    
     await syncSecureTime(); 
 
-    if(!window.db) console.error("Firebase DB not initialized");
     const saved = safeLoadState();
     if(saved) window.state = saved;
 
@@ -109,9 +129,134 @@ document.addEventListener("DOMContentLoaded", () => {
 window.addEventListener("storage", (e) => { if(e.key === "earnx_state") location.reload(); });
 window.addEventListener("beforeunload", () => { if(timerInterval) clearInterval(timerInterval); });
 
-document.addEventListener("click", (e) => {
-    if(e.target.tagName === "BUTTON"){ if(e.target.disabled) e.stopImmediatePropagation(); }
+window.handleSuccessfulLogin = async function(user) {
+    try {
+        window.currentUser = user;
+        const ref = doc(db, "earnx_users", user.uid);
+        const snap = await getDoc(ref);
+
+        let deviceId = localStorage.getItem("earnx_device_id");
+        if(!deviceId){
+            deviceId = "DEV_" + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem("earnx_device_id", deviceId);
+        }
+
+        const defaultTasks = { lastWatch:0, lastStay:0, lastTap:0, tapCount:0, checkInTime:0 };
+        const defaultSpin = { spinsLeft:5, lastRefill:0, totalSpins:0 };
+
+        if(!snap.exists()){
+            const newRefCode = user.uid.substring(0,4).toUpperCase() + Math.floor(Math.random()*9000+1000);
+            const data = {
+                coins: 0,
+                refCode: newRefCode,
+                deviceId: deviceId,
+                createdAt: window.getTrueTime(),
+                tasks: defaultTasks,
+                spin: defaultSpin
+            };
+            await setDoc(ref, data);
+            
+            window.state.user = { id: user.uid, phone: user.email, coins: 0, refCode: newRefCode, referredBy: false };
+            window.state.tasks = defaultTasks;
+            window.state.spin = defaultSpin;
+        } else {
+            const data = snap.data();
+            window.state.user = {
+                ...(window.state.user || {}),
+                id: user.uid,
+                phone: user.email,
+                coins: data.coins || 0,
+                refCode: data.refCode,
+                referredBy: data.referredBy || false
+            };
+            window.state.tasks = data.tasks || defaultTasks;
+            window.state.spin = data.spin || defaultSpin;
+        }
+
+        window.saveState();
+        window.nav('home'); 
+        window.startTimers();
+        window.loadWithdrawals();
+        window.showToast("Login Successful");
+    } catch (error) {
+        window.showToast("Connection error, please try again.");
+    } finally {
+        loginLoading = false;
+    }
+};
+
+onAuthStateChanged(auth, async (user) => {
+    if(user && !loginHandled){
+        loginHandled = true;
+        if(!window.state){
+            window.state = {
+                user: null,
+                tasks: { lastWatch:0,lastStay:0,lastTap:0,tapCount:0,checkInTime:0 },
+                spin: { spinsLeft:5,lastRefill:0,totalSpins:0 },
+                withdrawals: []
+            };
+        }
+        await window.handleSuccessfulLogin(user);
+    } else if (!user) {
+        loginHandled = false;
+    }
 });
+
+window.loginWithGoogle = async function(){
+    if(loginLoading) return;
+    loginLoading = true;
+    const provider = new GoogleAuthProvider();
+    try {
+        const result = await signInWithPopup(auth, provider);
+        await window.handleSuccessfulLogin(result.user);
+    } catch(err) {
+        if (err.code !== 'auth/popup-closed-by-user') window.showToast("Login Error. Try again.");
+        loginLoading = false;
+    }
+};
+
+window.loginWithEmail = async function() {
+    if(loginLoading) return;
+    const email = document.getElementById('email-input').value.trim();
+    const password = document.getElementById('password-input').value.trim();
+    if(!email || !password) return window.showToast("Enter Email and Password");
+    if(password.length < 6) return window.showToast("Password must be at least 6 characters");
+    loginLoading = true;
+    window.showToast("Authenticating...");
+    try {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        await window.handleSuccessfulLogin(result.user);
+    } catch(err) {
+        if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
+            try {
+                window.showToast("Creating new account...");
+                const result = await createUserWithEmailAndPassword(auth, email, password);
+                await window.handleSuccessfulLogin(result.user);
+            } catch(regErr) {
+                if (regErr.code === 'auth/email-already-in-use') {
+                    window.showToast("Account exists. Use 'Forgot Password'.");
+                } else {
+                    window.showToast("Registration failed");
+                }
+                loginLoading = false;
+            }
+        } else {
+            window.showToast("Login failed");
+            loginLoading = false;
+        }
+    }
+};
+
+window.resetPassword = async function() {
+    const email = document.getElementById('email-input').value.trim();
+    if(!email) return window.showToast("Please enter your email above first.");
+    try {
+        await sendPasswordResetEmail(auth, email);
+        window.showToast("Password Reset Link sent to your Email!");
+    } catch(err) {
+        window.showToast("Could not send link");
+    }
+};
 
 function sanitizeCoins(){
     if(!window.state || !window.state.user) return;
@@ -129,7 +274,6 @@ async function saveCoinsToFirebase(){
     if(!navigator.onLine || !window.state.user || !window.state.user.id || saving) return;
     saving = true;
     try {
-        const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
         const ref = doc(window.db, "earnx_users", window.state.user.id);
         await updateDoc(ref, { coins: Number(window.state.user.coins) || 0, tasks: window.state.tasks || {}, spin: window.state.spin || {} });
     } catch(e) {}
@@ -162,9 +306,7 @@ window.nav = function(screenId) {
 }
 
 window.logout = function() {
-    import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js").then(({ getAuth, signOut }) => {
-        signOut(getAuth()); window.currentUser = null; localStorage.clear(); location.reload();
-    });
+    signOut(auth).then(() => { window.currentUser = null; localStorage.clear(); location.reload(); });
 }
 
 function debounce(fn, delay=300){
@@ -174,7 +316,6 @@ function debounce(fn, delay=300){
 window.loadWithdrawals = debounce(async function(){
     if(!window.currentUser) return;
     try {
-        const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
         const q = query(collection(window.db, "earnx_withdrawals"), where("userId", "==", window.currentUser.uid));
         const snap = await getDocs(q);
         window.state.withdrawals = [];
@@ -272,7 +413,6 @@ function rewardCoins(amount, msg) {
     window.saveState(); window.showToast(`${amount} Coins Added`);
 }
 
-// === REAL ADMOB REWARDED VIDEO ADS (STRICT MODE) ===
 async function showAd(callback) {
     if(isTimeLocked) return window.showToast("Please ensure correct phone time & active internet.");
     
@@ -303,7 +443,6 @@ async function showAd(callback) {
             await AdMob.showRewardVideoAd();
 
         } catch (error) {
-            console.error("Ad Error: ", error);
             window.showToast("Ad not available right now.");
         }
     } else {
@@ -311,8 +450,7 @@ async function showAd(callback) {
     }
 }
 
-/* === TASKS (PROTECTED BY STRICT TIME ENGINE) === */
-function dailyCheckIn() {
+window.dailyCheckIn = function() {
     if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
     const last = window.state.tasks.checkInTime || 0;
     if(window.getTrueTime() - last < 86400000) return window.showToast("Already claimed today");
@@ -320,13 +458,13 @@ function dailyCheckIn() {
     rewardCoins(50, "Daily Check-in");
 }
 
-function doWatchTask() {
+window.doWatchTask = function() {
     if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
     if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_MS) return window.showToast("Wait for timer!");
     showAd(() => { window.state.tasks.lastWatch = window.getTrueTime(); rewardCoins(100, "Watched Ad"); updateTimersUI(); });
 }
 
-function doStayTask() {
+window.doStayTask = function() {
     if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
     if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_MS) return window.showToast("Wait for timer!");
     showAd(() => {
@@ -344,7 +482,7 @@ function doStayTask() {
     });
 }
 
-function doTapTask() {
+window.doTapTask = function() {
     if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
     if(!window.state || !window.state.tasks) return;
     if(window.state.tasks.tapCount >= 20) return;
@@ -363,7 +501,7 @@ function doTapTask() {
 }
 
 const prizeMap = [100, 75, 50, 20, 10, 5]; 
-function spinWheel() {
+window.spinWheel = function() {
     if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
     const btn = document.getElementById('btn-spin');
     if(!btn || btn.disabled) return; 
@@ -425,7 +563,6 @@ window.applyReferralFirebase = async function(){
         if(window.state.user.referredBy === true) return window.showToast("Already used referral");
         if(code === window.state.user.refCode.toUpperCase()) return window.showToast("Cannot use your own code");
 
-        const { collection, query, where, getDocs, doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
         const q = query(collection(window.db, "earnx_users"), where("refCode", "==", code));
         const snapshot = await getDocs(q);
 
@@ -453,7 +590,6 @@ window.submitWithdraw = async function(){
         const input = document.getElementById('upi-input'); const upi = input.value.trim();
         if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)) return window.showToast("Invalid UPI");
 
-        const { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
         const userRef = doc(window.db, "earnx_users", window.currentUser.uid);
         const snap = await getDoc(userRef);
         const currentCoins = snap.data().coins || 0;
@@ -511,19 +647,3 @@ function formatMS(ms) {
     const m = Math.floor(totalSec / 60); const s = totalSec % 60;
     return `${m}:${s < 10 ? '0' : ''}${s}`;
 }
-
-/* === SPLASH SCREEN JAVASCRIPT LOGIC === */
-document.addEventListener("DOMContentLoaded", function() {
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
-        window.Capacitor.Plugins.SplashScreen.hide();
-    }
-    setTimeout(function() {
-        let splash = document.getElementById('custom-splash');
-        if(splash) {
-            splash.style.opacity = '0';
-            setTimeout(function() {
-                splash.style.display = 'none';
-            }, 600); 
-        }
-    }, 2500); 
-});
