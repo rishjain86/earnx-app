@@ -987,10 +987,10 @@
         });
     }
 
-    // 🔥 SHARE REFERRAL FIXED (NEW SHORT LINK) 🔥
+    // 🔥 SHARE REFERRAL FIXED (DIRECT APK DOWNLOAD LINK) 🔥
     window.shareReferral = async function() {
         const code = window.state.user.refCode; 
-        const shareLink = "https://shorturl.at/sO8Qx"; // Aapka naya short link
+        const shareLink = "https://shorturl.at/jpU8o"; // Naya Direct APK Link
         const text = `Hey! Join EarnX and earn real rewards. Use my code: ${code}\nDownload App here: ${shareLink}`;
         
         try {
@@ -1008,13 +1008,7 @@
                 });
             } else { throw new Error("Share not supported"); }
         } catch(e) { 
-            // Agar native share fail ho jaye, toh direct copy kar dega
-            const t = document.createElement("textarea"); 
-            t.value = text; 
-            document.body.appendChild(t); 
-            t.select(); 
-            document.execCommand('copy'); 
-            document.body.removeChild(t); 
+            const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); 
             window.showToast("Message & Link Copied! Share manually."); 
         }
     }
