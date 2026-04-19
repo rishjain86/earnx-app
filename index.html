@@ -862,14 +862,17 @@
         rewardCoins(50, "Daily Check-in");
     }
 
+        /* === TASKS (FIXED TIMERS) === */
     function doWatchTask() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
+        // Ab ye 15 mins (COOLDOWN_WATCH) check karega
         if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_WATCH) return window.showToast("Wait for timer!");
         showAd(() => { window.state.tasks.lastWatch = window.getTrueTime(); rewardCoins(100, "Watched Ad"); updateTimersUI(); });
     }
 
     function doStayTask() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
+        // Ab ye 30 mins (COOLDOWN_STAY) check karega
         if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_STAY) return window.showToast("Wait for timer!");
         showAd(() => {
             const sModal = document.getElementById('stay-modal'); const sTime = document.getElementById('stay-countdown');
@@ -890,6 +893,7 @@
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(!window.state || !window.state.tasks) return;
         if(window.state.tasks.tapCount >= 20) return;
+        // Ab ye 60 mins (COOLDOWN_TAP) check karega
         if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_TAP) return window.showToast("Wait for timer!");
 
         let next = window.state.tasks.tapCount + 1;
@@ -903,6 +907,7 @@
         }
         window.saveState();
     }
+
 
     const prizeMap = [100, 75, 50, 20, 10, 5]; 
     function spinWheel() {
