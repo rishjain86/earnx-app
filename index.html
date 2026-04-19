@@ -321,7 +321,7 @@
                 <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Mobile Number</label>
                 <input type="tel" id="profile-phone-input" placeholder="Enter mobile number">
                 
-                <button class="btn" id="btn-save-profile" onclick="saveProfileDetails()">Save Details</button>
+                <button class="btn" id="btn-save-profile" style="margin-top: 10px;" onclick="saveProfileDetails()">Save Details</button>
             </div>
         </div>
 
@@ -411,7 +411,6 @@
 
             const defaultTasks = { lastWatch:0, lastStay:0, lastTap:0, tapCount:0, checkInTime:0 };
             const defaultSpin = { spinsLeft:5, lastRefill:0, totalSpins:0 };
-            const defaultProfile = { name: "", phone: "" };
 
             if(!snap.exists()){
                 const newRefCode = user.uid.substring(0,4).toUpperCase() + Math.floor(Math.random()*9000+1000);
@@ -421,12 +420,11 @@
                     deviceId: deviceId,
                     createdAt: window.getTrueTime(),
                     tasks: defaultTasks,
-                    spin: defaultSpin,
-                    profile: defaultProfile
+                    spin: defaultSpin
                 };
                 await setDoc(ref, data);
                 
-                window.state.user = { id: user.uid, phone: user.email, coins: 0, refCode: newRefCode, referredBy: false, profile: defaultProfile };
+                window.state.user = { id: user.uid, phone: user.email, coins: 0, refCode: newRefCode, referredBy: false };
                 window.state.tasks = defaultTasks;
                 window.state.spin = defaultSpin;
             } else {
@@ -438,7 +436,7 @@
                     coins: data.coins || 0,
                     refCode: data.refCode,
                     referredBy: data.referredBy || false,
-                    profile: data.profile || defaultProfile
+                    profile: data.profile || {}
                 };
                 window.state.tasks = data.tasks || defaultTasks;
                 window.state.spin = data.spin || defaultSpin;
@@ -535,7 +533,7 @@
 </script>
 
 <script>
-    /* === GLOBAL VARIABLES & UPDATED TIMERS === */
+    /* === GLOBAL VARIABLES === */
     const COIN_RATE = 100; 
     const COOLDOWN_WATCH = 15 * 60 * 1000; // 15 Minutes
     const COOLDOWN_STAY = 30 * 60 * 1000;  // 30 Minutes
@@ -727,6 +725,37 @@
 
     function safeSetText(id, value){ const el = document.getElementById(id); if(el) el.innerText = value; }
 
+    window.saveProfileDetails = async function() {
+        const nameVal = document.getElementById('profile-name-input').value.trim();
+        const phoneVal = document.getElementById('profile-phone-input').value.trim();
+        const btn = document.getElementById('btn-save-profile');
+        
+        if(!nameVal || !phoneVal) return window.showToast("Please fill both details");
+        
+        btn.disabled = true;
+        btn.innerText = "Saving...";
+        try {
+            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            await updateDoc(doc(window.db, "earnx_users", window.state.user.id), { 
+                "profile.name": nameVal, 
+                "profile.phone": phoneVal 
+            });
+            
+            if(!window.state.user.profile) window.state.user.profile = {};
+            window.state.user.profile.name = nameVal;
+            window.state.user.profile.phone = phoneVal;
+            window.saveState();
+            
+            btn.innerText = "Details Saved ✓";
+            window.showToast("Profile Updated!");
+            setTimeout(() => { btn.innerText = "Save Details"; btn.disabled = false; }, 3000);
+        } catch(e) {
+            btn.innerText = "Save Details";
+            btn.disabled = false;
+            window.showToast("Error saving profile");
+        }
+    };
+
     const updateUICore = function() {
         if(!window.state || !window.state.user) return;
         sanitizeCoins();
@@ -738,7 +767,6 @@
         safeSetText('tap-count', window.state.tasks.tapCount);
         safeSetText('spin-count-display', window.state.spin.spinsLeft);
 
-        // Populate Profile Inputs
         const nameInput = document.getElementById('profile-name-input');
         const phoneInput = document.getElementById('profile-phone-input');
         if(nameInput && window.state.user.profile && window.state.user.profile.name) nameInput.value = window.state.user.profile.name;
@@ -767,11 +795,9 @@
         const list1 = document.getElementById('my-withdrawals-list');
         const list2 = document.getElementById('home-withdrawals-list');
         if(!window.state || !window.state.withdrawals) return;
-        
-        // Handling default Empty states clearly
         if(window.state.withdrawals.length === 0) {
             if(list1) list1.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No withdrawals yet.</p>';
-            if(list2) list2.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No recent activity yet.</p>';
+            if(list2) list2.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No recent activity.</p>';
             return;
         }
 
@@ -819,7 +845,6 @@
         window.saveState(); window.showToast(`${amount} Coins Added`);
     }
 
-    // === REAL ADMOB REWARDED VIDEO ADS (STRICT MODE) ===
     async function showAd(callback) {
         if(isTimeLocked) return window.showToast("Please ensure correct phone time & active internet.");
         
@@ -858,8 +883,7 @@
         }
     }
 
-    /* === TASKS (PROTECTED BY STRICT TIME ENGINE) === */
-    function dailyCheckIn() {
+    window.dailyCheckIn = function() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         const last = window.state.tasks.checkInTime || 0;
         if(window.getTrueTime() - last < 86400000) return window.showToast("Already claimed today");
@@ -867,42 +891,44 @@
         rewardCoins(50, "Daily Check-in");
     }
 
-    function doWatchTask() {
+    window.doWatchTask = function() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_WATCH) return window.showToast("Wait for timer!");
-        showAd(() => { window.state.tasks.lastWatch = window.getTrueTime(); rewardCoins(100, "Watched Ad"); updateTimersUI(); });
+        showAd(() => { 
+            window.state.tasks.lastWatch = window.getTrueTime(); 
+            rewardCoins(100, "Watched Ad"); 
+            window.saveState(); 
+            updateTimersUI(); 
+        });
     }
 
-    function doStayTask() {
+    window.doStayTask = function() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_STAY) return window.showToast("Wait for timer!");
         
-        const sModal = document.getElementById('stay-modal');
+        const sModal = document.getElementById('stay-modal'); 
         const sTime = document.getElementById('stay-countdown');
         if(!sModal || !sTime) return;
         
-        sModal.style.display = 'flex';
-        let timeLeft = 15;
+        sModal.style.display = 'flex'; 
+        let timeLeft = 15; 
         sTime.innerText = timeLeft;
         
         const sInt = setInterval(() => {
-            timeLeft--;
-            sTime.innerText = timeLeft;
+            timeLeft--; sTime.innerText = timeLeft;
             if(timeLeft <= 0) {
-                clearInterval(sInt);
-                sModal.style.display = 'none';
-                
-                // 🔥 NAYA FLOW: Timer 0 hone ke BAAD ad dikhayega 🔥
+                clearInterval(sInt); sModal.style.display = 'none';
                 showAd(() => {
                     window.state.tasks.lastStay = window.getTrueTime();
                     rewardCoins(200, "Stay Task Complete");
+                    window.saveState();
                     updateTimersUI();
                 });
             }
         }, 1000);
     }
 
-    function doTapTask() {
+    window.doTapTask = function() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(!window.state || !window.state.tasks) return;
         if(window.state.tasks.tapCount >= 20) return;
@@ -915,13 +941,17 @@
         }
         window.state.tasks.tapCount++;
         if(window.state.tasks.tapCount >= 20){
-            window.state.tasks.tapCount = 0; window.state.tasks.lastTap = window.getTrueTime(); rewardCoins(150, "Tap Task");
+            window.state.tasks.tapCount = 0; window.state.tasks.lastTap = window.getTrueTime(); 
+            rewardCoins(150, "Tap Task"); 
+            window.saveState(); 
+            updateTimersUI();
+        } else {
+            window.saveState();
         }
-        window.saveState();
     }
 
     const prizeMap = [100, 75, 50, 20, 10, 5]; 
-    function spinWheel() {
+    window.spinWheel = function() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         const btn = document.getElementById('btn-spin');
         if(!btn || btn.disabled) return; 
@@ -957,10 +987,8 @@
         });
     }
 
-    // 🔥 SHARE REFERRAL FIXED 🔥
     window.shareReferral = async function() {
-        const code = window.state.user.refCode; 
-        const shareLink = "https://dukaan-platform.firebaseapp.com"; 
+        const code = window.state.user.refCode; const shareLink = "https://dukaan-platform.firebaseapp.com"; 
         const text = `Hey! Join EarnX and earn real rewards. Use my code: ${code}\nLink: ${shareLink}`;
         
         try {
@@ -968,14 +996,10 @@
                 await window.Capacitor.Plugins.Share.share({ title: 'EarnX Rewards', text: text, url: shareLink, dialogTitle: 'Share EarnX with friends' });
             } else if (navigator.share) {
                 await navigator.share({ title: 'EarnX Rewards', text: text, url: shareLink });
-            } else { 
-                // Fallback agar share block hai toh
-                window.copyReferral(); 
-                window.showToast("Link Copied! Share manually."); 
-            }
+            } else { throw new Error("Share not supported"); }
         } catch(e) { 
-            window.copyReferral(); 
-            window.showToast("Link Copied! Share manually."); 
+            const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); 
+            window.showToast("Link & Code Copied! Share manually."); 
         }
     }
 
@@ -1035,38 +1059,6 @@
         } catch(e){ window.showToast("Withdraw failed"); }
     };
 
-    // PROFILE SAVE LOGIC
-    window.saveProfileDetails = async function() {
-        const nameVal = document.getElementById('profile-name-input').value.trim();
-        const phoneVal = document.getElementById('profile-phone-input').value.trim();
-        const btn = document.getElementById('btn-save-profile');
-        
-        if(!nameVal || !phoneVal) return window.showToast("Please fill both details");
-        
-        btn.disabled = true;
-        btn.innerText = "Saving...";
-        try {
-            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-            await updateDoc(doc(window.db, "earnx_users", window.state.user.id), { 
-                "profile.name": nameVal, 
-                "profile.phone": phoneVal 
-            });
-            
-            if(!window.state.user.profile) window.state.user.profile = {};
-            window.state.user.profile.name = nameVal;
-            window.state.user.profile.phone = phoneVal;
-            window.saveState();
-            
-            btn.innerText = "Details Saved ✓";
-            window.showToast("Profile Updated!");
-            setTimeout(() => { btn.innerText = "Save Details"; btn.disabled = false; }, 3000);
-        } catch(e) {
-            btn.innerText = "Save Details";
-            btn.disabled = false;
-            window.showToast("Error saving profile");
-        }
-    };
-
     window.startTimers = function() {
         if(timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(updateTimersUI, 1000);
@@ -1097,19 +1089,11 @@
     function updateSingleTimer(type, lastTime, now, cooldownLimit) {
         const btn = document.getElementById(`btn-${type}`); if(!btn) return;
         const passed = now - lastTime;
-        
-        // 🔥 TIMER LOGIC FIXED HERE 🔥
         if(passed < cooldownLimit) {
-            safeSetText(`${type}-timer-display`, formatMS(cooldownLimit - passed)); 
-            btn.disabled = true;
+            safeSetText(`${type}-timer-display`, formatMS(cooldownLimit - passed)); btn.disabled = true;
         } else {
-            if(type === 'tap' && window.state.tasks.tapCount >= 20) { 
-                safeSetText(`${type}-timer-display`, "Complete"); 
-                btn.disabled = true;
-            } else { 
-                safeSetText(`${type}-timer-display`, "Ready"); 
-                btn.disabled = false; 
-            }
+            if(type === 'tap' && window.state.tasks.tapCount >= 20) { safeSetText(`${type}-timer-display`, "Complete"); btn.disabled = true;
+            } else { safeSetText(`${type}-timer-display`, "Ready"); btn.disabled = false; }
         }
     }
 
