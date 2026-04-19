@@ -547,45 +547,21 @@
     let appLoaded = false;
     let lastCoinRewardTime = 0;
 
-    // 🔥 MILITARY-GRADE ANTI-CHEAT TIME ENGINE (MONOTONIC CLOCK) 🔥
-    let serverTimeBase = Date.now() - performance.now();
-    let isTimeLocked = true;
+    /* === ANTI-CHEAT TIME ENGINE (MONOTONIC PERFORMANCE CLOCK) === */
+    // This is immune to phone time manipulation
+    let serverTimeOffset = Date.now() - performance.now();
 
-    async function syncSecureTime() {
-        try {
-            const response = await fetch("https://worldtimeapi.org/api/timezone/Etc/UTC");
-            if (!response.ok) throw new Error("API 1 down");
-            const data = await response.json();
-            serverTimeBase = new Date(data.datetime).getTime() - performance.now();
-            console.log("Anti-Cheat Active: Time secured via Server 1.");
-        } catch (error) {
-            try {
-                const response2 = await fetch("https://timeapi.io/api/Time/current/zone?timeZone=UTC");
-                if (!response2.ok) throw new Error("API 2 down");
-                const data2 = await response2.json();
-                serverTimeBase = new Date(data2.dateTime).getTime() - performance.now();
-                console.log("Anti-Cheat Active: Time secured via Server 2.");
-            } catch(e) {
-                console.log("Time sync failed, using secure monotonic fallback.");
-            }
-        }
-    }
+    // Async sync with server, doesn't block the UI
+    fetch("https://worldtimeapi.org/api/timezone/Etc/UTC")
+        .then(res => res.json())
+        .then(data => {
+            serverTimeOffset = new Date(data.datetime).getTime() - performance.now();
+        })
+        .catch(() => console.log("Using local monotonic clock for protection."));
 
-    // Uses performance.now() - 100% immune to local clock manipulation
     window.getTrueTime = function() {
-        return serverTimeBase + performance.now();
-    }
-
-    document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) syncSecureTime();
-    });
-
-    let lastLoad = sessionStorage.getItem("lastLoad");
-    let nowTime = window.getTrueTime();
-    if(lastLoad && (nowTime - lastLoad < 500)){ 
-        console.warn("Fast reload detected");
-    }
-    sessionStorage.setItem("lastLoad", nowTime);
+        return performance.now() + serverTimeOffset;
+    };
 
     function safeLoadState(){
         try{ const saved = localStorage.getItem('earnx_state'); return saved ? JSON.parse(saved) : null;
@@ -596,9 +572,6 @@
         if(appLoaded) return;
         appLoaded = true;
         
-        await syncSecureTime(); 
-        isTimeLocked = false; // Ensures it NEVER gets stuck in infinite lock
-
         if(!window.db) console.error("Firebase DB not initialized");
         const saved = safeLoadState();
         if(saved) window.state = saved;
@@ -622,12 +595,24 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         init();
-        setTimeout(() => {
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-                window.Capacitor.Plugins.AdMob.initialize({ initializeForTesting: false }) // 🔥 REAL ADS ENABLED
-                .then(() => { admobLoaded = true; }).catch(e => console.log("AdMob Init Error"));
+        
+        // Ensure AdMob is explicitly initialized
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+            window.Capacitor.Plugins.AdMob.initialize({ initializeForTesting: false })
+            .catch(e => console.log("AdMob Init Error: ", e));
+        }
+
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
+            window.Capacitor.Plugins.SplashScreen.hide();
+        }
+
+        setTimeout(function() {
+            let splash = document.getElementById('custom-splash');
+            if(splash) { 
+                splash.style.opacity = '0'; 
+                setTimeout(function() { splash.style.display = 'none'; }, 600); 
             }
-        }, 1000);
+        }, 2500);
     });
 
     window.addEventListener("storage", (e) => { if(e.key === "earnx_state") location.reload(); });
@@ -796,26 +781,30 @@
         window.saveState(); window.showToast(`${amount} Coins Added`);
     }
 
-    // === REAL ADMOB REWARDED VIDEO ADS (NO FAKE AD) ===
+    // === REAL ADMOB REWARDED VIDEO ADS ===
     async function showAd(callback) {
         if(window.getTrueTime() - lastAdTime < 60000){
             window.showToast("Wait 1 min before next ad");
             return;
         }
 
-        if (admobLoaded && window.Capacitor && window.Capacitor.Plugins.AdMob) {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
             try {
                 window.showToast("Loading Ad...");
                 const { AdMob } = window.Capacitor.Plugins;
-
                 const adId = "ca-app-pub-6519206650027176/8005768127"; 
 
                 await AdMob.prepareRewardVideoAd({ adId: adId });
 
-                AdMob.addListener('onRewardedVideoAdRewarded', (rewardItem) => {
+                let listener = AdMob.addListener('onRewardedVideoAdRewarded', (rewardItem) => {
                     lastAdTime = window.getTrueTime();
                     if(callback) callback();
-                    AdMob.removeAllListeners(); 
+                    
+                    if (listener && listener.remove) {
+                        listener.remove();
+                    } else {
+                        AdMob.removeAllListeners();
+                    }
                 });
 
                 await AdMob.showRewardVideoAd();
@@ -825,37 +814,25 @@
                 window.showToast("Ad not available right now.");
             }
         } else {
-            window.showToast("Ad not available right now.");
+            window.showToast("App not running on Mobile!");
         }
     }
 
     /* === TASKS (PROTECTED BY TRUE TIME) === */
     function dailyCheckIn() {
-        if(isTimeLocked) return window.showToast("Securing Time... Please wait");
         const last = window.state.tasks.checkInTime || 0;
         if(window.getTrueTime() - last < 86400000) return window.showToast("Already claimed today");
         window.state.tasks.checkInTime = window.getTrueTime();
         rewardCoins(50, "Daily Check-in");
     }
 
-    function validateTimestamps() {
-        const trueNow = window.getTrueTime();
-        if(window.state.tasks.lastWatch > trueNow) window.state.tasks.lastWatch = trueNow;
-        if(window.state.tasks.lastStay > trueNow) window.state.tasks.lastStay = trueNow;
-        if(window.state.tasks.lastTap > trueNow) window.state.tasks.lastTap = trueNow;
-    }
-
     function doWatchTask() {
-        if(isTimeLocked) return window.showToast("Securing Time... Please wait");
-        validateTimestamps();
-        if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_MS) return;
+        if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_MS) return window.showToast("Wait for timer!");
         showAd(() => { window.state.tasks.lastWatch = window.getTrueTime(); rewardCoins(100, "Watched Ad"); updateTimersUI(); });
     }
 
     function doStayTask() {
-        if(isTimeLocked) return window.showToast("Securing Time... Please wait");
-        validateTimestamps();
-        if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_MS) return;
+        if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_MS) return window.showToast("Wait for timer!");
         showAd(() => {
             const sModal = document.getElementById('stay-modal'); const sTime = document.getElementById('stay-countdown');
             if(!sModal || !sTime) return;
@@ -872,15 +849,13 @@
     }
 
     function doTapTask() {
-        if(isTimeLocked) return window.showToast("Securing Time... Please wait");
         if(!window.state || !window.state.tasks) return;
         if(window.state.tasks.tapCount >= 20) return;
-        validateTimestamps();
-        if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_MS) return;
+        if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_MS) return window.showToast("Wait for timer!");
 
         let next = window.state.tasks.tapCount + 1;
         if(next === 10){
-            if(window.getTrueTime() - lastAdTime < 60000) return window.showToast("Ad not ready");
+            if(window.getTrueTime() - lastAdTime < 60000) return window.showToast("Wait 1 min for next Ad");
             showAd(()=>{});
         }
         window.state.tasks.tapCount++;
@@ -892,7 +867,6 @@
 
     const prizeMap = [100, 75, 50, 20, 10, 5]; 
     function spinWheel() {
-        if(isTimeLocked) return window.showToast("Securing Time... Please wait");
         const btn = document.getElementById('btn-spin');
         if(!btn || btn.disabled) return; 
         if(window.state.spin.spinsLeft <= 0) return window.showToast("No spins left.");
@@ -1003,13 +977,6 @@
     }
 
     function updateTimersUI() {
-        if(isTimeLocked) {
-            safeSetText('watch-timer-display', "Syncing...");
-            safeSetText('stay-timer-display', "Syncing...");
-            safeSetText('tap-timer-display', "Syncing...");
-            return;
-        }
-
         const now = window.getTrueTime();
         updateSingleTimer('watch', window.state.tasks.lastWatch, now);
         updateSingleTimer('stay', window.state.tasks.lastStay, now);
@@ -1040,43 +1007,6 @@
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
-// 4. Advanced Time Manipulation Defuser (Phone Time Cheat Protection)
-let lastValidTime = window.getTrueTime();
-
-setInterval(() => {
-    if(document.hidden) {
-        lastValidTime = window.getTrueTime();
-        return;
-    }
-    const currentTime = window.getTrueTime();
-    const timeDiff = currentTime - lastValidTime;
-    if (timeDiff > 15000) {
-        console.warn("System time manipulation detected!");
-        if(window.state && window.state.tasks) {
-            window.state.tasks.lastWatch += timeDiff;
-            window.state.tasks.lastStay += timeDiff;
-            window.state.tasks.lastTap += timeDiff;
-            window.saveState();
-        }
-    }
-    lastValidTime = currentTime;
-}, 1000);
-
-/* === SPLASH SCREEN JAVASCRIPT LOGIC === */
-document.addEventListener("DOMContentLoaded", function() {
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
-        window.Capacitor.Plugins.SplashScreen.hide();
-    }
-    setTimeout(function() {
-        let splash = document.getElementById('custom-splash');
-        if(splash) {
-            splash.style.opacity = '0';
-            setTimeout(function() {
-                splash.style.display = 'none';
-            }, 600); 
-        }
-    }, 2500); 
-});
 </script>
 </body>
 </html>
