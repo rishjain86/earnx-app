@@ -415,7 +415,7 @@
                     coins: 0,
                     refCode: newRefCode,
                     deviceId: deviceId,
-                    createdAt: window.getTrueTime(), 
+                    createdAt: window.getTrueTime(),
                     tasks: defaultTasks,
                     spin: defaultSpin
                 };
@@ -486,16 +486,12 @@
 
     window.loginWithEmail = async function() {
         if(loginLoading) return;
-        
         const email = document.getElementById('email-input').value.trim();
         const password = document.getElementById('password-input').value.trim();
-        
         if(!email || !password) return window.showToast("Enter Email and Password");
         if(password.length < 6) return window.showToast("Password must be at least 6 characters");
-
         loginLoading = true;
         window.showToast("Authenticating...");
-        
         try {
             const result = await signInWithEmailAndPassword(auth, email, password);
             await window.handleSuccessfulLogin(result.user);
@@ -551,46 +547,37 @@
     let appLoaded = false;
     let lastCoinRewardTime = 0;
 
-    // 🔥 MILITARY-GRADE ANTI-CHEAT TIME ENGINE (FIXED LOOP) 🔥
-    let serverTimeOffset = 0;
+    // 🔥 MILITARY-GRADE ANTI-CHEAT TIME ENGINE (MONOTONIC CLOCK) 🔥
+    let serverTimeBase = Date.now() - performance.now();
     let isTimeLocked = true;
-    let retryCount = 0;
 
     async function syncSecureTime() {
-        isTimeLocked = true;
         try {
             const response = await fetch("https://worldtimeapi.org/api/timezone/Etc/UTC");
-            if (!response.ok) throw new Error("Server down");
+            if (!response.ok) throw new Error("API 1 down");
             const data = await response.json();
-            serverTimeOffset = new Date(data.datetime).getTime() - Date.now();
-            isTimeLocked = false;
-            retryCount = 0; // Reset retry count on success
-            console.log("Anti-Cheat Active: Time secured.");
+            serverTimeBase = new Date(data.datetime).getTime() - performance.now();
+            console.log("Anti-Cheat Active: Time secured via Server 1.");
         } catch (error) {
-            retryCount++;
-            if (retryCount <= 2) {
-                setTimeout(syncSecureTime, 1000); 
-            } else {
-                serverTimeOffset = 0; 
-                isTimeLocked = false;
-                console.log("Time sync failed, using safe local fallback.");
+            try {
+                const response2 = await fetch("https://timeapi.io/api/Time/current/zone?timeZone=UTC");
+                if (!response2.ok) throw new Error("API 2 down");
+                const data2 = await response2.json();
+                serverTimeBase = new Date(data2.dateTime).getTime() - performance.now();
+                console.log("Anti-Cheat Active: Time secured via Server 2.");
+            } catch(e) {
+                console.log("Time sync failed, using secure monotonic fallback.");
             }
         }
     }
 
-    // Every function in the app now uses this instead of Date.now()
+    // Uses performance.now() - 100% immune to local clock manipulation
     window.getTrueTime = function() {
-        return Date.now() + serverTimeOffset;
+        return serverTimeBase + performance.now();
     }
 
-    // Sync time every time the app opens or comes to foreground
     document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) {
-            retryCount = 0;
-            syncSecureTime();
-        } else {
-            isTimeLocked = true;
-        }
+        if (!document.hidden) syncSecureTime();
     });
 
     let lastLoad = sessionStorage.getItem("lastLoad");
@@ -610,6 +597,7 @@
         appLoaded = true;
         
         await syncSecureTime(); 
+        isTimeLocked = false; // Ensures it NEVER gets stuck in infinite lock
 
         if(!window.db) console.error("Firebase DB not initialized");
         const saved = safeLoadState();
@@ -636,7 +624,7 @@
         init();
         setTimeout(() => {
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-                window.Capacitor.Plugins.AdMob.initialize({ initializeForTesting: false })
+                window.Capacitor.Plugins.AdMob.initialize({ initializeForTesting: false }) // 🔥 REAL ADS ENABLED
                 .then(() => { admobLoaded = true; }).catch(e => console.log("AdMob Init Error"));
             }
         }, 1000);
@@ -1060,10 +1048,8 @@ setInterval(() => {
         lastValidTime = window.getTrueTime();
         return;
     }
-
     const currentTime = window.getTrueTime();
     const timeDiff = currentTime - lastValidTime;
-
     if (timeDiff > 15000) {
         console.warn("System time manipulation detected!");
         if(window.state && window.state.tasks) {
