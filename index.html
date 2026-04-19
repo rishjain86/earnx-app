@@ -313,7 +313,17 @@
                 <i class="fa-solid fa-user-astronaut"></i>
             </div>
             <h3 id="profile-phone">Loading...</h3>
-            <p>User ID: <span id="profile-uid">-----</span></p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 15px;">User ID: <span id="profile-uid">-----</span></p>
+            
+            <div style="text-align: left; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--card-border);">
+                <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Full Name</label>
+                <input type="text" id="profile-name-input" placeholder="Enter your full name">
+                
+                <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Mobile Number</label>
+                <input type="tel" id="profile-phone-input" placeholder="Enter mobile number">
+                
+                <button class="btn" id="btn-save-profile" onclick="saveProfileDetails()">Save Details</button>
+            </div>
         </div>
 
         <div class="card">
@@ -398,6 +408,7 @@
 
             const defaultTasks = { lastWatch:0, lastStay:0, lastTap:0, tapCount:0, checkInTime:0 };
             const defaultSpin = { spinsLeft:5, lastRefill:0, totalSpins:0 };
+            const defaultProfile = { name: "", phone: "" };
 
             if(!snap.exists()){
                 const newRefCode = user.uid.substring(0,4).toUpperCase() + Math.floor(Math.random()*9000+1000);
@@ -407,11 +418,12 @@
                     deviceId: deviceId,
                     createdAt: window.getTrueTime(),
                     tasks: defaultTasks,
-                    spin: defaultSpin
+                    spin: defaultSpin,
+                    profile: defaultProfile
                 };
                 await setDoc(ref, data);
                 
-                window.state.user = { id: user.uid, phone: user.email, coins: 0, refCode: newRefCode, referredBy: false };
+                window.state.user = { id: user.uid, phone: user.email, coins: 0, refCode: newRefCode, referredBy: false, profile: defaultProfile };
                 window.state.tasks = defaultTasks;
                 window.state.spin = defaultSpin;
             } else {
@@ -422,7 +434,8 @@
                     phone: user.email,
                     coins: data.coins || 0,
                     refCode: data.refCode,
-                    referredBy: data.referredBy || false
+                    referredBy: data.referredBy || false,
+                    profile: data.profile || defaultProfile
                 };
                 window.state.tasks = data.tasks || defaultTasks;
                 window.state.spin = data.spin || defaultSpin;
@@ -519,9 +532,11 @@
 </script>
 
 <script>
-    /* === GLOBAL VARIABLES === */
+    /* === GLOBAL VARIABLES & UPDATED TIMERS === */
     const COIN_RATE = 100; 
-    const COOLDOWN_MS = 3 * 60 * 1000; // 3 Minutes
+    const COOLDOWN_WATCH = 15 * 60 * 1000; // 15 Minutes
+    const COOLDOWN_STAY = 30 * 60 * 1000;  // 30 Minutes
+    const COOLDOWN_TAP = 60 * 60 * 1000;   // 60 Minutes (1 Hour)
     const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; // 3 Hours
     const MAX_DAILY_COINS = 5000;
 
@@ -720,6 +735,12 @@
         safeSetText('tap-count', window.state.tasks.tapCount);
         safeSetText('spin-count-display', window.state.spin.spinsLeft);
 
+        // Populate Profile Inputs
+        const nameInput = document.getElementById('profile-name-input');
+        const phoneInput = document.getElementById('profile-phone-input');
+        if(nameInput && window.state.user.profile && window.state.user.profile.name) nameInput.value = window.state.user.profile.name;
+        if(phoneInput && window.state.user.profile && window.state.user.profile.phone) phoneInput.value = window.state.user.profile.phone;
+
         if(window.state.user.referredBy){
             const el = document.getElementById('enter-ref-section');
             if(el) el.style.display = 'none';
@@ -843,13 +864,13 @@
 
     function doWatchTask() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
-        if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_MS) return window.showToast("Wait for timer!");
+        if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_WATCH) return window.showToast("Wait for timer!");
         showAd(() => { window.state.tasks.lastWatch = window.getTrueTime(); rewardCoins(100, "Watched Ad"); updateTimersUI(); });
     }
 
     function doStayTask() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
-        if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_MS) return window.showToast("Wait for timer!");
+        if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_STAY) return window.showToast("Wait for timer!");
         showAd(() => {
             const sModal = document.getElementById('stay-modal'); const sTime = document.getElementById('stay-countdown');
             if(!sModal || !sTime) return;
@@ -869,7 +890,7 @@
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(!window.state || !window.state.tasks) return;
         if(window.state.tasks.tapCount >= 20) return;
-        if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_MS) return window.showToast("Wait for timer!");
+        if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_TAP) return window.showToast("Wait for timer!");
 
         let next = window.state.tasks.tapCount + 1;
         if(next === 10){
@@ -989,6 +1010,38 @@
         } catch(e){ window.showToast("Withdraw failed"); }
     };
 
+    // PROFILE SAVE LOGIC
+    window.saveProfileDetails = async function() {
+        const nameVal = document.getElementById('profile-name-input').value.trim();
+        const phoneVal = document.getElementById('profile-phone-input').value.trim();
+        const btn = document.getElementById('btn-save-profile');
+        
+        if(!nameVal || !phoneVal) return window.showToast("Please fill both details");
+        
+        btn.disabled = true;
+        btn.innerText = "Saving...";
+        try {
+            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            await updateDoc(doc(window.db, "earnx_users", window.state.user.id), { 
+                "profile.name": nameVal, 
+                "profile.phone": phoneVal 
+            });
+            
+            if(!window.state.user.profile) window.state.user.profile = {};
+            window.state.user.profile.name = nameVal;
+            window.state.user.profile.phone = phoneVal;
+            window.saveState();
+            
+            btn.innerText = "Details Saved ✓";
+            window.showToast("Profile Updated!");
+            setTimeout(() => { btn.innerText = "Save Details"; btn.disabled = false; }, 3000);
+        } catch(e) {
+            btn.innerText = "Save Details";
+            btn.disabled = false;
+            window.showToast("Error saving profile");
+        }
+    };
+
     window.startTimers = function() {
         if(timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(updateTimersUI, 1000);
@@ -1004,9 +1057,9 @@
         }
 
         const now = window.getTrueTime();
-        updateSingleTimer('watch', window.state.tasks.lastWatch, now);
-        updateSingleTimer('stay', window.state.tasks.lastStay, now);
-        updateSingleTimer('tap', window.state.tasks.lastTap, now);
+        updateSingleTimer('watch', window.state.tasks.lastWatch, now, COOLDOWN_WATCH);
+        updateSingleTimer('stay', window.state.tasks.lastStay, now, COOLDOWN_STAY);
+        updateSingleTimer('tap', window.state.tasks.lastTap, now, COOLDOWN_TAP);
 
         if(window.state.spin.spinsLeft < 5 && window.state.spin.lastRefill > 0) {
             const passed = now - window.state.spin.lastRefill;
@@ -1016,11 +1069,11 @@
         } else { safeSetText('spin-refill-timer', ""); }
     }
 
-    function updateSingleTimer(type, lastTime, now) {
+    function updateSingleTimer(type, lastTime, now, cooldownLimit) {
         const btn = document.getElementById(`btn-${type}`); if(!btn) return;
         const passed = now - lastTime;
-        if(passed < COOLDOWN_MS) {
-            safeSetText(`${type}-timer-display`, formatMS(COOLDOWN_MS - passed)); btn.disabled = true;
+        if(passed < cooldownLimit) {
+            safeSetText(`${type}-timer-display`, formatMS(cooldownLimit - passed)); btn.disabled = true;
         } else {
             if(type === 'tap' && window.state.tasks.tapCount >= 20) { safeSetText(`${type}-timer-display`, "Complete"); btn.disabled = true;
             } else { safeSetText(`${type}-timer-display`, "Ready"); btn.disabled = false; }
