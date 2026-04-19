@@ -551,7 +551,7 @@
     let appLoaded = false;
     let lastCoinRewardTime = 0;
 
-    // 🔥 MILITARY-GRADE ANTI-CHEAT TIME ENGINE (FIXED)
+    // 🔥 MILITARY-GRADE ANTI-CHEAT TIME ENGINE (FIXED LOOP) 🔥
     let serverTimeOffset = 0;
     let isTimeLocked = true;
     let retryCount = 0;
@@ -564,35 +564,37 @@
             const data = await response.json();
             serverTimeOffset = new Date(data.datetime).getTime() - Date.now();
             isTimeLocked = false;
-            retryCount = 0; 
-            console.log("Anti-Cheat Active: Time secured via Server.");
+            retryCount = 0; // Reset retry count on success
+            console.log("Anti-Cheat Active: Time secured.");
         } catch (error) {
             retryCount++;
             if (retryCount <= 2) {
                 setTimeout(syncSecureTime, 1000); 
             } else {
                 serverTimeOffset = 0; 
-                isTimeLocked = false; 
+                isTimeLocked = false;
                 console.log("Time sync failed, using safe local fallback.");
             }
         }
     }
 
+    // Every function in the app now uses this instead of Date.now()
     window.getTrueTime = function() {
         return Date.now() + serverTimeOffset;
     }
 
+    // Sync time every time the app opens or comes to foreground
     document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-            isTimeLocked = true;
-        } else {
+        if (!document.hidden) {
             retryCount = 0;
             syncSecureTime();
+        } else {
+            isTimeLocked = true;
         }
     });
 
     let lastLoad = sessionStorage.getItem("lastLoad");
-    let nowTime = Date.now();
+    let nowTime = window.getTrueTime();
     if(lastLoad && (nowTime - lastLoad < 500)){ 
         console.warn("Fast reload detected");
     }
@@ -634,9 +636,8 @@
         init();
         setTimeout(() => {
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-                window.Capacitor.Plugins.AdMob.initialize({
-                    initializeForTesting: false // 🔥 REAL ADS ENABLED 
-                }).then(() => { admobLoaded = true; }).catch(e => console.log("AdMob Init Error"));
+                window.Capacitor.Plugins.AdMob.initialize({ initializeForTesting: false })
+                .then(() => { admobLoaded = true; }).catch(e => console.log("AdMob Init Error"));
             }
         }, 1000);
     });
@@ -807,30 +808,37 @@
         window.saveState(); window.showToast(`${amount} Coins Added`);
     }
 
+    // === REAL ADMOB REWARDED VIDEO ADS (NO FAKE AD) ===
     async function showAd(callback) {
-        if(window.getTrueTime() - lastAdTime < 60000){ window.showToast("Wait 1 min before next ad"); return; }
-        if (admobLoaded && window.Capacitor) {
+        if(window.getTrueTime() - lastAdTime < 60000){
+            window.showToast("Wait 1 min before next ad");
+            return;
+        }
+
+        if (admobLoaded && window.Capacitor && window.Capacitor.Plugins.AdMob) {
             try {
                 window.showToast("Loading Ad...");
                 const { AdMob } = window.Capacitor.Plugins;
+
                 const adId = "ca-app-pub-6519206650027176/8005768127"; 
+
                 await AdMob.prepareRewardVideoAd({ adId: adId });
+
                 AdMob.addListener('onRewardedVideoAdRewarded', (rewardItem) => {
                     lastAdTime = window.getTrueTime();
-                    if(callback) callback(); AdMob.removeAllListeners(); 
+                    if(callback) callback();
+                    AdMob.removeAllListeners(); 
                 });
-                await AdMob.showRewardVideoAd();
-            } catch (error) {
-                console.error(error); window.showToast("Ad not available right now."); fallbackFakeAd(callback);
-            }
-        } else { fallbackFakeAd(callback); }
-    }
 
-    function fallbackFakeAd(callback) {
-        lastAdTime = window.getTrueTime();
-        const modal = document.getElementById('ad-modal'); if(!modal) return;
-        modal.style.display = 'flex';
-        setTimeout(() => { modal.style.display = 'none'; if(callback) callback(); }, 3000);
+                await AdMob.showRewardVideoAd();
+
+            } catch (error) {
+                console.error("Ad Error: ", error);
+                window.showToast("Ad not available right now.");
+            }
+        } else {
+            window.showToast("Ad not available right now.");
+        }
     }
 
     /* === TASKS (PROTECTED BY TRUE TIME) === */
@@ -842,23 +850,23 @@
         rewardCoins(50, "Daily Check-in");
     }
 
-    function checkTimeManipulation() {
+    function validateTimestamps() {
         const trueNow = window.getTrueTime();
-        if(trueNow < (window.state.tasks.lastWatch || 0)) window.state.tasks.lastWatch = trueNow;
-        if(trueNow < (window.state.tasks.lastStay || 0)) window.state.tasks.lastStay = trueNow;
-        if(trueNow < (window.state.tasks.lastTap || 0)) window.state.tasks.lastTap = trueNow;
+        if(window.state.tasks.lastWatch > trueNow) window.state.tasks.lastWatch = trueNow;
+        if(window.state.tasks.lastStay > trueNow) window.state.tasks.lastStay = trueNow;
+        if(window.state.tasks.lastTap > trueNow) window.state.tasks.lastTap = trueNow;
     }
 
     function doWatchTask() {
         if(isTimeLocked) return window.showToast("Securing Time... Please wait");
-        checkTimeManipulation();
+        validateTimestamps();
         if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_MS) return;
         showAd(() => { window.state.tasks.lastWatch = window.getTrueTime(); rewardCoins(100, "Watched Ad"); updateTimersUI(); });
     }
 
     function doStayTask() {
         if(isTimeLocked) return window.showToast("Securing Time... Please wait");
-        checkTimeManipulation();
+        validateTimestamps();
         if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_MS) return;
         showAd(() => {
             const sModal = document.getElementById('stay-modal'); const sTime = document.getElementById('stay-countdown');
@@ -879,7 +887,7 @@
         if(isTimeLocked) return window.showToast("Securing Time... Please wait");
         if(!window.state || !window.state.tasks) return;
         if(window.state.tasks.tapCount >= 20) return;
-        checkTimeManipulation();
+        validateTimestamps();
         if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_MS) return;
 
         let next = window.state.tasks.tapCount + 1;
@@ -934,7 +942,14 @@
     window.shareReferral = async function() {
         const code = window.state.user.refCode; const shareLink = "https://dukaan-platform.firebaseapp.com"; 
         const text = `Hey! Join EarnX and earn real rewards. Use my code: ${code}\nLink: ${shareLink}`;
-        window.copyReferral(); window.showToast("Code Copied! Share manually."); 
+        
+        try {
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
+                await window.Capacitor.Plugins.Share.share({ title: 'EarnX Rewards', text: text, url: shareLink, dialogTitle: 'Share EarnX with friends' });
+            } else if (navigator.share) {
+                await navigator.share({ title: 'EarnX Rewards', text: text, url: shareLink });
+            } else { throw new Error("Share not supported"); }
+        } catch(e) { window.copyReferral(); window.showToast("Code Copied! Share link manually."); }
     }
 
     window.applyReferralFirebase = async function(){
@@ -1037,15 +1052,45 @@
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
-            window.Capacitor.Plugins.SplashScreen.hide();
+// 4. Advanced Time Manipulation Defuser (Phone Time Cheat Protection)
+let lastValidTime = window.getTrueTime();
+
+setInterval(() => {
+    if(document.hidden) {
+        lastValidTime = window.getTrueTime();
+        return;
+    }
+
+    const currentTime = window.getTrueTime();
+    const timeDiff = currentTime - lastValidTime;
+
+    if (timeDiff > 15000) {
+        console.warn("System time manipulation detected!");
+        if(window.state && window.state.tasks) {
+            window.state.tasks.lastWatch += timeDiff;
+            window.state.tasks.lastStay += timeDiff;
+            window.state.tasks.lastTap += timeDiff;
+            window.saveState();
         }
-        setTimeout(function() {
-            let splash = document.getElementById('custom-splash');
-            if(splash) { splash.style.opacity = '0'; setTimeout(function() { splash.style.display = 'none'; }, 600); }
-        }, 2500); 
-    });
+    }
+    lastValidTime = currentTime;
+}, 1000);
+
+/* === SPLASH SCREEN JAVASCRIPT LOGIC === */
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
+        window.Capacitor.Plugins.SplashScreen.hide();
+    }
+    setTimeout(function() {
+        let splash = document.getElementById('custom-splash');
+        if(splash) {
+            splash.style.opacity = '0';
+            setTimeout(function() {
+                splash.style.display = 'none';
+            }, 600); 
+        }
+    }, 2500); 
+});
 </script>
 </body>
 </html>
