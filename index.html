@@ -46,6 +46,7 @@
         h1, h2, h3 { font-weight: 700; margin-bottom: 10px; }
         p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.4; }
         .text-green { color: var(--primary); }
+        .text-danger { color: var(--danger); }
         .flex-between { display: flex; justify-content: space-between; align-items: center; }
         .flex-center { display: flex; justify-content: center; align-items: center; }
         .mt-1 { margin-top: 10px; } .mt-2 { margin-top: 20px; }
@@ -77,7 +78,10 @@
         /* === SPECIFIC SCREENS === */
         .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--card-border); margin-bottom: 20px; }
         .header-title { font-size: 1.5rem; background: var(--primary-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .coin-badge { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; color: var(--primary); }
+        
+        /* CLICKABLE COIN BADGE */
+        .coin-badge { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; color: var(--primary); cursor: pointer; transition: 0.2s; }
+        .coin-badge:active { transform: scale(0.95); background: rgba(16, 185, 129, 0.2); }
 
         .hero-card { text-align: center; background: linear-gradient(to bottom right, var(--card-bg), var(--bg-darker)); }
         .balance-title { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
@@ -96,6 +100,7 @@
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card-border); }
         .history-item:last-child { border-bottom: none; padding-bottom: 0; }
         .h-info { display: flex; flex-direction: column; }
+        .h-title { font-size: 0.95rem; font-weight: 600; color: white; }
         .h-upi { font-size: 0.9rem; font-weight: 600; }
         .h-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
         .h-status { font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
@@ -168,7 +173,7 @@
     <div id="screen-home" class="screen">
         <div class="header">
             <div class="header-title"><i class="fa-solid fa-coins"></i> EarnX</div>
-            <div class="coin-badge"><i class="fa-solid fa-gem"></i> <span class="global-coin-display" id="coins">0</span></div>
+            <div class="coin-badge" onclick="nav('history')"><i class="fa-solid fa-gem"></i> <span class="global-coin-display" id="coins">0</span></div>
         </div>
         
         <div class="card hero-card">
@@ -190,16 +195,36 @@
             <div class="action-card" onclick="nav('withdraw')"><i class="fa-solid fa-wallet"></i><div style="font-weight: 600;">Withdraw</div></div>
         </div>
 
-        <h3>Recent Activity</h3>
-        <div class="card" id="home-withdrawals-list">
+        <div class="flex-between">
+            <h3>Recent Activity</h3>
+            <span style="font-size:0.8rem; color:var(--primary); cursor:pointer;" onclick="nav('history')">View All</span>
+        </div>
+        <div class="card" id="home-recent-activity">
             <p style="text-align: center; color: var(--text-muted);">No recent activity.</p>
+        </div>
+    </div>
+
+    <div id="screen-history" class="screen">
+        <div class="header">
+            <h2><i class="fa-solid fa-clock-rotate-left text-green"></i> Coin History</h2>
+            <i class="fa-solid fa-times" style="font-size: 1.5rem; cursor: pointer;" onclick="nav('home')"></i>
+        </div>
+        
+        <div class="card hero-card" style="margin-bottom: 20px;">
+            <div class="balance-title">Current Balance</div>
+            <div class="balance-amount"><i class="fa-solid fa-coins" style="color: gold;"></i> <span class="global-coin-display">0</span></div>
+        </div>
+
+        <h3>All Transactions</h3>
+        <div class="card" id="full-history-list">
+            <p style="text-align: center; color: var(--text-muted);">No transactions found.</p>
         </div>
     </div>
 
     <div id="screen-tasks" class="screen">
         <div class="header">
             <h2><i class="fa-solid fa-list-check text-green"></i> Earn Tasks</h2>
-            <div class="coin-badge"><span class="global-coin-display">0</span></div>
+            <div class="coin-badge" onclick="nav('history')"><span class="global-coin-display">0</span></div>
         </div>
 
         <div class="card">
@@ -233,7 +258,7 @@
     <div id="screen-spin" class="screen">
         <div class="header">
             <h2><i class="fa-solid fa-dharmachakra text-green"></i> Spin & Earn</h2>
-            <div class="coin-badge"><span class="global-coin-display">0</span></div>
+            <div class="coin-badge" onclick="nav('history')"><span class="global-coin-display">0</span></div>
         </div>
 
         <div class="card" style="text-align: center;">
@@ -260,7 +285,7 @@
     <div id="screen-withdraw" class="screen">
         <div class="header">
             <h2><i class="fa-solid fa-wallet text-green"></i> Withdraw</h2>
-            <div class="coin-badge"><span class="global-coin-display">0</span></div>
+            <div class="coin-badge" onclick="nav('history')"><span class="global-coin-display">0</span></div>
         </div>
 
         <div class="card">
@@ -280,7 +305,7 @@
     <div id="screen-referral" class="screen">
         <div class="header">
             <h2><i class="fa-solid fa-users text-green"></i> Refer & Earn</h2>
-            <div class="coin-badge"><span class="global-coin-display">0</span></div>
+            <div class="coin-badge" onclick="nav('history')"><span class="global-coin-display">0</span></div>
         </div>
 
         <div class="card" style="text-align: center;">
@@ -420,13 +445,15 @@
                     deviceId: deviceId,
                     createdAt: window.getTrueTime(),
                     tasks: defaultTasks,
-                    spin: defaultSpin
+                    spin: defaultSpin,
+                    transactions: [] // Added transactions array
                 };
                 await setDoc(ref, data);
                 
                 window.state.user = { id: user.uid, phone: user.email, coins: 0, refCode: newRefCode, referredBy: false, profile: {name: "", phone: ""} };
                 window.state.tasks = defaultTasks;
                 window.state.spin = defaultSpin;
+                window.state.transactions = [];
             } else {
                 const data = snap.data();
                 window.state.user = {
@@ -440,6 +467,7 @@
                 };
                 window.state.tasks = data.tasks || defaultTasks;
                 window.state.spin = data.spin || defaultSpin;
+                window.state.transactions = data.transactions || []; // Load transactions
             }
 
             window.saveState();
@@ -463,7 +491,8 @@
                     user: null,
                     tasks: { lastWatch:0,lastStay:0,lastTap:0,tapCount:0,checkInTime:0 },
                     spin: { spinsLeft:5,lastRefill:0,totalSpins:0 },
-                    withdrawals: []
+                    withdrawals: [],
+                    transactions: []
                 };
             }
             await window.handleSuccessfulLogin(user);
@@ -535,13 +564,12 @@
 <script>
     /* === GLOBAL VARIABLES === */
     const COIN_RATE = 100; 
-    const COOLDOWN_WATCH = 15 * 60 * 1000; // 15 Minutes
-    const COOLDOWN_STAY = 30 * 60 * 1000;  // 30 Minutes
-    const COOLDOWN_TAP = 60 * 60 * 1000;   // 60 Minutes (1 Hour)
-    const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; // 3 Hours
+    const COOLDOWN_WATCH = 15 * 60 * 1000; 
+    const COOLDOWN_STAY = 30 * 60 * 1000;  
+    const COOLDOWN_TAP = 60 * 60 * 1000;   
+    const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; 
     const MAX_DAILY_COINS = 5000;
 
-    let admobLoaded = false;
     let lastAdTime = 0; 
     let timerInterval = null;
     let withdrawLock = false; 
@@ -553,9 +581,8 @@
     let appLoaded = false;
     let lastCoinRewardTime = 0;
 
-    // 🔥 MILITARY-GRADE ANTI-CHEAT TIME ENGINE (STRICT MODE) 🔥
     let serverTimeOffset = 0;
-    let isTimeLocked = true; // App starts completely locked
+    let isTimeLocked = true; 
 
     async function syncSecureTime() {
         try {
@@ -564,7 +591,6 @@
             const data = await response.json();
             serverTimeOffset = new Date(data.datetime).getTime() - Date.now();
             isTimeLocked = false;
-            console.log("Anti-Cheat: Time secured via Server 1.");
         } catch (error) {
             try {
                 const response2 = await fetch("https://timeapi.io/api/Time/current/zone?timeZone=UTC");
@@ -572,11 +598,8 @@
                 const data2 = await response2.json();
                 serverTimeOffset = new Date(data2.dateTime).getTime() - Date.now();
                 isTimeLocked = false;
-                console.log("Anti-Cheat: Time secured via Server 2.");
             } catch(e) {
-                // STRICT LOCK: Do NOT unlock if time cannot be fetched!
                 isTimeLocked = true;
-                console.log("Time sync failed. App remains locked to prevent cheating.");
             }
         }
         updateTimersUI(); 
@@ -595,13 +618,6 @@
         }
     });
 
-    let lastLoad = sessionStorage.getItem("lastLoad");
-    let nowTime = Date.now();
-    if(lastLoad && (nowTime - lastLoad < 500)){ 
-        console.warn("Fast reload detected");
-    }
-    sessionStorage.setItem("lastLoad", nowTime);
-
     function safeLoadState(){
         try{ const saved = localStorage.getItem('earnx_state'); return saved ? JSON.parse(saved) : null;
         }catch{ localStorage.removeItem('earnx_state'); return null; }
@@ -613,7 +629,6 @@
         
         await syncSecureTime(); 
 
-        if(!window.db) console.error("Firebase DB not initialized");
         const saved = safeLoadState();
         if(saved) window.state = saved;
 
@@ -622,9 +637,12 @@
                 user:null,
                 tasks:{ lastWatch:0,lastStay:0,lastTap:0,tapCount:0,checkInTime:0 },
                 spin:{ spinsLeft:5,lastRefill:0,totalSpins:0 },
-                withdrawals:[]
+                withdrawals:[],
+                transactions:[]
             };
         }
+
+        if(!window.state.transactions) window.state.transactions = [];
 
         if(!window.state.spin.lastRefill && window.state.spin.spinsLeft < 5){
             window.state.spin.lastRefill = window.getTrueTime();
@@ -643,23 +661,28 @@
         }, 1000);
     });
 
-    window.addEventListener("storage", (e) => { if(e.key === "earnx_state") location.reload(); });
-    window.addEventListener("beforeunload", () => { if(timerInterval) clearInterval(timerInterval); });
+    // TRANSACTION LOGGING ENGINE
+    function logTransaction(title, amount, type="earn") {
+        if(!window.state.transactions) window.state.transactions = [];
+        
+        window.state.transactions.unshift({
+            title: title,
+            amount: amount,
+            type: type,
+            date: window.getTrueTime()
+        });
 
-    document.addEventListener("click", (e) => {
-        if(e.target.tagName === "BUTTON"){ if(e.target.disabled) e.stopImmediatePropagation(); }
-    });
+        // Keep maximum 50 records locally to save space
+        if(window.state.transactions.length > 50) {
+            window.state.transactions.pop();
+        }
+    }
 
     function sanitizeCoins(){
         if(!window.state || !window.state.user) return;
         let c = Number(window.state.user.coins);
         if(isNaN(c) || c < 0) c = 0;
         window.state.user.coins = c;
-    }
-
-    function validateState(){
-        if(!window.state || !window.state.user) return;
-        if(window.state.user.coins > 1000000) window.state.user.coins = 0;
     }
 
     async function saveCoinsToFirebase(){
@@ -672,7 +695,8 @@
                 coins: Number(window.state.user.coins) || 0, 
                 tasks: window.state.tasks || {}, 
                 spin: window.state.spin || {},
-                profile: window.state.user.profile || {name: "", phone: ""}
+                profile: window.state.user.profile || {name: "", phone: ""},
+                transactions: window.state.transactions || []
             });
         } catch(e) {}
         saving = false;
@@ -683,7 +707,7 @@
     }
 
     window.saveState = function() {
-        sanitizeCoins(); validateState();
+        sanitizeCoins(); 
         localStorage.setItem('earnx_state', JSON.stringify(window.state));
         window.updateUI(); saveCoinsToFirebaseDebounced();
     }
@@ -695,7 +719,7 @@
         
         const bNav = document.getElementById('bottom-nav');
         if (bNav) {
-            if (['login'].includes(screenId)) bNav.style.display = 'none';
+            if (['login', 'history', 'terms'].includes(screenId)) bNav.style.display = 'none';
             else bNav.style.display = 'flex';
         }
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -783,6 +807,7 @@
         }
 
         renderWithdrawals();
+        renderTransactionHistory();
 
         const btnCheckin = document.getElementById('btn-checkin');
         if(btnCheckin){
@@ -798,11 +823,9 @@
 
     function renderWithdrawals() {
         const list1 = document.getElementById('my-withdrawals-list');
-        const list2 = document.getElementById('home-withdrawals-list');
         if(!window.state || !window.state.withdrawals) return;
         if(window.state.withdrawals.length === 0) {
             if(list1) list1.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No withdrawals yet.</p>';
-            if(list2) list2.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No recent activity.</p>';
             return;
         }
 
@@ -816,7 +839,58 @@
             if(w.status === 'Rejected') statusClass = 'text-danger';
             htmlContent += `<div class="history-item"><div class="h-info"><span class="h-upi">₹${w.amount} &rarr; ${maskedUpi}</span><span class="h-time">${dateStr}</span></div><div class="h-status ${statusClass}" style="${w.status === 'Approved' || w.status === 'Rejected' ? 'background:transparent; padding:0;' : ''}">${w.status}</div></div>`;
         });
-        if(list1) list1.innerHTML = htmlContent; if(list2) list2.innerHTML = htmlContent; 
+        if(list1) list1.innerHTML = htmlContent;
+    }
+
+    // NEW: RENDER TRANSACTION HISTORY
+    function renderTransactionHistory() {
+        const homeList = document.getElementById('home-recent-activity');
+        const fullList = document.getElementById('full-history-list');
+        
+        if(!window.state.transactions || window.state.transactions.length === 0) {
+            if(homeList) homeList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No recent activity.</p>';
+            if(fullList) fullList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No transactions found.</p>';
+            return;
+        }
+
+        let htmlContent = '';
+        // Sort newest first
+        const sorted = [...window.state.transactions].sort((a,b) => b.date - a.date); 
+        
+        sorted.forEach((t, index) => {
+            const dateStr = new Date(t.date).toLocaleDateString() + " " + new Date(t.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const amountColor = t.type === 'earn' ? 'text-green' : 'text-danger';
+            const sign = t.type === 'earn' ? '+' : '-';
+            
+            const itemHTML = `
+            <div class="history-item">
+                <div class="h-info">
+                    <span class="h-title">${t.title}</span>
+                    <span class="h-time">${dateStr}</span>
+                </div>
+                <div class="h-status ${amountColor}" style="font-size: 1rem; background:transparent;">${sign}${t.amount}</div>
+            </div>`;
+            
+            htmlContent += itemHTML;
+        });
+
+        if(fullList) fullList.innerHTML = htmlContent;
+
+        // Render only top 3 for Home Screen
+        if(homeList) {
+            let homeHTML = '';
+            sorted.slice(0, 3).forEach(t => {
+                const dateStr = new Date(t.date).toLocaleDateString();
+                const amountColor = t.type === 'earn' ? 'text-green' : 'text-danger';
+                const sign = t.type === 'earn' ? '+' : '-';
+                homeHTML += `
+                <div class="history-item">
+                    <div class="h-info"><span class="h-title">${t.title}</span><span class="h-time">${dateStr}</span></div>
+                    <div class="h-status ${amountColor}" style="background:transparent;">${sign}${t.amount}</div>
+                </div>`;
+            });
+            homeList.innerHTML = homeHTML;
+        }
     }
 
     function maskUPI(upi) {
@@ -846,8 +920,13 @@
         if(window.state.lastRewardDate !== today){ window.state.dailyCoins = 0; window.state.lastRewardDate = today; }
         if((window.state.dailyCoins || 0) >= MAX_DAILY_COINS) return window.showToast("Daily limit reached");
 
-        window.state.dailyCoins += amount; window.state.user.coins += amount;
-        window.saveState(); window.showToast(`${amount} Coins Added`);
+        window.state.dailyCoins += amount; 
+        window.state.user.coins += amount;
+        
+        // LOG TRANSACTION IN HISTORY
+        logTransaction(msg, amount, "earn");
+
+        window.saveState(); window.showToast(`+${amount} Coins`);
     }
 
     async function showAd(callback) {
@@ -897,7 +976,6 @@
         rewardCoins(50, "Daily Check-in");
     }
 
-    // 🔥 SURGICAL FIX: Watch Timer Instant Start 🔥
     window.doWatchTask = function() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_WATCH) return window.showToast("Wait for timer!");
@@ -907,12 +985,11 @@
         updateTimersUI();
 
         showAd(() => { 
-            rewardCoins(100, "Watched Ad"); 
+            rewardCoins(100, "Watch Ad Task"); 
             window.saveState(); 
         });
     }
 
-    // 🔥 SURGICAL FIX: Stay Timer Instant Start (After 15s wait) 🔥
     window.doStayTask = function() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_STAY) return window.showToast("Wait for timer!");
@@ -935,7 +1012,7 @@
                 updateTimersUI();
 
                 showAd(() => {
-                    rewardCoins(200, "Stay Task Complete");
+                    rewardCoins(200, "Stay Task");
                     window.saveState();
                 });
             }
@@ -985,7 +1062,7 @@
         }
 
         setTimeout(() => {
-            rewardCoins(prizeMap[safeRandom], "Spin Wheel");
+            rewardCoins(prizeMap[safeRandom], "Spin Reward");
             if(window.state.spin.totalSpins % 3 === 0) {
                 if(window.getTrueTime() - lastAdTime >= 60000) { setTimeout(() => showAd(), 500); }
             }
@@ -1001,7 +1078,6 @@
         });
     }
 
-    // 🔥 SURGICAL FIX: Custom Domain Share Link 🔥
     window.shareReferral = async function() {
         const code = window.state.user.refCode; 
         const shareLink = "https://raashanmart.in/download/earnx/"; 
@@ -1043,7 +1119,11 @@
             if(refData.deviceId && refData.deviceId === currentDevice) { window.showToast("Fraud detected!"); return; }
 
             await updateDoc(doc(window.db, "earnx_users", refDoc.id), { coins: (Number(refData.coins) || 0) + 100 });
-            window.state.user.coins += 100; window.state.user.referredBy = true;
+            
+            window.state.user.coins += 100; 
+            window.state.user.referredBy = true;
+            logTransaction("Referral Code Applied", 100, "earn");
+
             window.saveState(); window.showToast("Referral applied +100 coins"); el.value = "";
         } catch(e) { window.showToast("Error applying referral");
         } finally { referralLock = false; }
@@ -1070,7 +1150,10 @@
             await updateDoc(userRef, { coins: currentCoins - coins });
             await addDoc(collection(window.db, "earnx_withdrawals"), { userId: window.currentUser.uid, coins: coins, upiId: upi, status: "Pending", createdAt: serverTimestamp() });
 
-            window.state.user.coins -= coins; window.saveState(); window.loadWithdrawals();
+            window.state.user.coins -= coins; 
+            logTransaction("Withdrawal Request", coins, "spend");
+
+            window.saveState(); window.loadWithdrawals();
             input.value = ""; window.showToast("Withdraw Requested");
         } catch(e){ window.showToast("Withdraw failed"); }
     };
