@@ -1101,20 +1101,21 @@
         });
     }
 
+    // 🔥 MASTER UPDATE: Viral Referral Message in App 🔥
     window.shareReferral = async function() {
         const code = window.state.user.refCode; 
-        const shareLink = "https://raashanmart.in/download/earnx/"; 
-        const text = `Hey! Join EarnX and earn real rewards. Use my code: ${code}\nDownload App here: ${shareLink}`;
+        const shareLink = "https://shorturl.at/RknTL"; 
+        const viralMsg = `EarnX - Loot Event ~ For All Users ✅✅\n📌 Reward For Every User 🔥🔥\n\n📌 Download Now: ${shareLink}\n\n✅ Step 1: Download & Login.\n✅ Step 2: Use Ref Code: ${code} (Get Instant 100 Coins).\n✅ Step 3: Daily Check-in (50 Coins).\n✅ Step 4: Simple Tasks (Earn Daily ₹50+).\n\n📌 10,000 Coins = ₹100 > Instant UPI Withdrawal! 💸💸\n\n⭐️ Zero Investment | Verified Payment | Don't Miss! ⭐️`;
         
         try {
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
-                await window.Capacitor.Plugins.Share.share({ title: 'EarnX Rewards', text: text, url: shareLink, dialogTitle: 'Share EarnX with friends' });
+                await window.Capacitor.Plugins.Share.share({ title: 'EarnX Loot Event', text: viralMsg, url: shareLink, dialogTitle: 'Share EarnX Loot!' });
             } else if (navigator.share) {
-                await navigator.share({ title: 'EarnX Rewards', text: text, url: shareLink });
+                await navigator.share({ title: 'EarnX Loot Event', text: viralMsg, url: shareLink });
             } else { throw new Error("Share not supported"); }
         } catch(e) { 
-            const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); 
-            window.showToast("Message & Link Copied! Share manually."); 
+            const t = document.createElement("textarea"); t.value = viralMsg; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); 
+            window.showToast("Viral Message & Link Copied! Share manually."); 
         }
     }
 
