@@ -1075,6 +1075,7 @@
         updateTimersUI();
     }
 
+    // 🔥 UPDATED TIMER ENGINE (FIXED FOR WATCH & STAY) 🔥
     function updateTimersUI() {
         if(isTimeLocked) {
             safeSetText('watch-timer-display', "Syncing...");
@@ -1083,27 +1084,51 @@
             return;
         }
 
+        if (!window.state || !window.state.tasks) return;
+
         const now = window.getTrueTime();
-        updateSingleTimer('watch', window.state.tasks.lastWatch, now, COOLDOWN_WATCH);
-        updateSingleTimer('stay', window.state.tasks.lastStay, now, COOLDOWN_STAY);
-        updateSingleTimer('tap', window.state.tasks.lastTap, now, COOLDOWN_TAP);
+        
+        updateSingleTimer('watch', window.state.tasks.lastWatch || 0, now, COOLDOWN_WATCH);
+        updateSingleTimer('stay', window.state.tasks.lastStay || 0, now, COOLDOWN_STAY);
+        updateSingleTimer('tap', window.state.tasks.lastTap || 0, now, COOLDOWN_TAP);
 
         if(window.state.spin.spinsLeft < 5 && window.state.spin.lastRefill > 0) {
             const passed = now - window.state.spin.lastRefill;
             if(passed >= SPIN_REFILL_MS) {
-                window.state.spin.spinsLeft = 5; window.state.spin.lastRefill = 0; window.saveState();
-            } else { safeSetText('spin-refill-timer', "Refill in: " + formatMS(SPIN_REFILL_MS - passed)); }
-        } else { safeSetText('spin-refill-timer', ""); }
+                window.state.spin.spinsLeft = 5; 
+                window.state.spin.lastRefill = 0; 
+                window.saveState();
+            } else { 
+                safeSetText('spin-refill-timer', "Refill in: " + formatMS(SPIN_REFILL_MS - passed)); 
+            }
+        } else { 
+            safeSetText('spin-refill-timer', ""); 
+        }
     }
 
     function updateSingleTimer(type, lastTime, now, cooldownLimit) {
-        const btn = document.getElementById(`btn-${type}`); if(!btn) return;
+        const btn = document.getElementById(`btn-${type}`); 
+        const display = document.getElementById(`${type}-timer-display`);
+        if(!btn || !display) return;
+
         const passed = now - lastTime;
-        if(passed < cooldownLimit) {
-            safeSetText(`${type}-timer-display`, formatMS(cooldownLimit - passed)); btn.disabled = true;
+        
+        if(passed < cooldownLimit && lastTime > 0) {
+            const remaining = cooldownLimit - passed;
+            display.innerText = formatMS(remaining);
+            display.style.color = "var(--warning)"; 
+            btn.disabled = true;
+            btn.style.opacity = "0.6";
         } else {
-            if(type === 'tap' && window.state.tasks.tapCount >= 20) { safeSetText(`${type}-timer-display`, "Complete"); btn.disabled = true;
-            } else { safeSetText(`${type}-timer-display`, "Ready"); btn.disabled = false; }
+            if(type === 'tap' && window.state.tasks.tapCount >= 20) { 
+                display.innerText = "Complete"; 
+                btn.disabled = true;
+            } else { 
+                display.innerText = "Ready"; 
+                display.style.color = "var(--primary)"; 
+                btn.disabled = false; 
+                btn.style.opacity = "1";
+            }
         }
     }
 
