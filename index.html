@@ -5,1471 +5,187 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EarnX - Rewards Platform</title>
     
+    <link rel="stylesheet" href="style.css">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        /* ==============================================
-           CORE THEME VARIABLES 
-           ============================================== */
-        :root {
-            --bg-dark: #0f172a;
-            --bg-darker: #020617;
-            --card-bg: #1e293b;
-            --card-border: #334155;
-            --primary: #10b981;
-            --primary-dark: #059669;
-            --primary-grad: linear-gradient(135deg, #10b981, #059669);
-            --text-light: #f8fafc;
-            --text-muted: #94a3b8;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-        }
-
-        /* ==============================================
-           GLOBAL RESET & BASE STYLES 
-           ============================================== */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #000;
-            color: var(--text-light);
-            display: flex;
-            justify-content: center;
-            overflow: hidden;
-        }
-        
-        /* ==============================================
-           MAIN APP CONTAINER
-           ============================================== */
-        #app {
-            width: 100%;
-            max-width: 480px;
-            height: 100vh;
-            height: 100dvh;
-            background: var(--bg-dark);
-            position: relative;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding-bottom: 70px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-        
-        #app::-webkit-scrollbar {
-            display: none;
-        }
-        
-        /* ==============================================
-           TYPOGRAPHY & UTILITIES
-           ============================================== */
-        h1 { 
-            font-size: 2rem; 
-            font-weight: 700; 
-            margin-bottom: 10px; 
-        }
-        
-        h2 { 
-            font-size: 1.5rem; 
-            font-weight: 700; 
-            margin-bottom: 10px; 
-        }
-        
-        h3 { 
-            font-size: 1.1rem; 
-            font-weight: 600; 
-            margin-bottom: 5px; 
-        }
-        
-        p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-        
-        .text-green { color: var(--primary); }
-        .text-danger { color: var(--danger); }
-        .text-warning { color: var(--warning); }
-        
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .flex-center {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .mt-1 { margin-top: 10px; }
-        .mt-2 { margin-top: 20px; }
-        .mb-1 { margin-bottom: 10px; }
-        .mb-2 { margin-bottom: 20px; }
-        
-        /* ==============================================
-           UI COMPONENTS (Cards, Buttons, Inputs)
-           ============================================== */
-        .screen {
-            display: none;
-            padding: 20px;
-            animation: fadeIn 0.4s ease-out;
-        }
-        
-        .screen.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            margin-bottom: 15px;
-        }
-        
-        .btn {
-            background: var(--primary-grad);
-            color: white;
-            border: none;
-            padding: 15px 20px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            width: 100%;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-            display: block;
-            text-align: center;
-        }
-        
-        .btn:active {
-            transform: scale(0.97);
-            opacity: 0.9;
-        }
-        
-        .btn:disabled {
-            background: var(--card-border);
-            color: var(--text-muted);
-            box-shadow: none;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            box-shadow: none;
-        }
-        
-        .btn-small {
-            padding: 10px 15px;
-            font-size: 0.85rem;
-            width: auto;
-        }
-        
-        .btn-google {
-            background: white;
-            color: #333;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        input {
-            width: 100%;
-            background: var(--bg-darker);
-            border: 1px solid var(--card-border);
-            color: white;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 1rem;
-            margin-bottom: 15px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        
-        input:focus {
-            border-color: var(--primary);
-        }
-
-        /* ==============================================
-           NAVIGATION STYLES
-           ============================================== */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            max-width: 480px;
-            background: var(--card-bg);
-            border-top: 1px solid var(--card-border);
-            display: flex;
-            justify-content: space-around;
-            padding: 12px 0;
-            z-index: 100;
-            padding-bottom: calc(12px + env(safe-area-inset-bottom));
-        }
-        
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-        
-        .nav-item i {
-            font-size: 1.3rem;
-            margin-bottom: 5px;
-        }
-        
-        .nav-item.active {
-            color: var(--primary);
-        }
-
-        /* ==============================================
-           HEADER & BADGES
-           ============================================== */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--card-border);
-            margin-bottom: 20px;
-        }
-        
-        .coin-badge {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid var(--primary);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-weight: 700;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .badge-verified {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--primary);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-        
-        .badge-unverified {
-            background: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        /* ==============================================
-           TASK ELEMENTS (SPIN, TIMERS)
-           ============================================== */
-        .timer-display {
-            font-family: monospace;
-            font-size: 1.1rem;
-            color: var(--warning);
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        .wheel-container {
-            position: relative;
-            width: 280px;
-            height: 280px;
-            margin: 30px auto;
-        }
-        
-        .wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 5px solid var(--card-bg);
-            box-shadow: 0 0 20px rgba(0,0,0,0.4);
-            position: relative;
-            overflow: hidden;
-            transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
-            background: conic-gradient(
-                #10b981 0 60deg, 
-                #059669 60deg 120deg, 
-                #10b981 120deg 180deg, 
-                #059669 180deg 240deg, 
-                #10b981 240deg 300deg, 
-                #059669 300deg 360deg
-            );
-        }
-        
-        .wheel-pointer {
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 25px solid var(--warning);
-            z-index: 10;
-        }
-        
-        .wheel-label {
-            position: absolute;
-            top: 15%;
-            left: 50%;
-            transform-origin: 50% 115px;
-            transform: translateX(-50%);
-            color: white;
-            font-weight: bold;
-            font-size: 1.1rem;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-        }
-
-        /* ==============================================
-           OVERLAYS & SPLASH
-           ============================================== */
-        #update-screen {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-darker);
-            z-index: 1000000;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 40px;
-        }
-
-        #ad-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 9999;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        #custom-splash {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: var(--bg-dark);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 999999;
-            transition: opacity 0.6s ease;
-        }
-
-        #custom-splash img {
-            width: 75vw;
-            max-width: 350px;
-            animation: pulse 1.8s infinite alternate;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(0.96); opacity: 0.8; }
-            100% { transform: scale(1.04); opacity: 1; }
-        }
-
-        /* ==============================================
-           HISTORY & LISTS
-           ============================================== */
-        .history-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid var(--card-border);
-        }
-        
-        .status-pending {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--warning);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        
-        .grid-actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 10px;
-        }
-        
-        .tc-list { 
-            list-style: none; 
-        }
-        
-        .tc-list li { 
-            position: relative; 
-            padding-left: 20px; 
-            margin-bottom: 12px; 
-            font-size: 0.9rem; 
-            color: var(--text-muted); 
-        }
-        
-        .tc-list li::before { 
-            content: "•"; 
-            color: var(--primary); 
-            position: absolute; 
-            left: 0; 
-            font-weight: bold; 
-            font-size: 1.2rem; 
-            top: -2px; 
-        }
-    </style>
 </head>
 <body>
 
-<div id="update-screen">
-    <i class="fa-solid fa-circle-arrow-up" style="font-size: 5rem; color: var(--primary); margin-bottom: 25px;"></i>
-    <h1>Upgrade EarnX</h1>
-    <p style="margin-bottom: 35px; color: var(--text-muted); padding: 0 10px;">
-        A critical update is available. Please download the latest version to keep earning coins and sync your data safely.
-    </p>
-    <button class="btn" onclick="window.location.href=window.updateUrl">Download Now</button>
-</div>
-
-<div id="custom-splash">
-    <img src="assets/splash.png" alt="App Logo">
-</div>
-
-<div id="app">
-    <div id="toast" style="position: fixed; top: 25px; left: 50%; transform: translateX(-50%); background: var(--card-bg); border: 1px solid var(--primary); padding: 14px 24px; border-radius: 12px; color: white; z-index: 10001; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.4);">
-        Message
+    <div id="update-screen">
+        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 5rem; color: var(--primary); margin-bottom: 20px;"></i>
+        <h1>New Update Available!</h1>
+        <p style="margin-bottom: 30px; color: var(--text-muted);">Please download the latest version of EarnX to continue earning rewards.</p>
+        <button class="btn" onclick="window.location.href=window.updateUrl">Download Now</button>
     </div>
 
-    <div id="ad-modal">
-        <h2 style="color: var(--warning); margin-bottom: 15px; font-size: 2rem;">Watch Ad</h2>
-        <p>Rewarding in <span id="ad-timer" class="text-green" style="font-weight: bold; font-size: 1.5rem;">3</span> seconds...</p>
+    <div id="custom-splash">
+        <img src="assets/splash.png" alt="EarnX Logo">
     </div>
 
-    <div id="stay-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9998; flex-direction: column; justify-content: center; align-items: center;">
-        <i class="fa-solid fa-stopwatch" style="font-size: 5rem; color: var(--primary); margin-bottom: 25px;"></i>
-        <h2>Task in Progress</h2>
-        <p style="margin-top: 10px; color: var(--text-muted);">Please stay on this screen</p>
-        <div style="font-size: 4rem; font-weight: 800; margin: 30px 0; color: var(--warning);" id="stay-countdown">15</div>
-    </div>
+    <div id="app">
+        <div id="toast">Message</div>
 
-    <div id="screen-login" class="screen active">
-        <div style="text-align: center; margin-top: 70px; margin-bottom: 50px;">
-            <img src="assets/icon.png" alt="Icon" style="width: 140px; margin-bottom: 15px; filter: drop-shadow(0 5px 15px rgba(16, 185, 129, 0.3));">
-            <h1 style="letter-spacing: 1px;">EarnX</h1>
-            <p>Simple Tasks. Real Rewards.</p>
+        <div id="stay-modal" style="display:none;">
+            <i class="fa-solid fa-hourglass-half" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
+            <h2>Stay Task Active</h2>
+            <p>Keep this screen open to earn rewards.</p>
+            <div style="font-size: 3rem; font-weight: bold; margin: 30px 0; color: var(--warning);" id="stay-countdown">15</div>
+            <p class="text-green">Do not close the app.</p>
         </div>
-        
-        <div class="card">
-            <h3 style="text-align: center; margin-bottom: 20px;">Welcome Back</h3>
-            <div id="web-login-section">
-                <button class="btn btn-google" onclick="loginWithGoogle()">
-                    <i class="fa-brands fa-google"></i> Continue with Google
-                </button>
-            </div>
-            
-            <div id="app-login-section" style="display: none; margin-top: 10px;">
-                <input type="email" id="email-input" placeholder="Enter Email">
-                <input type="password" id="password-input" placeholder="Enter Password">
-                <button class="btn" onclick="loginWithEmail()">Login / Register</button>
+
+        <div id="ad-modal">
+            <div class="ad-content">
+                <h2 style="color: var(--warning); margin-bottom: 10px;">Advertisement</h2>
+                <p>Please wait <span id="ad-timer" class="text-green" style="font-weight:bold;">3</span> seconds...</p>
             </div>
         </div>
-        <p style="text-align: center; font-size: 0.75rem; margin-top: 30px;">
-            By signing up, you agree to our <span class="text-green">Terms</span>.
-        </p>
-    </div>
 
-    <div id="screen-home" class="screen">
-        <div class="header">
-            <h2 style="color: var(--primary); font-weight: 800;">EARNX</h2>
-            <div class="coin-badge">
-                <i class="fa-solid fa-coins"></i> 
-                <span class="global-coin-display">0</span>
+        <div id="screen-login" class="screen active">
+            <div style="text-align: center; margin-top: 60px; margin-bottom: 40px;">
+                <img src="assets/icon.png" alt="EarnX Logo" class="app-logo">
+                <h1 style="font-size: 2.5rem;">EarnX</h1>
+                <p>Your ultimate rewards platform.</p>
             </div>
-        </div>
-        
-        <div class="card hero-card">
-            <p style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">Wallet Balance</p>
-            <h1 style="font-size: 3rem; margin: 15px 0;">
-                <span class="global-coin-display">0</span>
-            </h1>
-            <p class="text-green" style="font-weight: 600; font-size: 1.1rem;">≈ ₹<span id="rupee-display">0.00</span></p>
-            
-            <div style="margin-top: 25px; border-top: 1px solid var(--card-border); padding-top: 20px;" class="flex-between">
-                <div>
-                    <h3 style="margin:0;">Daily Bonus</h3>
-                    <p style="font-size: 0.75rem;">Login every day</p>
+            <div class="card">
+                <h3>Login to Continue</h3>
+                <div id="web-login-section">
+                    <button class="btn btn-google" onclick="loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
                 </div>
-                <button class="btn btn-small" id="btn-checkin" onclick="dailyCheckIn()">Claim +50</button>
-            </div>
-        </div>
-
-        <h3>Main Features</h3>
-        <div class="grid-actions mb-2">
-            <div class="action-card" onclick="nav('tasks')">
-                <i class="fa-solid fa-list-check" style="font-size: 1.8rem; margin-bottom: 10px; color: var(--primary);"></i>
-                <div style="font-weight: 600;">All Tasks</div>
-            </div>
-            <div class="action-card" onclick="nav('spin')">
-                <i class="fa-solid fa-dharmachakra" style="font-size: 1.8rem; margin-bottom: 10px; color: var(--warning);"></i>
-                <div style="font-weight: 600;">Lucky Spin</div>
-            </div>
-            <div class="action-card" onclick="nav('referral')">
-                <i class="fa-solid fa-user-group" style="font-size: 1.8rem; margin-bottom: 10px; color: #3b82f6;"></i>
-                <div style="font-weight: 600;">Refer Friends</div>
-            </div>
-            <div class="action-card" onclick="nav('withdraw')">
-                <i class="fa-solid fa-wallet" style="font-size: 1.8rem; margin-bottom: 10px; color: #a855f7;"></i>
-                <div style="font-weight: 600;">Withdraw</div>
-            </div>
-        </div>
-
-        <h3 style="margin-top: 25px;">Recent Activity</h3>
-        <div class="card" id="home-withdrawals-list">
-            <p style="text-align: center; color: var(--text-muted); padding: 10px 0;">No history found.</p>
-        </div>
-    </div>
-
-    <div id="screen-tasks" class="screen">
-        <div class="header">
-            <h2>Task Center</h2>
-            <div class="coin-badge"><span class="global-coin-display">0</span></div>
-        </div>
-        
-        <div class="card" style="background: rgba(16, 185, 129, 0.05); border: 1px dashed var(--primary);">
-            <div class="flex-between">
-                <div>
-                    <h3 style="color: var(--primary);">Mega Surveys</h3>
-                    <p>High reward tasks coming!</p>
+                <div id="app-login-section" style="display: none; margin-top: 15px;">
+                    <input type="email" id="email-input" placeholder="Email Address">
+                    <input type="password" id="password-input" placeholder="Password (6+ chars)">
+                    <button class="btn" onclick="loginWithEmail()">Continue</button>
                 </div>
-                <div class="badge-verified">SOON</div>
             </div>
         </div>
 
-        <div class="card">
-            <div class="flex-between mb-1">
-                <div>
-                    <h3>Watch Video</h3>
-                    <p>Reward: 100 Coins</p>
+        <div id="screen-home" class="screen">
+            <div class="header">
+                <div class="header-title">EarnX</div>
+                <div class="coin-badge"><i class="fa-solid fa-gem"></i> <span class="global-coin-display">0</span></div>
+            </div>
+            <div class="card hero-card">
+                <div class="balance-title">Total Balance</div>
+                <div class="balance-amount"><span class="global-coin-display">0</span></div>
+                <div class="rupee-eq">≈ ₹<span id="rupee-display">0.00</span></div>
+                <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 15px;" class="flex-between">
+                    <span>Daily Bonus</span>
+                    <button class="btn btn-small" id="btn-checkin" onclick="dailyCheckIn()">Claim 50</button>
                 </div>
-                <div class="timer-display" id="watch-timer-display">Ready</div>
             </div>
-            <p style="font-size: 0.75rem; margin-bottom: 15px;">Max 3 ads every 3 hours slot.</p>
-            <button class="btn btn-outline" id="btn-watch" onclick="doWatchTask()">Watch Now</button>
+            <div class="grid-actions">
+                <div class="action-card" onclick="nav('tasks')"><i class="fa-solid fa-list-check"></i><div>Tasks</div></div>
+                <div class="action-card" onclick="nav('spin')"><i class="fa-solid fa-dharmachakra"></i><div>Spin</div></div>
+                <div class="action-card" onclick="nav('referral')"><i class="fa-solid fa-users"></i><div>Refer</div></div>
+                <div class="action-card" onclick="nav('withdraw')"><i class="fa-solid fa-wallet"></i><div>Withdraw</div></div>
+            </div>
         </div>
 
-        <div class="card">
-            <div class="flex-between mb-1">
-                <div>
-                    <h3>Stay & Earn</h3>
-                    <p>Reward: 200 Coins</p>
+        <div id="screen-tasks" class="screen">
+            <div class="header"><h2>Tasks</h2><div class="coin-badge"><span class="global-coin-display">0</span></div></div>
+            <div class="card">
+                <div class="flex-between">
+                    <div><h3>Watch Ad</h3><p>Reward: 100 Coins</p></div>
+                    <div class="timer-display" id="watch-timer-display">Ready</div>
                 </div>
-                <div class="timer-display" id="stay-timer-display">Ready</div>
+                <button class="btn mt-1" id="btn-watch" onclick="doWatchTask()">Watch Now</button>
             </div>
-            <p style="font-size: 0.75rem; margin-bottom: 15px;">Stay for 15s. Cooling: 30 mins.</p>
-            <button class="btn btn-outline" id="btn-stay" onclick="doStayTask()">Start Task</button>
-        </div>
-
-        <div class="card">
-            <div class="flex-between mb-1">
-                <div>
-                    <h3>Fast Tap</h3>
-                    <p>Reward: 150 Coins</p>
+            <div class="card">
+                <div class="flex-between">
+                    <div><h3>Stay Task</h3><p>Reward: 200 Coins</p></div>
+                    <div class="timer-display" id="stay-timer-display">Ready</div>
                 </div>
-                <div class="timer-display" id="tap-timer-display">Ready</div>
+                <button class="btn mt-1" id="btn-stay" onclick="doStayTask()">Start</button>
             </div>
-            <div class="flex-between mt-1">
-                <div style="font-weight: 800; font-size: 1.3rem;">
-                    <span id="tap-count">0</span> <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: normal;">/ 20</span>
+            <div class="card">
+                <div class="flex-between">
+                    <div><h3>Tap Task</h3><p>Reward: 150 Coins</p></div>
+                    <div class="timer-display" id="tap-timer-display">Ready</div>
                 </div>
-                <button class="btn btn-small" id="btn-tap" style="padding: 12px 30px;" onclick="doTapTask()">TAP</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="screen-spin" class="screen">
-        <div class="header">
-            <h2>Lucky Wheel</h2>
-            <div class="coin-badge"><span class="global-coin-display">0</span></div>
-        </div>
-        
-        <div class="card" style="text-align: center;">
-            <p style="margin-bottom: 5px;">Daily Spins Left</p>
-            <h2 id="spin-count-display" style="color: var(--primary); font-size: 2rem; margin-bottom: 5px;">5</h2>
-            
-            <div class="wheel-container">
-                <div class="wheel-pointer"></div>
-                <div class="wheel" id="wheel-inner">
-                    <div class="wheel-label" style="transform: translateX(-50%) rotate(30deg);">100</div>
-                    <div class="wheel-label" style="transform: translateX(-50%) rotate(90deg);">75</div>
-                    <div class="wheel-label" style="transform: translateX(-50%) rotate(150deg);">50</div>
-                    <div class="wheel-label" style="transform: translateX(-50%) rotate(210deg);">20</div>
-                    <div class="wheel-label" style="transform: translateX(-50%) rotate(270deg);">10</div>
-                    <div class="wheel-label" style="transform: translateX(-50%) rotate(330deg);">5</div>
+                <div class="flex-between mt-1">
+                    <div style="font-weight: bold;"><span id="tap-count">0</span> / 20</div>
+                    <button class="btn btn-small" id="btn-tap" onclick="doTapTask()">TAP</button>
                 </div>
-                <div class="wheel-center"></div>
             </div>
-            
-            <p style="font-size: 0.75rem; margin-bottom: 15px; color: var(--text-muted);">
-                Get an extra bonus ad after every 3 spins!
-            </p>
-            <button class="btn" id="btn-spin" onclick="spinWheel()">SPIN NOW</button>
         </div>
-    </div>
 
-    <div id="screen-withdraw" class="screen">
-        <div class="header">
-            <h2>Withdraw</h2>
-            <div class="coin-badge"><span class="global-coin-display">0</span></div>
+        <div id="screen-spin" class="screen">
+            <div class="header"><h2>Spin Wheel</h2><div class="coin-badge"><span class="global-coin-display">0</span></div></div>
+            <div class="card" style="text-align: center;">
+                <p>Spins Left: <strong id="spin-count-display">5</strong></p>
+                <div id="spin-refill-timer" class="text-warning mt-1" style="font-size: 0.8rem;"></div>
+                <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel" id="wheel-inner">
+                        <div class="wheel-label" style="transform: translateX(-50%) rotate(30deg);">100</div>
+                        <div class="wheel-label" style="transform: translateX(-50%) rotate(90deg);">75</div>
+                        <div class="wheel-label" style="transform: translateX(-50%) rotate(150deg);">50</div>
+                        <div class="wheel-label" style="transform: translateX(-50%) rotate(210deg);">20</div>
+                        <div class="wheel-label" style="transform: translateX(-50%) rotate(270deg);">10</div>
+                        <div class="wheel-label" style="transform: translateX(-50%) rotate(330deg);">5</div>
+                    </div>
+                    <div class="wheel-center"></div>
+                </div>
+                <button class="btn" id="btn-spin" onclick="spinWheel()">SPIN NOW</button>
+            </div>
         </div>
-        
-        <div class="card">
-            <h3>Redeem Points</h3>
-            <p class="mb-2">Minimum withdrawal: 10,000 Coins (₹100)</p>
-            <input type="text" id="upi-input" placeholder="Enter UPI (e.g. name@upi)">
-            <p style="font-size: 0.75rem; color: var(--danger); margin-bottom: 15px;">
-                *Note: You must verify your email in the profile tab to withdraw.
-            </p>
-            <button class="btn" id="btn-withdraw" onclick="submitWithdraw()">Withdraw Now</button>
-        </div>
-        
-        <h3 style="margin-top: 20px;">Withdrawal History</h3>
-        <div id="my-withdrawals-list" class="card">
-            <p style="text-align: center; color: var(--text-muted);">Loading history...</p>
-        </div>
-    </div>
 
-    <div id="screen-referral" class="screen">
-        <div class="header">
-            <h2>Refer & Earn</h2>
-        </div>
-        
-        <div class="card" style="text-align: center;">
-            <i class="fa-solid fa-gift" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
-            <h3>Referral Program</h3>
-            <p>Give 100 coins to your friend. You get 50 coins when they complete their <b>First Withdrawal</b>.</p>
-            
-            <div id="my-ref-code" style="background: var(--bg-darker); border: 2px dashed var(--primary); padding: 20px; border-radius: 12px; font-size: 2rem; font-weight: 800; margin: 25px 0; color: white;">
-                ------
+        <div id="screen-withdraw" class="screen">
+            <div class="header"><h2>Withdraw</h2><div class="coin-badge"><span class="global-coin-display">0</span></div></div>
+            <div class="card">
+                <input type="text" id="upi-input" placeholder="UPI ID (example@upi)">
+                <p class="mb-1" style="font-size: 0.75rem; color: var(--danger);">*Email verification required in Profile.</p>
+                <button class="btn" id="btn-withdraw" onclick="submitWithdraw()">Withdraw Now</button>
             </div>
-            
-            <button class="btn" onclick="shareReferral()">Share Invite Link</button>
+            <div id="my-withdrawals-list"></div>
         </div>
-        
-        <div class="card" id="enter-ref-section">
-            <h3>Enter Friend's Code</h3>
-            <p class="mb-2">Get 100 coins instantly for using an invite code.</p>
-            <input type="text" id="ref-input" placeholder="Paste code here">
-            <button class="btn btn-outline" onclick="applyReferralFirebase()">Apply Code</button>
-        </div>
-    </div>
 
-    <div id="screen-profile" class="screen">
-        <div class="header">
-            <h2>My Profile</h2>
+        <div id="screen-referral" class="screen">
+            <div class="header"><h2>Refer & Earn</h2></div>
+            <div class="card" style="text-align: center;">
+                <i class="fa-solid fa-gift" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
+                <p>Give 100 coins, get 50 coins after friend's 1st withdrawal.</p>
+                <div id="my-ref-code" style="background: var(--bg-darker); border: 2px dashed var(--primary); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; margin: 20px 0;">------</div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-outline" style="flex:1" onclick="copyReferral()">Copy</button>
+                    <button class="btn" style="flex:1" onclick="shareReferral()">Share</button>
+                </div>
+            </div>
+            <div class="card" id="enter-ref-section">
+                <input type="text" id="ref-input" placeholder="Enter Friend's Code">
+                <button class="btn btn-outline" onclick="applyReferralFirebase()">Apply Code</button>
+            </div>
         </div>
-        
-        <div class="card" style="text-align: center;">
-            <div style="width: 90px; height: 90px; background: var(--card-border); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; font-size: 3rem;">
-                <i class="fa-solid fa-user-astronaut"></i>
-            </div>
-            
-            <div class="flex-center mb-1">
-                <h3 id="profile-email" style="margin:0;">---</h3>
-                <span id="email-badge" class="badge-unverified">Unverified</span>
-            </div>
-            
-            <button class="btn btn-small btn-outline" id="btn-verify-email" onclick="sendVerificationLink()" style="margin: 10px auto 25px auto; display: block;">
-                Verify Email Now
-            </button>
-            
-            <div style="text-align: left; border-top: 1px solid var(--card-border); padding-top: 20px;">
-                <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display:block;">Full Name</label>
-                <input type="text" id="profile-name-input" placeholder="Add your name">
+
+        <div id="screen-profile" class="screen">
+            <div class="header"><h2>Profile</h2></div>
+            <div class="card" style="text-align: center;">
+                <div class="flex-center mb-1">
+                    <h3 id="profile-email">---</h3>
+                    <span id="email-badge" class="badge-unverified">Unverified</span>
+                </div>
+                <button class="btn btn-small btn-outline" id="btn-verify-email" onclick="sendVerificationLink()" style="margin-bottom: 20px;">Verify Email</button>
                 
-                <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display:block;">Phone Number</label>
-                <input type="tel" id="profile-phone-input" placeholder="Add mobile number">
-                
-                <button class="btn" id="btn-save-profile" onclick="saveProfileDetails()">Save Details</button>
+                <div style="text-align: left;">
+                    <input type="text" id="profile-name-input" placeholder="Full Name">
+                    <input type="tel" id="profile-phone-input" placeholder="Mobile Number">
+                    <button class="btn" id="btn-save-profile" onclick="saveProfileDetails()">Save Details</button>
+                </div>
             </div>
-        </div>
-        
-        <div class="card" style="padding: 10px;">
-            <div class="history-item" onclick="nav('terms')" style="cursor: pointer; border: none; padding: 15px;">
-                <span><i class="fa-solid fa-file-shield text-green" style="width: 30px;"></i> Terms of Service</span>
-                <i class="fa-solid fa-chevron-right" style="font-size: 0.8rem;"></i>
-            </div>
+            <button class="btn btn-outline" onclick="logout()" style="color:var(--danger); border-color:var(--danger);">Logout</button>
+            <p style="text-align: center; font-size: 0.65rem; color: var(--text-muted); margin-top: 30px;">UID: <span id="profile-uid">---</span></p>
         </div>
 
-        <button class="btn btn-outline" onclick="logout()" style="color: var(--danger); border-color: var(--danger); margin-top: 10px;">
-            Logout Account
-        </button>
-        
-        <p style="text-align: center; font-size: 0.65rem; color: var(--card-border); margin-top: 35px; letter-spacing: 1px;">
-            ID: <span id="profile-uid">---</span>
-        </p>
-    </div>
-
-    <div id="screen-terms" class="screen">
-        <div class="header">
-            <h2>Legal</h2>
-            <i class="fa-solid fa-xmark" style="font-size: 1.5rem;" onclick="nav('profile')"></i>
-        </div>
-        <div class="card">
-            <ul class="tc-list">
-                <li><strong>Anti-Fraud:</strong> VPN, multiple accounts, or emulators result in ban.</li>
-                <li><strong>Verification:</strong> Withdrawals require verified email status.</li>
-                <li><strong>Referrals:</strong> Limit of 5 referrals per day.</li>
-                <li><strong>Processing:</strong> Payments processed within 48-72 working hours.</li>
-            </ul>
+        <div class="bottom-nav" id="bottom-nav" style="display: none;">
+            <div class="nav-item active" onclick="nav('home')" data-target="home"><i class="fa-solid fa-house"></i><span>Home</span></div>
+            <div class="nav-item" onclick="nav('tasks')" data-target="tasks"><i class="fa-solid fa-list-check"></i><span>Tasks</span></div>
+            <div class="nav-item" onclick="nav('spin')" data-target="spin"><i class="fa-solid fa-dharmachakra"></i><span>Spin</span></div>
+            <div class="nav-item" onclick="nav('profile')" data-target="profile"><i class="fa-solid fa-user"></i><span>Profile</span></div>
         </div>
     </div>
 
-    <div class="bottom-nav" id="bottom-nav" style="display: none;">
-        <div class="nav-item active" onclick="nav('home')" data-target="home">
-            <i class="fa-solid fa-house"></i>
-            <span>Home</span>
-        </div>
-        <div class="nav-item" onclick="nav('tasks')" data-target="tasks">
-            <i class="fa-solid fa-list-check"></i>
-            <span>Tasks</span>
-        </div>
-        <div class="nav-item" onclick="nav('spin')" data-target="spin">
-            <i class="fa-solid fa-dharmachakra"></i>
-            <span>Spin</span>
-        </div>
-        <div class="nav-item" onclick="nav('profile')" data-target="profile">
-            <i class="fa-solid fa-user-gear"></i>
-            <span>Profile</span>
-        </div>
-    </div>
-</div>
+    <script type="module" src="script.js"></script>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { 
-        getAuth, 
-        GoogleAuthProvider, 
-        signInWithPopup, 
-        onAuthStateChanged, 
-        signInWithEmailAndPassword, 
-        createUserWithEmailAndPassword, 
-        sendEmailVerification, 
-        signOut 
-    } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
-    
-    import { 
-        getFirestore, doc, setDoc, getDoc, updateDoc, 
-        addDoc, collection, serverTimestamp, query, where, getDocs 
-    } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCpS_rr77wh23C2LYl6xCSTyptMKlITauk",
-      authDomain: "dukaan-platform.firebaseapp.com",
-      projectId: "dukaan-platform",
-      storageBucket: "dukaan-platform.firebasestorage.app",
-      messagingSenderId: "75765851780",
-      appId: "1:75765851780:web:b6782abb897594b89c84d1"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    
-    window.db = db; 
-    window.auth = auth;
-
-    let loginProcessing = false;
-
-    setTimeout(() => {
-        if (window.Capacitor) {
-            const webSec = document.getElementById('web-login-section');
-            const appSec = document.getElementById('app-login-section');
-            if(webSec) webSec.style.display = 'none';
-            if(appSec) appSec.style.display = 'block';
-        }
-    }, 200);
-
-    /* --- LOGIN HANDLER --- */
-    window.handleSuccessfulLogin = async function(user, isNewUser = false) {
-        try {
-            window.currentUser = user;
-            const ref = doc(db, "earnx_users", user.uid);
-            const snap = await getDoc(ref);
-
-            let deviceId = localStorage.getItem("earnx_device_id");
-            if(!deviceId){
-                deviceId = "DEV_" + Math.random().toString(36).substring(2, 15);
-                localStorage.setItem("earnx_device_id", deviceId);
-            }
-
-            // FIX 1: Default Tasks initialized with 0 to prevent negative timer locks for new users
-            const defaultTasks = { 
-                lastWatch: 0, 
-                watchHistory: [], 
-                lastStay: 0, 
-                lastTap: 0, 
-                tapCount: 0, 
-                checkInTime: 0 
-            };
-            const defaultSpin = { spinsLeft: 5, lastRefill: 0, totalSpins: 0 };
-
-            if(!snap.exists()){
-                const newCode = user.uid.substring(0,4).toUpperCase() + Math.floor(Math.random()*9000+1000);
-                const data = { 
-                    coins: 0, 
-                    refCode: newCode, 
-                    createdAt: serverTimestamp(), 
-                    tasks: defaultTasks, 
-                    spin: defaultSpin, 
-                    profile: {name: "", phone: ""} 
-                };
-                
-                await setDoc(ref, data);
-                
-                window.state.user = { id: user.uid, email: user.email, coins: 0, refCode: newCode, profile: {name: "", phone: ""} };
-                window.state.tasks = defaultTasks;
-                window.state.spin = defaultSpin;
-            } else {
-                const d = snap.data();
-                window.state.user = { 
-                    id: user.uid, 
-                    email: user.email, 
-                    coins: d.coins || 0, 
-                    refCode: d.refCode, 
-                    referredBy: d.referredBy, 
-                    profile: d.profile || {name: "", phone: ""} 
-                };
-                window.state.tasks = d.tasks || defaultTasks;
-                window.state.spin = d.spin || defaultSpin;
-            }
-            
-            window.saveState(); 
-            window.nav('home'); 
-            window.startTimers(); 
-            window.loadWithdrawals();
-
-            if (isNewUser) { window.showToast("Account Created! Please verify your email."); }
-            else { window.showToast("Login Successful"); }
-            
-        } catch (error) {
-            console.error("Firebase Auth Error:", error);
-            window.showToast("Connection error, please try again.");
-        } finally { 
-            loginProcessing = false; 
-        }
-    };
-
-    onAuthStateChanged(auth, u => { 
-        if(u && !loginProcessing) {
-            window.handleSuccessfulLogin(u); 
-        }
-    });
-
-    window.loginWithGoogle = async () => {
-        if(loginProcessing) return; 
-        loginProcessing = true;
-        const provider = new GoogleAuthProvider();
-        try {
-            const result = await signInWithPopup(auth, provider);
-            await window.handleSuccessfulLogin(result.user);
-        } catch(err) {
-            if (err.code !== 'auth/popup-closed-by-user') window.showToast("Login Error. Try again.");
-            loginProcessing = false;
-        }
-    };
-
-    window.loginWithEmail = async () => {
-        if(loginProcessing) return;
-        const e = document.getElementById('email-input').value.trim(); 
-        const p = document.getElementById('password-input').value.trim();
-        
-        if(!e || p.length < 6) return window.showToast("Invalid Input");
-        
-        loginProcessing = true;
-        try { 
-            await signInWithEmailAndPassword(auth, e, p); 
-        } catch(err) {
-            if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-                try {
-                    const res = await createUserWithEmailAndPassword(auth, e, p);
-                    await sendEmailVerification(res.user);
-                    await window.handleSuccessfulLogin(res.user, true);
-                } catch(regErr) { 
-                    window.showToast("Registration Failed"); 
-                    loginProcessing = false;
-                }
-            } else { 
-                window.showToast("Login Failed"); 
-                loginProcessing = false;
-            }
-        }
-    };
-
-    window.sendVerificationLink = async function() {
-        if(!window.currentUser) return;
-        try {
-            await sendEmailVerification(window.currentUser);
-            window.showToast("Verification link sent! Check your spam folder.");
-        } catch(err) {
-            if(err.code === 'auth/too-many-requests') window.showToast("Wait a few minutes before sending again.");
-            else window.showToast("Error sending link.");
-        }
-    };
-    
-    window.saveProfileDetails = async () => {
-        const n = document.getElementById('profile-name-input').value.trim();
-        const ph = document.getElementById('profile-phone-input').value.trim();
-        const btn = document.getElementById('btn-save-profile');
-        
-        if(!n) return window.showToast("Name is required");
-        
-        try {
-            const userRef = doc(db, "earnx_users", window.currentUser.uid);
-            await updateDoc(userRef, { profile: {name: n, phone: ph} });
-            
-            window.state.user.profile = {name: n, phone: ph};
-            window.saveState();
-            
-            btn.innerText = "Details Saved ✓";
-            btn.disabled = true;
-            btn.classList.add('btn-outline');
-            
-            window.showToast("Profile Updated!");
-            
-            setTimeout(() => {
-                btn.innerText = "Save Details";
-                btn.disabled = false;
-                btn.classList.remove('btn-outline');
-            }, 5000);
-            
-        } catch(e) { window.showToast("Update Failed"); }
-    };
-
-    window.logout = () => signOut(auth).then(() => { localStorage.clear(); location.reload(); });
-</script>
-
-<script>
-    const CURRENT_VERSION = "1.0";
-    const COOLDOWN_WATCH = 15 * 60 * 1000;
-    const COOLDOWN_STAY = 30 * 60 * 1000;
-    const COOLDOWN_TAP = 60 * 60 * 1000;
-    const SPIN_REFILL_MS = 3 * 60 * 60 * 1000;
-
-    // Default initialization is safe even if API fails completely
-    let serverTimeOffset = Date.now() - performance.now(); 
-    let isTimeLocked = true; 
-    let lastAdTime = 0;
-    let timerLoop = null; 
-    let withdrawBusy = false;
-
-    async function checkAppVersion() {
-        try {
-            const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-            const snap = await getDoc(doc(window.db, "earnx_config", "app_settings"));
-            if(snap.exists()){
-                const config = snap.data();
-                if(config.latest_version && config.latest_version !== CURRENT_VERSION) {
-                    window.updateUrl = config.update_url || "https://play.google.com";
-                    document.getElementById('update-screen').style.display = 'flex';
-                    document.getElementById('app').style.display = 'none';
-                }
-            }
-        } catch(e) { console.warn("Version check failed."); }
-    }
-
-    async function secureSync() {
-        try {
-            const response = await fetch("https://worldtimeapi.org/api/timezone/Etc/UTC");
-            const data = await response.json();
-            serverTimeOffset = new Date(data.datetime).getTime() - performance.now();
-            isTimeLocked = false; 
-            checkAppVersion();
-        } catch(e) { 
-            // Fallback so users aren't locked out permanently if API is down
-            serverTimeOffset = Date.now() - performance.now(); 
-            isTimeLocked = false; 
-            checkAppVersion();
-        }
-    }
-    
-    window.getTrueTime = () => performance.now() + serverTimeOffset;
-
-    document.addEventListener("visibilitychange", () => {
-        if (!document.hidden) secureSync();
-    });
-
-    async function init() {
-        await secureSync(); 
-        const saved = JSON.parse(localStorage.getItem('earnx_state'));
-        if(saved) window.state = saved;
-        if(!window.state) {
-            window.state = { user: null, tasks: { lastWatch:0, watchHistory:[], lastStay:0, lastTap:0, tapCount:0, checkInTime:0 }, spin: { spinsLeft:5, lastRefill:0, totalSpins:0 }, withdrawals: [] };
-        }
-        window.updateUI(); 
-        window.nav('login');
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-        init();
-        setTimeout(() => {
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-                window.Capacitor.Plugins.AdMob.initialize({ initializeForTesting: false })
-                .catch(e => console.log("AdMob Init Error"));
-            }
-        }, 1000);
-        setTimeout(() => { 
-            document.getElementById('custom-splash').style.opacity = '0';
-            setTimeout(() => document.getElementById('custom-splash').style.display = 'none', 600);
-        }, 2500);
-    });
-
-    window.saveState = function() {
-        let c = Number(window.state.user.coins); 
-        if(isNaN(c) || c < 0) c = 0; 
-        window.state.user.coins = c;
-        localStorage.setItem('earnx_state', JSON.stringify(window.state));
-        window.updateUI(); 
-    }
-
-    window.showToast = m => { 
-        const t = document.getElementById('toast'); 
-        t.innerText = m; t.style.display = 'block'; 
-        setTimeout(() => t.style.display = 'none', 3000); 
-    };
-
-    function giveCoins(val) { 
-        window.state.user.coins += val; 
-        window.saveState(); 
-        window.showToast("+" + val + " Coins!"); 
-    }
-
-    /* === ADMOB CONTROLLER === */
-    async function showAd(callback) {
-        if(isTimeLocked) return window.showToast("Securing connection...");
-        
-        // FIX 2: Ad Cooldown Bypass Fix
-        if(window.getTrueTime() - lastAdTime < 60000) {
-            window.showToast("Wait 1 min before next ad");
-            if(callback) callback(); // IMPORTANT: Unlock the spin button if blocked!
-            return;
-        }
-
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-            try {
-                window.showToast("Requesting Ad...");
-                const { AdMob } = window.Capacitor.Plugins;
-                await AdMob.prepareRewardVideoAd({ adId: "ca-app-pub-6519206650027176/8005768127" });
-                
-                const listener = AdMob.addListener('onRewardedVideoAdRewarded', () => { 
-                    lastAdTime = window.getTrueTime(); 
-                    if(callback) callback(); 
-                    listener.remove(); 
-                });
-                
-                await AdMob.showRewardVideoAd();
-            } catch(e) { 
-                window.showToast("Ad Network Busy. Try again."); 
-                if(callback) callback(); // Unlock button if failed
-            }
-        } else {
-            const m = document.getElementById('ad-modal'); 
-            m.style.display = 'flex';
-            let sec = 3;
-            document.getElementById('ad-timer').innerText = sec;
-            const t = setInterval(() => {
-                sec--; document.getElementById('ad-timer').innerText = sec;
-                if(sec <= 0) {
-                    clearInterval(t); m.style.display = 'none';
-                    lastAdTime = window.getTrueTime(); 
-                    if(callback) callback();
-                }
-            }, 1000);
-        }
-    }
-
-    /* === TASKS LOGIC === */
-    window.dailyCheckIn = function() {
-        if(isTimeLocked) return window.showToast("Syncing...");
-        const last = window.state.tasks.checkInTime || 0;
-        if(window.getTrueTime() - last < 86400000) return window.showToast("Come back tomorrow!");
-        window.state.tasks.checkInTime = window.getTrueTime(); 
-        giveCoins(50);
-    };
-
-    window.doWatchTask = function() {
-        const now = window.getTrueTime();
-        let history = window.state.tasks.watchHistory || [];
-        history = history.filter(t => now - t < 10800000); 
-        
-        if(history.length >= 3) return window.showToast("3 Ads limit reached.");
-        if(now - window.state.tasks.lastWatch < COOLDOWN_WATCH) return window.showToast("Cooling down...");
-        
-        showAd(() => { 
-            window.state.tasks.lastWatch = window.getTrueTime(); 
-            history.push(window.getTrueTime()); 
-            window.state.tasks.watchHistory = history; 
-            giveCoins(100); 
-        });
-    };
-
-    window.doStayTask = function() {
-        if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_STAY) return window.showToast("Task on cooldown.");
-        showAd(() => {
-            const modal = document.getElementById('stay-modal'); 
-            const counter = document.getElementById('stay-countdown');
-            modal.style.display = 'flex'; 
-            let remaining = 15; counter.innerText = remaining;
-            
-            const timer = setInterval(() => {
-                remaining--; counter.innerText = remaining;
-                if(remaining <= 0) { 
-                    clearInterval(timer); modal.style.display = 'none'; 
-                    window.state.tasks.lastStay = window.getTrueTime(); 
-                    giveCoins(200); 
-                }
-            }, 1000);
-        });
-    };
-
-    window.doTapTask = function() {
-        if(window.state.tasks.tapCount >= 20) return;
-        if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_TAP) return window.showToast("Task on cooldown.");
-
-        if(window.state.tasks.tapCount === 10) {
-            if(window.getTrueTime() - lastAdTime < 60000) return window.showToast("Wait 1 min for security ad");
-            showAd(() => {});
-        }
-        
-        window.state.tasks.tapCount++;
-        if(window.state.tasks.tapCount >= 20) {
-            window.state.tasks.tapCount = 0;
-            window.state.tasks.lastTap = window.getTrueTime();
-            giveCoins(150);
-        }
-        window.saveState();
-    };
-
-    window.spinWheel = function() {
-        const btn = document.getElementById('btn-spin');
-        if(window.state.spin.spinsLeft <= 0) return window.showToast("No spins left!");
-        
-        btn.disabled = true;
-        window.state.spin.spinsLeft--; 
-        window.state.spin.totalSpins++;
-        
-        if(window.state.spin.spinsLeft === 4) window.state.spin.lastRefill = window.getTrueTime();
-        window.saveState();
-
-        const prizes = [100, 75, 50, 20, 10, 5];
-        const randomIndex = Math.floor(Math.random() * prizes.length);
-        const rotation = (360 * 6) + (360 - (randomIndex * 60));
-        
-        document.getElementById('wheel-inner').style.transform = `rotate(${rotation}deg)`;
-
-        setTimeout(() => {
-            giveCoins(prizes[randomIndex]);
-            
-            // FIX 2: Correctly passing callback to unlock button
-            if(window.state.spin.totalSpins % 3 === 0 && window.state.spin.totalSpins > 0) {
-                setTimeout(() => {
-                    showAd(() => {
-                        btn.disabled = false;
-                    });
-                }, 1000);
-            } else {
-                setTimeout(() => { btn.disabled = false; }, 500);
-            }
-        }, 4500);
-    };
-
-    /* === SHARE & REFERRALS === */
-    // FIX 3: Robust Copy and Share functions
-    window.copyReferral = () => {
-        const code = window.state.user.refCode;
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(code).then(() => window.showToast("Code Copied!"));
-        } else {
-            // Legacy Fallback for older WebViews
-            const t = document.createElement("textarea");
-            t.value = code;
-            document.body.appendChild(t);
-            t.select();
-            document.execCommand('copy');
-            document.body.removeChild(t);
-            window.showToast("Code Copied!");
-        }
-    };
-
-    window.shareReferral = async () => {
-        const code = window.state.user ? window.state.user.refCode : "";
-        const text = `Join EarnX & earn real rewards. Use my code: ${code}\nLink: https://dukaan-platform.firebaseapp.com`;
-        try {
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
-                await window.Capacitor.Plugins.Share.share({ title: 'EarnX', text: text, url: "https://dukaan-platform.firebaseapp.com" });
-            } else if (navigator.share) {
-                await navigator.share({ title: 'EarnX', text: text });
-            } else {
-                throw new Error("Share API not supported");
-            }
-        } catch(e) {
-            window.copyReferral();
-            window.showToast("Invite link copied!");
-        }
-    };
-
-    window.applyReferralFirebase = async function() {
-        try {
-            if(!navigator.onLine) return window.showToast("No internet");
-            
-            const code = document.getElementById('ref-input').value.trim().toUpperCase();
-            if(!code) return window.showToast("Enter a code");
-            if(window.state.user.referredBy) return window.showToast("Already used a referral code");
-            if(code === window.state.user.refCode.toUpperCase()) return window.showToast("Cannot use your own code");
-
-            const { collection, query, where, getDocs, doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-            const q = query(collection(window.db, "earnx_users"), where("refCode", "==", code));
-            const snap = await getDocs(q);
-            
-            if(snap.empty) return window.showToast("Invalid code");
-            
-            const refDoc = snap.docs[0]; 
-            const refData = refDoc.data();
-            
-            const todayStr = new Date().toDateString();
-            const rCount = refData.lastReferralDate === todayStr ? (refData.referralsToday || 0) : 0;
-            if(rCount >= 5) return window.showToast("Referral limit reached for this code.");
-            
-            const myDevice = localStorage.getItem("earnx_device_id");
-            if(refData.deviceId && refData.deviceId === myDevice) return window.showToast("Fraud detected!");
-
-            await updateDoc(doc(window.db, "earnx_users", refDoc.id), { referralsToday: rCount + 1, lastReferralDate: todayStr });
-
-            window.state.user.coins += 100; 
-            window.state.user.referredBy = refDoc.id; 
-            window.saveState(); 
-            window.showToast("Referral applied! +100 coins"); 
-            
-        } catch(e) { window.showToast("Error applying referral"); }
-    }
-
-    /* === WITHDRAWAL === */
-    window.submitWithdraw = async function() {
-        if(withdrawBusy) return;
-        
-        await window.auth.currentUser.reload();
-        if(!window.auth.currentUser.emailVerified) return window.showToast("Verify Email first!");
-        
-        const upi = document.getElementById('upi-input').value.trim();
-        const coinsToRedeem = Math.floor(window.state.user.coins / 10000) * 10000;
-        
-        if(coinsToRedeem < 10000) return window.showToast("Min 10,000 Coins");
-        if(!upi.includes('@')) return window.showToast("Invalid UPI ID");
-
-        withdrawBusy = true;
-        try {
-            const { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-            const userRef = doc(window.db, "earnx_users", window.state.user.id);
-            const userSnap = await getDoc(userRef);
-            if((userSnap.data().coins || 0) < coinsToRedeem) throw new Error("Balance mismatch");
-
-            await updateDoc(userRef, { coins: (userSnap.data().coins || 0) - coinsToRedeem });
-            await addDoc(collection(window.db, "earnx_withdrawals"), { userId: window.state.user.id, coins: coinsToRedeem, upiId: upi, status: "Pending", createdAt: serverTimestamp() });
-
-            if(window.state.withdrawals.length === 0 && window.state.user.referredBy) {
-                const refBy = window.state.user.referredBy;
-                if(typeof refBy === "string") {
-                    try {
-                        const rRef = doc(window.db, "earnx_users", refBy);
-                        const rSnap = await getDoc(rRef);
-                        if(rSnap.exists()) {
-                            await updateDoc(rRef, { coins: (rSnap.data().coins || 0) + 50 });
-                            await updateDoc(userRef, { referredBy: true });
-                            window.state.user.referredBy = true;
-                        }
-                    } catch(ex) { }
-                }
-            }
-
-            window.state.user.coins -= coinsToRedeem;
-            window.saveState();
-            window.loadWithdrawals();
-            window.showToast("Request Submitted!");
-            document.getElementById('upi-input').value = "";
-        } catch(e) { window.showToast("Transaction Failed"); }
-        withdrawBusy = false;
-    };
-
-    /* === UI UPDATES === */
-    window.nav = function(target) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById('screen-'+target).classList.add('active');
-        document.getElementById('bottom-nav').style.display = (target === 'login') ? 'none' : 'flex';
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        const activeItem = document.querySelector(`.nav-item[data-target="${target}"]`);
-        if(activeItem) activeItem.classList.add('active');
-        window.updateUI();
-    };
-
-    window.updateUI = async function() {
-        if(!window.state || !window.state.user) return;
-        
-        document.querySelectorAll('.global-coin-display').forEach(el => el.innerText = window.state.user.coins.toLocaleString());
-        
-        const rub = document.getElementById('rupee-display');
-        if(rub) rub.innerText = (window.state.user.coins / 100).toFixed(2);
-        
-        const spc = document.getElementById('spin-count-display');
-        if(spc) spc.innerText = window.state.spin.spinsLeft;
-        
-        document.getElementById('profile-email').innerText = window.state.user.email || "Guest";
-        document.getElementById('profile-uid').innerText = window.state.user.id;
-        document.getElementById('my-ref-code').innerText = window.state.user.refCode || "---";
-        document.getElementById('tap-count').innerText = window.state.tasks.tapCount || 0;
-
-        if(window.state.user.profile) {
-            document.getElementById('profile-name-input').value = window.state.user.profile.name || "";
-            document.getElementById('profile-phone-input').value = window.state.user.profile.phone || "";
-        }
-
-        if(window.auth.currentUser) {
-            const badge = document.getElementById('email-badge');
-            const vBtn = document.getElementById('btn-verify-email');
-            const isVerified = window.auth.currentUser.emailVerified;
-            
-            badge.innerText = isVerified ? "Verified" : "Unverified";
-            badge.className = isVerified ? "badge-verified" : "badge-unverified";
-            vBtn.style.display = isVerified ? "none" : "block";
-        }
-        
-        if(window.state.user.referredBy) {
-            document.getElementById('enter-ref-section').style.display = 'none';
-        }
-
-        const list = document.getElementById('my-withdrawals-list');
-        const homeList = document.getElementById('home-withdrawals-list');
-        
-        if(window.state.withdrawals.length === 0) {
-            const emptyMsg = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">No records yet.</p>';
-            if(list) list.innerHTML = emptyMsg;
-            if(homeList) homeList.innerHTML = emptyMsg;
-        } else {
-            let html = '';
-            [...window.state.withdrawals].sort((a,b) => b.date - a.date).forEach(w => {
-                const date = new Date(w.date).toLocaleDateString();
-                const upiMask = w.upi.split('@')[0].substring(0,2) + "***@" + w.upi.split('@')[1];
-                let statusStyle = w.status === 'Approved' ? 'text-green' : (w.status === 'Rejected' ? 'text-danger' : 'status-pending');
-                html += `<div class="history-item"><div class="h-info"><span class="h-upi">₹${w.amount} &rarr; ${upiMask}</span><span class="h-time">${date}</span></div><div class="${statusStyle}">${w.status}</div></div>`;
-            });
-            if(list) list.innerHTML = html;
-            if(homeList) homeList.innerHTML = html;
-        }
-    };
-
-    window.startTimers = () => {
-        if(timerLoop) clearInterval(timerLoop);
-        timerLoop = setInterval(() => {
-            if(isTimeLocked) return;
-            const now = window.getTrueTime();
-            
-            const watchBtn = document.getElementById('btn-watch');
-            const watchDisp = document.getElementById('watch-timer-display');
-            let history = window.state.tasks.watchHistory || [];
-            history = history.filter(t => now - t < 10800000);
-            
-            if(history.length >= 3) {
-                const nextSlot = 10800000 - (now - history[0]);
-                if(watchDisp) watchDisp.innerText = formatTime(nextSlot);
-                if(watchBtn) watchBtn.disabled = true;
-            } else {
-                updateTimerUI('watch', window.state.tasks.lastWatch, COOLDOWN_WATCH);
-            }
-
-            updateTimerUI('stay', window.state.tasks.lastStay, COOLDOWN_STAY);
-            updateTimerUI('tap', window.state.tasks.lastTap, COOLDOWN_TAP);
-
-            const spinDisp = document.getElementById('spin-refill-timer');
-            if(window.state.spin.spinsLeft < 5 && window.state.spin.lastRefill > 0) {
-                const timePassed = now - window.state.spin.lastRefill;
-                if(timePassed >= SPIN_REFILL_MS) { 
-                    window.state.spin.spinsLeft = 5; window.state.spin.lastRefill = 0; window.saveState(); 
-                } else {
-                    if(spinDisp) spinDisp.innerText = "Refill in: " + formatTime(SPIN_REFILL_MS - timePassed);
-                }
-            } else {
-                if(spinDisp) spinDisp.innerText = "";
-            }
-        }, 1000);
-    };
-
-    function updateTimerUI(taskId, lastTimeCompleted, cooldownDuration) {
-        const btn = document.getElementById('btn-'+taskId);
-        const disp = document.getElementById(taskId+'-timer-display');
-        if(!btn || !disp) return;
-        
-        const timeDifference = cooldownDuration - (window.getTrueTime() - lastTimeCompleted);
-        
-        if(timeDifference > 0) {
-            btn.disabled = true;
-            disp.innerText = formatTime(timeDifference);
-        } else {
-            if(taskId === 'tap' && window.state.tasks.tapCount >= 20) {
-                btn.disabled = true; disp.innerText = "Done";
-            } else {
-                btn.disabled = false; disp.innerText = "Ready";
-            }
-        }
-    }
-
-    function formatTime(ms) {
-        const totalSeconds = Math.floor(ms / 1000);
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-        const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-        const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
-        return hours > 0 ? `${hours}:${formattedMinutes}:${formattedSeconds}` : `${formattedMinutes}:${formattedSeconds}`;
-    }
-
-</script>
 </body>
 </html>
