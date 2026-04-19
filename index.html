@@ -15,16 +15,26 @@
     <div id="update-screen">
         <i class="fa-solid fa-cloud-arrow-up" style="font-size: 5rem; color: var(--primary); margin-bottom: 20px;"></i>
         <h1>New Update Available!</h1>
-        <p style="margin-bottom: 30px; color: var(--text-muted);">Please download the latest version of EarnX to continue earning rewards.</p>
-        <button class="btn" onclick="window.location.href=window.updateUrl">Download Now</button>
+        <p style="margin-bottom: 30px; color: var(--text-muted);">
+            Please download the latest version of EarnX to continue earning rewards and access new features.
+        </p>
+        <button class="btn" onclick="window.location.href=window.updateUrl">Download Update Now</button>
     </div>
 
     <div id="custom-splash">
-        <img src="assets/splash.png" alt="EarnX Logo">
+        <img src="assets/splash.png" alt="EarnX Splash Logo">
     </div>
 
     <div id="app">
         <div id="toast">Message</div>
+
+        <div id="ad-modal">
+            <div class="ad-content">
+                <h2 style="color: var(--warning); font-size: 2rem; margin-bottom: 10px;">Advertisement</h2>
+                <p>Please wait <span id="ad-timer" class="text-green" style="font-size: 1.5rem; font-weight:bold;">3</span> seconds...</p>
+                <p style="margin-top: 20px; font-size:0.8rem; color: var(--text-muted);">(Simulating AdMob network integration)</p>
+            </div>
+        </div>
 
         <div id="stay-modal" style="display:none;">
             <i class="fa-solid fa-hourglass-half" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
@@ -34,87 +44,115 @@
             <p class="text-green">Do not close the app.</p>
         </div>
 
-        <div id="ad-modal">
-            <div class="ad-content">
-                <h2 style="color: var(--warning); margin-bottom: 10px;">Advertisement</h2>
-                <p>Please wait <span id="ad-timer" class="text-green" style="font-weight:bold;">3</span> seconds...</p>
-            </div>
-        </div>
-
         <div id="screen-login" class="screen active">
             <div style="text-align: center; margin-top: 60px; margin-bottom: 40px;">
                 <img src="assets/icon.png" alt="EarnX Logo" class="app-logo">
                 <h1 style="font-size: 2.5rem;">EarnX</h1>
                 <p>Your ultimate rewards platform.</p>
             </div>
+            
             <div class="card">
                 <h3>Login to Continue</h3>
+                <p class="mb-2" style="font-size: 0.85rem;">Secure access for your account.</p>
+                
                 <div id="web-login-section">
-                    <button class="btn btn-google" onclick="loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
+                    <button class="btn btn-google" onclick="loginWithGoogle()">
+                        <i class="fa-brands fa-google"></i> Login with Google
+                    </button>
                 </div>
-                <div id="app-login-section" style="display: none; margin-top: 15px;">
-                    <input type="email" id="email-input" placeholder="Email Address">
-                    <input type="password" id="password-input" placeholder="Password (6+ chars)">
-                    <button class="btn" onclick="loginWithEmail()">Continue</button>
+
+                <div id="app-login-section" style="display: none;">
+                    <input type="email" id="email-input" placeholder="Valid Email ID">
+                    <input type="password" id="password-input" placeholder="Password (Min 6 chars)">
+                    <p style="font-size: 0.8rem; color: var(--primary); text-align: right; margin-bottom: 15px; cursor: pointer;" onclick="resetPassword()">
+                        Forgot Password?
+                    </p>
+                    <button class="btn" onclick="loginWithEmail()">Login / Sign Up</button>
                 </div>
             </div>
+            <p style="text-align: center; font-size: 0.75rem; margin-top: 20px;">
+                By continuing, you agree to our <span class="text-green" onclick="nav('terms')" style="cursor: pointer;">Terms & Conditions</span>.
+            </p>
         </div>
 
         <div id="screen-home" class="screen">
             <div class="header">
-                <div class="header-title">EarnX</div>
-                <div class="coin-badge"><i class="fa-solid fa-gem"></i> <span class="global-coin-display">0</span></div>
+                <div class="header-title"><i class="fa-solid fa-coins"></i> EarnX</div>
+                <div class="coin-badge">
+                    <i class="fa-solid fa-gem"></i> 
+                    <span class="global-coin-display">0</span>
+                </div>
             </div>
+            
             <div class="card hero-card">
                 <div class="balance-title">Total Balance</div>
                 <div class="balance-amount"><span class="global-coin-display">0</span></div>
                 <div class="rupee-eq">≈ ₹<span id="rupee-display">0.00</span></div>
-                <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 15px;" class="flex-between">
-                    <span>Daily Bonus</span>
+                
+                <div style="margin-top: 15px; border-top: 1px solid var(--card-border); padding-top: 15px;" class="flex-between">
+                    <span style="font-size: 0.9rem;">Daily Check-in Bonus</span>
                     <button class="btn btn-small" id="btn-checkin" onclick="dailyCheckIn()">Claim 50</button>
                 </div>
             </div>
-            <div class="grid-actions">
-                <div class="action-card" onclick="nav('tasks')"><i class="fa-solid fa-list-check"></i><div>Tasks</div></div>
-                <div class="action-card" onclick="nav('spin')"><i class="fa-solid fa-dharmachakra"></i><div>Spin</div></div>
-                <div class="action-card" onclick="nav('referral')"><i class="fa-solid fa-users"></i><div>Refer</div></div>
-                <div class="action-card" onclick="nav('withdraw')"><i class="fa-solid fa-wallet"></i><div>Withdraw</div></div>
+
+            <h3>Quick Actions</h3>
+            <div class="grid-actions mb-2">
+                <div class="action-card" onclick="nav('tasks')"><i class="fa-solid fa-list-check"></i><div style="font-weight: 600;">Tasks</div></div>
+                <div class="action-card" onclick="nav('spin')"><i class="fa-solid fa-dharmachakra"></i><div style="font-weight: 600;">Spin Wheel</div></div>
+                <div class="action-card" onclick="nav('referral')"><i class="fa-solid fa-users"></i><div style="font-weight: 600;">Referrals</div></div>
+                <div class="action-card" onclick="nav('withdraw')"><i class="fa-solid fa-wallet"></i><div style="font-weight: 600;">Withdraw</div></div>
+            </div>
+
+            <h3>Recent Activity</h3>
+            <div class="card" id="home-withdrawals-list">
+                <p style="text-align: center; color: var(--text-muted);">No recent activity.</p>
             </div>
         </div>
 
         <div id="screen-tasks" class="screen">
-            <div class="header"><h2>Tasks</h2><div class="coin-badge"><span class="global-coin-display">0</span></div></div>
+            <div class="header">
+                <h2>Earn Tasks</h2>
+                <div class="coin-badge"><span class="global-coin-display">0</span></div>
+            </div>
+
             <div class="card">
-                <div class="flex-between">
+                <div class="flex-between mb-1">
                     <div><h3>Watch Ad</h3><p>Reward: 100 Coins</p></div>
                     <div class="timer-display" id="watch-timer-display">Ready</div>
                 </div>
-                <button class="btn mt-1" id="btn-watch" onclick="doWatchTask()">Watch Now</button>
+                <button class="btn" id="btn-watch" onclick="doWatchTask()">Watch Now</button>
             </div>
+
             <div class="card">
-                <div class="flex-between">
-                    <div><h3>Stay Task</h3><p>Reward: 200 Coins</p></div>
+                <div class="flex-between mb-1">
+                    <div><h3>Stay Task</h3><p>Wait 15s. Reward: 200</p></div>
                     <div class="timer-display" id="stay-timer-display">Ready</div>
                 </div>
-                <button class="btn mt-1" id="btn-stay" onclick="doStayTask()">Start</button>
+                <button class="btn" id="btn-stay" onclick="doStayTask()">Start Task</button>
             </div>
+
             <div class="card">
-                <div class="flex-between">
-                    <div><h3>Tap Task</h3><p>Reward: 150 Coins</p></div>
+                <div class="flex-between mb-1">
+                    <div><h3>Tap Task</h3><p>Tap 20 times. Reward: 150</p></div>
                     <div class="timer-display" id="tap-timer-display">Ready</div>
                 </div>
-                <div class="flex-between mt-1">
-                    <div style="font-weight: bold;"><span id="tap-count">0</span> / 20</div>
-                    <button class="btn btn-small" id="btn-tap" onclick="doTapTask()">TAP</button>
+                <div class="flex-between">
+                    <div style="font-size: 1.2rem; font-weight: bold;"><span id="tap-count">0</span> / 20</div>
+                    <button class="btn btn-small" id="btn-tap" onclick="doTapTask()">TAP ME</button>
                 </div>
             </div>
         </div>
 
         <div id="screen-spin" class="screen">
-            <div class="header"><h2>Spin Wheel</h2><div class="coin-badge"><span class="global-coin-display">0</span></div></div>
+            <div class="header">
+                <h2>Spin & Earn</h2>
+                <div class="coin-badge"><span class="global-coin-display">0</span></div>
+            </div>
+
             <div class="card" style="text-align: center;">
-                <p>Spins Left: <strong id="spin-count-display">5</strong></p>
-                <div id="spin-refill-timer" class="text-warning mt-1" style="font-size: 0.8rem;"></div>
+                <p class="mb-1">Spins Remaining: <strong class="text-green" id="spin-count-display">5</strong> / 5</p>
+                <div class="timer-display mt-1" id="spin-refill-timer"></div>
+                
                 <div class="wheel-container">
                     <div class="wheel-pointer"></div>
                     <div class="wheel" id="wheel-inner">
@@ -132,28 +170,37 @@
         </div>
 
         <div id="screen-withdraw" class="screen">
-            <div class="header"><h2>Withdraw</h2><div class="coin-badge"><span class="global-coin-display">0</span></div></div>
+            <div class="header">
+                <h2>Withdraw</h2>
+                <div class="coin-badge"><span class="global-coin-display">0</span></div>
+            </div>
+
             <div class="card">
-                <input type="text" id="upi-input" placeholder="UPI ID (example@upi)">
-                <p class="mb-1" style="font-size: 0.75rem; color: var(--danger);">*Email verification required in Profile.</p>
+                <h3>Redeem Coins</h3>
+                <input type="text" id="upi-input" placeholder="Enter UPI ID (e.g. name@upi)">
+                <p style="font-size: 0.75rem; color: var(--danger); margin-bottom: 15px;">*Email must be verified in Profile.</p>
                 <button class="btn" id="btn-withdraw" onclick="submitWithdraw()">Withdraw Now</button>
             </div>
-            <div id="my-withdrawals-list"></div>
+
+            <h3>My Withdrawals</h3>
+            <div class="card" id="my-withdrawals-list">
+                <p style="text-align: center; color: var(--text-muted);">No records found.</p>
+            </div>
         </div>
 
         <div id="screen-referral" class="screen">
             <div class="header"><h2>Refer & Earn</h2></div>
             <div class="card" style="text-align: center;">
                 <i class="fa-solid fa-gift" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
-                <p>Give 100 coins, get 50 coins after friend's 1st withdrawal.</p>
-                <div id="my-ref-code" style="background: var(--bg-darker); border: 2px dashed var(--primary); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; margin: 20px 0;">------</div>
+                <p>Referrer gets 50 coins after friend's 1st Withdrawal!</p>
+                <div id="my-ref-code" style="background: var(--bg-darker); border: 2px dashed var(--primary); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; margin: 15px 0;">------</div>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-outline" style="flex:1" onclick="copyReferral()">Copy</button>
-                    <button class="btn" style="flex:1" onclick="shareReferral()">Share</button>
+                    <button class="btn btn-outline" style="flex: 1;" onclick="copyReferral()">Copy</button>
+                    <button class="btn" style="flex: 1;" onclick="shareReferral()">Share</button>
                 </div>
             </div>
             <div class="card" id="enter-ref-section">
-                <input type="text" id="ref-input" placeholder="Enter Friend's Code">
+                <input type="text" id="ref-input" placeholder="Enter Code" style="text-transform: uppercase;">
                 <button class="btn btn-outline" onclick="applyReferralFirebase()">Apply Code</button>
             </div>
         </div>
@@ -162,19 +209,35 @@
             <div class="header"><h2>Profile</h2></div>
             <div class="card" style="text-align: center;">
                 <div class="flex-center mb-1">
-                    <h3 id="profile-email">---</h3>
+                    <h3 id="profile-email">Loading...</h3>
                     <span id="email-badge" class="badge-unverified">Unverified</span>
                 </div>
-                <button class="btn btn-small btn-outline" id="btn-verify-email" onclick="sendVerificationLink()" style="margin-bottom: 20px;">Verify Email</button>
+                <button class="btn btn-small btn-outline" id="btn-verify-email" style="display:none; margin: 0 auto 20px auto;" onclick="sendVerificationLink()">Verify Email</button>
                 
                 <div style="text-align: left;">
-                    <input type="text" id="profile-name-input" placeholder="Full Name">
-                    <input type="tel" id="profile-phone-input" placeholder="Mobile Number">
+                    <label style="font-size: 0.8rem; color: var(--text-muted);">Full Name</label>
+                    <input type="text" id="profile-name-input" placeholder="Enter your full name">
+                    <label style="font-size: 0.8rem; color: var(--text-muted);">Mobile Number</label>
+                    <input type="tel" id="profile-phone-input" placeholder="Enter mobile">
                     <button class="btn" id="btn-save-profile" onclick="saveProfileDetails()">Save Details</button>
                 </div>
             </div>
-            <button class="btn btn-outline" onclick="logout()" style="color:var(--danger); border-color:var(--danger);">Logout</button>
-            <p style="text-align: center; font-size: 0.65rem; color: var(--text-muted); margin-top: 30px;">UID: <span id="profile-uid">---</span></p>
+            <div class="card" onclick="nav('terms')" style="cursor:pointer; text-align: center; padding: 15px;">
+                Terms & Conditions
+            </div>
+            <button class="btn btn-outline" onclick="logout()" style="color:var(--danger); border-color:var(--danger);">Logout Account</button>
+            <p style="text-align: center; font-size: 0.65rem; color: var(--card-border); margin-top: 20px;">ID: <span id="profile-uid">---</span></p>
+        </div>
+
+        <div id="screen-terms" class="screen">
+            <div class="header"><h2>Legal</h2><i class="fa-solid fa-times" onclick="nav('profile')" style="cursor: pointer;"></i></div>
+            <div class="card">
+                <ul class="tc-list">
+                    <li>Withdrawals require a verified email.</li>
+                    <li>VPN or multiple accounts result in a ban.</li>
+                    <li>Payments processed within 48-72 working hours.</li>
+                </ul>
+            </div>
         </div>
 
         <div class="bottom-nav" id="bottom-nav" style="display: none;">
@@ -186,6 +249,19 @@
     </div>
 
     <script type="module" src="script.js"></script>
+
+    <script>
+        setTimeout(function() {
+            var splash = document.getElementById('custom-splash');
+            if (splash) {
+                splash.style.transition = 'opacity 0.6s ease';
+                splash.style.opacity = '0';
+                setTimeout(function() {
+                    splash.style.display = 'none';
+                }, 600);
+            }
+        }, 3000); 
+    </script>
 
 </body>
 </html>
