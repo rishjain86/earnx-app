@@ -987,19 +987,35 @@
         });
     }
 
+    // 🔥 SHARE REFERRAL FIXED (NEW SHORT LINK) 🔥
     window.shareReferral = async function() {
-        const code = window.state.user.refCode; const shareLink = "https://dukaan-platform.firebaseapp.com"; 
-        const text = `Hey! Join EarnX and earn real rewards. Use my code: ${code}\nLink: ${shareLink}`;
+        const code = window.state.user.refCode; 
+        const shareLink = "https://shorturl.at/sO8Qx"; // Aapka naya short link
+        const text = `Hey! Join EarnX and earn real rewards. Use my code: ${code}\nDownload App here: ${shareLink}`;
         
         try {
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
-                await window.Capacitor.Plugins.Share.share({ title: 'EarnX Rewards', text: text, url: shareLink, dialogTitle: 'Share EarnX with friends' });
+                await window.Capacitor.Plugins.Share.share({ 
+                    title: 'EarnX Rewards', 
+                    text: text, 
+                    url: shareLink,
+                    dialogTitle: 'Share EarnX with friends' 
+                });
             } else if (navigator.share) {
-                await navigator.share({ title: 'EarnX Rewards', text: text, url: shareLink });
+                await navigator.share({ 
+                    title: 'EarnX Rewards', 
+                    text: text 
+                });
             } else { throw new Error("Share not supported"); }
         } catch(e) { 
-            const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t); 
-            window.showToast("Link & Code Copied! Share manually."); 
+            // Agar native share fail ho jaye, toh direct copy kar dega
+            const t = document.createElement("textarea"); 
+            t.value = text; 
+            document.body.appendChild(t); 
+            t.select(); 
+            document.execCommand('copy'); 
+            document.body.removeChild(t); 
+            window.showToast("Message & Link Copied! Share manually."); 
         }
     }
 
