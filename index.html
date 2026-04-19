@@ -23,11 +23,9 @@
             --warning: #f59e0b;
         }
 
-        /* === GLOBAL RESETS === */
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body { font-family: 'Inter', sans-serif; background: #000; color: var(--text-light); display: flex; justify-content: center; overflow: hidden; }
         
-        /* === MOBILE APP CONTAINER === */
         #app {
             width: 100%;
             max-width: 480px;
@@ -42,7 +40,6 @@
         
         #app::-webkit-scrollbar { display: none; }
         
-        /* === TYPOGRAPHY & UTILS === */
         h1, h2, h3 { font-weight: 700; margin-bottom: 10px; }
         p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.4; }
         .text-green { color: var(--primary); }
@@ -52,7 +49,6 @@
         .mt-1 { margin-top: 10px; } .mt-2 { margin-top: 20px; }
         .mb-1 { margin-bottom: 10px; } .mb-2 { margin-bottom: 20px; }
         
-        /* === UI COMPONENTS === */
         .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
         .screen.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -69,17 +65,14 @@
         input { width: 100%; background: var(--bg-darker); border: 1px solid var(--card-border); color: white; padding: 14px; border-radius: 10px; font-size: 1rem; margin-bottom: 15px; outline: none; transition: border 0.3s; }
         input:focus { border-color: var(--primary); }
 
-        /* === BOTTOM NAVIGATION === */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: var(--card-bg); border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
         .nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
         .nav-item.active { color: var(--primary); }
 
-        /* === SPECIFIC SCREENS === */
         .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--card-border); margin-bottom: 20px; }
         .header-title { font-size: 1.5rem; background: var(--primary-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        /* CLICKABLE COIN BADGE */
         .coin-badge { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; color: var(--primary); cursor: pointer; transition: 0.2s; }
         .coin-badge:active { transform: scale(0.95); background: rgba(16, 185, 129, 0.2); }
 
@@ -114,18 +107,14 @@
         
         .timer-display { font-family: monospace; font-size: 1.1rem; color: var(--warning); font-weight: bold; }
 
-        /* === SPLASH AND LOGO CSS === */
         #custom-splash {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: var(--bg-dark); display: flex; justify-content: center; align-items: center;
             z-index: 999999; transition: opacity 0.5s ease-out;
         }
 
         #custom-splash img { width: 70vw; max-width: 400px; height: auto; object-fit: contain; animation: pulse-splash 1.5s infinite alternate; }
-
         @keyframes pulse-splash { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.05); opacity: 1; } }
-
         .app-logo { width: 60vw; max-width: 300px; height: auto; margin-bottom: 20px; object-fit: contain; filter: drop-shadow(0px 10px 15px rgba(16, 185, 129, 0.4)); }
     </style>
 </head>
@@ -135,6 +124,13 @@
 
 <div id="app">
     <div id="toast">Message</div>
+
+    <div id="update-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 100000; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center;">
+        <i class="fa-solid fa-rocket" style="font-size: 5rem; color: var(--primary); margin-bottom: 25px; filter: drop-shadow(0px 10px 15px rgba(16, 185, 129, 0.4));"></i>
+        <h2 style="font-size: 2rem;">Update Required!</h2>
+        <p style="margin-bottom: 30px; color: var(--text-muted); font-size: 1rem; max-width: 300px;">A new version of EarnX is available. Please update the app to continue earning rewards safely.</p>
+        <button class="btn" style="max-width: 300px; padding: 18px;" onclick="window.location.href='https://raashanmart.in/download/earnx/'">Update App Now</button>
+    </div>
 
     <div id="stay-modal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9998; flex-direction: column; justify-content: center; align-items: center; padding: 20px;">
         <i class="fa-solid fa-hourglass-half" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
@@ -251,6 +247,25 @@
             <div class="flex-between">
                 <div style="font-size: 1.2rem; font-weight: bold;"><span id="tap-count">0</span> / 20</div>
                 <button class="btn" id="btn-tap" style="width: auto; padding: 10px 30px;" onclick="doTapTask()">TAP ME</button>
+            </div>
+        </div>
+
+        <div class="card" style="opacity: 0.7; border: 2px dashed var(--card-border); background: transparent;">
+            <div class="flex-between">
+                <div>
+                    <h3 style="margin-bottom: 2px; color: var(--text-muted);"><i class="fa-solid fa-lock" style="font-size: 0.9rem; margin-right: 5px;"></i> Mega Task</h3>
+                    <p>Big rewards are loading...</p>
+                </div>
+                <div class="timer-display" style="color: var(--text-muted); font-size: 0.85rem; font-family: 'Inter', sans-serif;">Coming Soon</div>
+            </div>
+        </div>
+        <div class="card" style="opacity: 0.7; border: 2px dashed var(--card-border); background: transparent;">
+            <div class="flex-between">
+                <div>
+                    <h3 style="margin-bottom: 2px; color: var(--text-muted);"><i class="fa-solid fa-lock" style="font-size: 0.9rem; margin-right: 5px;"></i> App Install</h3>
+                    <p>Install & earn 500+ coins</p>
+                </div>
+                <div class="timer-display" style="color: var(--text-muted); font-size: 0.85rem; font-family: 'Inter', sans-serif;">Coming Soon</div>
             </div>
         </div>
     </div>
@@ -446,7 +461,7 @@
                     createdAt: window.getTrueTime(),
                     tasks: defaultTasks,
                     spin: defaultSpin,
-                    transactions: [] // Added transactions array
+                    transactions: []
                 };
                 await setDoc(ref, data);
                 
@@ -467,7 +482,7 @@
                 };
                 window.state.tasks = data.tasks || defaultTasks;
                 window.state.spin = data.spin || defaultSpin;
-                window.state.transactions = data.transactions || []; // Load transactions
+                window.state.transactions = data.transactions || [];
             }
 
             window.saveState();
@@ -562,7 +577,9 @@
 </script>
 
 <script>
-    /* === GLOBAL VARIABLES === */
+    /* === GLOBAL VARIABLES & VERSION CONTROL === */
+    const APP_VERSION = 1.0; // Isko code mein tabhi change karna jab aap asli mein APK update karoge
+    
     const COIN_RATE = 100; 
     const COOLDOWN_WATCH = 15 * 60 * 1000; 
     const COOLDOWN_STAY = 30 * 60 * 1000;  
@@ -583,6 +600,24 @@
 
     let serverTimeOffset = 0;
     let isTimeLocked = true; 
+
+    // 🔥 FORCE UPDATE CHECKER 🔥
+    async function checkAppVersion() {
+        try {
+            const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            const configRef = doc(window.db, "earnx_settings", "app_config");
+            const snap = await getDoc(configRef);
+            if(snap.exists()) {
+                const data = snap.data();
+                // Agar firebase par version code mein diye version se bada hai, toh update modal dikhao
+                if(data.latest_version > APP_VERSION) {
+                    document.getElementById('update-modal').style.display = 'flex';
+                }
+            }
+        } catch(e) {
+            console.log("Version Check Skipped", e);
+        }
+    }
 
     async function syncSecureTime() {
         try {
@@ -615,6 +650,7 @@
             updateTimersUI();
         } else {
             syncSecureTime();
+            checkAppVersion(); // Jab bhi app dobara open ho, version check kare
         }
     });
 
@@ -628,6 +664,9 @@
         appLoaded = true;
         
         await syncSecureTime(); 
+        
+        // Wait for DB to initialize before checking version
+        setTimeout(() => { if(window.db) checkAppVersion(); }, 2000);
 
         const saved = safeLoadState();
         if(saved) window.state = saved;
@@ -661,21 +700,10 @@
         }, 1000);
     });
 
-    // TRANSACTION LOGGING ENGINE
     function logTransaction(title, amount, type="earn") {
         if(!window.state.transactions) window.state.transactions = [];
-        
-        window.state.transactions.unshift({
-            title: title,
-            amount: amount,
-            type: type,
-            date: window.getTrueTime()
-        });
-
-        // Keep maximum 50 records locally to save space
-        if(window.state.transactions.length > 50) {
-            window.state.transactions.pop();
-        }
+        window.state.transactions.unshift({ title: title, amount: amount, type: type, date: window.getTrueTime() });
+        if(window.state.transactions.length > 50) { window.state.transactions.pop(); }
     }
 
     function sanitizeCoins(){
@@ -842,7 +870,6 @@
         if(list1) list1.innerHTML = htmlContent;
     }
 
-    // NEW: RENDER TRANSACTION HISTORY
     function renderTransactionHistory() {
         const homeList = document.getElementById('home-recent-activity');
         const fullList = document.getElementById('full-history-list');
@@ -854,7 +881,6 @@
         }
 
         let htmlContent = '';
-        // Sort newest first
         const sorted = [...window.state.transactions].sort((a,b) => b.date - a.date); 
         
         sorted.forEach((t, index) => {
@@ -876,7 +902,6 @@
 
         if(fullList) fullList.innerHTML = htmlContent;
 
-        // Render only top 3 for Home Screen
         if(homeList) {
             let homeHTML = '';
             sorted.slice(0, 3).forEach(t => {
@@ -923,9 +948,7 @@
         window.state.dailyCoins += amount; 
         window.state.user.coins += amount;
         
-        // LOG TRANSACTION IN HISTORY
         logTransaction(msg, amount, "earn");
-
         window.saveState(); window.showToast(`+${amount} Coins`);
     }
 
@@ -1202,7 +1225,6 @@
         return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
-/* === SPLASH SCREEN JAVASCRIPT LOGIC === */
 document.addEventListener("DOMContentLoaded", function() {
     if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
         window.Capacitor.Plugins.SplashScreen.hide();
