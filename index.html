@@ -326,7 +326,7 @@
         <div class="card" style="text-align: center;">
             <i class="fa-solid fa-gift" style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;"></i>
             <h3>Your Referral Code</h3>
-            <p class="mb-2">Share to earn bonuses when friends join.</p>
+            <p class="mb-2" style="font-size: 0.85rem;">When your friend stays active for 5 days & earns 5,000 coins, you both unlock 100 Bonus Coins!</p>
             <div style="background: var(--bg-darker); border: 2px dashed var(--primary); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; margin-bottom: 15px;" id="my-ref-code">------</div>
             
             <div style="display: flex; gap: 10px;">
@@ -337,7 +337,7 @@
 
         <div class="card" id="enter-ref-section">
             <h3>Have a Referral Code?</h3>
-            <p class="mb-2">Enter code to receive 100 bonus coins (One-time only).</p>
+            <p class="mb-2" style="font-size: 0.85rem;">Enter code to unlock 100 bonus coins (Credited after 5 active days & 5,000 coins earned).</p>
             <input type="text" id="ref-input" placeholder="Enter code here" style="text-transform: uppercase;">
             <button class="btn" onclick="applyReferralFirebase()">Apply Code</button>
         </div>
@@ -388,7 +388,7 @@
         <div class="card">
             <ul class="tc-list">
                 <li><strong>Virtual Currency:</strong> Coins are purely virtual rewards. 10,000 Coins = ₹100 Cash.</li>
-                <li><strong>Referral Bonus:</strong> Users get 100 Coins instantly upon using a valid referral code.</li>
+                <li><strong>Referral Bonus Rules:</strong> 100 Coins are credited to both users ONLY after the referred user stays active for 5 days AND earns a minimum of 5,000 coins.</li>
                 <li><strong>Withdrawal Policy:</strong> Minimum withdrawal is 10,000 Coins (₹100). Verification takes 48-72 hours.</li>
                 <li><strong>Task Rules:</strong> You must complete ads and stay tasks fully. Closing them early will result in 0 rewards.</li>
                 <li><strong>Anti-Cheat:</strong> Use of VPN, bots, auto-clickers, or multiple accounts on one device will lead to a permanent ban and forfeiture of balance.</li>
@@ -465,7 +465,7 @@
                 };
                 await setDoc(ref, data);
                 
-                window.state.user = { id: user.uid, phone: user.email, coins: 0, refCode: newRefCode, referredBy: false, profile: {name: "", phone: ""} };
+                window.state.user = { id: user.uid, phone: user.email, coins: 0, refCode: newRefCode, referredBy: false, pendingReferrer: null, createdAt: window.getTrueTime(), profile: {name: "", phone: ""} };
                 window.state.tasks = defaultTasks;
                 window.state.spin = defaultSpin;
                 window.state.transactions = [];
@@ -478,6 +478,8 @@
                     coins: data.coins || 0,
                     refCode: data.refCode,
                     referredBy: data.referredBy || false,
+                    pendingReferrer: data.pendingReferrer || null,
+                    createdAt: data.createdAt || window.getTrueTime(),
                     profile: data.profile || {name: "", phone: ""}
                 };
                 window.state.tasks = data.tasks || defaultTasks;
@@ -489,6 +491,7 @@
             window.nav('home'); 
             window.startTimers();
             window.loadWithdrawals();
+            window.checkReferralUnlock(); // Login hote hi check karega
             window.showToast("Login Successful");
         } catch (error) {
             console.error("Firebase Auth Error:", error);
@@ -578,7 +581,7 @@
 
 <script>
     /* === GLOBAL VARIABLES & VERSION CONTROL === */
-    const APP_VERSION = 1.0; // Isko code mein tabhi change karna jab aap asli mein APK update karoge
+    const APP_VERSION = 1.0; 
     
     const COIN_RATE = 100; 
     const COOLDOWN_WATCH = 15 * 60 * 1000; 
@@ -609,13 +612,12 @@
             const snap = await getDoc(configRef);
             if(snap.exists()) {
                 const data = snap.data();
-                // Agar firebase par version code mein diye version se bada hai, toh update modal dikhao
                 if(data.latest_version > APP_VERSION) {
                     document.getElementById('update-modal').style.display = 'flex';
                 }
             }
         } catch(e) {
-            console.log("Version Check Skipped", e);
+            console.log("Version Check Skipped");
         }
     }
 
@@ -650,7 +652,7 @@
             updateTimersUI();
         } else {
             syncSecureTime();
-            checkAppVersion(); // Jab bhi app dobara open ho, version check kare
+            checkAppVersion(); 
         }
     });
 
@@ -664,8 +666,6 @@
         appLoaded = true;
         
         await syncSecureTime(); 
-        
-        // Wait for DB to initialize before checking version
         setTimeout(() => { if(window.db) checkAppVersion(); }, 2000);
 
         const saved = safeLoadState();
@@ -682,7 +682,6 @@
         }
 
         if(!window.state.transactions) window.state.transactions = [];
-
         if(!window.state.spin.lastRefill && window.state.spin.spinsLeft < 5){
             window.state.spin.lastRefill = window.getTrueTime();
         }
@@ -723,6 +722,7 @@
                 coins: Number(window.state.user.coins) || 0, 
                 tasks: window.state.tasks || {}, 
                 spin: window.state.spin || {},
+                pendingReferrer: window.state.user.pendingReferrer || null,
                 profile: window.state.user.profile || {name: "", phone: ""},
                 transactions: window.state.transactions || []
             });
@@ -929,6 +929,40 @@
         toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 3000);
     }
 
+    // 🔥 MASTER UPDATE: Anti-Cheat Referral Unlock Checker 🔥
+    window.checkReferralUnlock = async function() {
+        if(!window.state || !window.state.user || !window.state.user.pendingReferrer) return;
+        
+        const coinsEarned = window.state.user.coins;
+        const creationTime = window.state.user.createdAt || window.getTrueTime();
+        const msActive = window.getTrueTime() - creationTime;
+        const daysActive = msActive / (1000 * 60 * 60 * 24);
+
+        if (coinsEarned >= 5000 && daysActive >= 5) {
+            try {
+                const refId = window.state.user.pendingReferrer;
+                window.state.user.pendingReferrer = null; // Clear to prevent loops
+                window.saveState();
+
+                const { doc, updateDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+                const refDocRef = doc(window.db, "earnx_users", refId);
+                const refSnap = await getDoc(refDocRef);
+                
+                if(refSnap.exists()) {
+                    const refData = refSnap.data();
+                    await updateDoc(refDocRef, { coins: (Number(refData.coins) || 0) + 100 });
+                }
+
+                window.state.user.coins += 100;
+                logTransaction("Referral Bonus Unlocked!", 100, "earn");
+                window.saveState();
+                window.showToast("Referral Bonus Unlocked! +100 Coins");
+            } catch(e) {
+                console.error("Error unlocking referral", e);
+            }
+        }
+    }
+
     function rewardCoins(amount, msg) {
         if(rewardLock) return; rewardLock = true;
         setTimeout(()=> rewardLock = false, 2000);
@@ -949,7 +983,11 @@
         window.state.user.coins += amount;
         
         logTransaction(msg, amount, "earn");
-        window.saveState(); window.showToast(`+${amount} Coins`);
+        window.saveState(); 
+        window.showToast(`+${amount} Coins`);
+        
+        // Reward milne ke baad turant check karega ki referral unlock hua ya nahi
+        window.checkReferralUnlock();
     }
 
     async function showAd(callback) {
@@ -1101,11 +1139,10 @@
         });
     }
 
-    // 🔥 MASTER UPDATE: Viral Referral Message in App 🔥
     window.shareReferral = async function() {
         const code = window.state.user.refCode; 
         const shareLink = "https://shorturl.at/RknTL"; 
-        const viralMsg = `EarnX - Loot Event ~ For All Users ✅✅\n📌 Reward For Every User 🔥🔥\n\n📌 Download Now: ${shareLink}\n\n✅ Step 1: Download & Login.\n✅ Step 2: Use Ref Code: ${code} (Get Instant 100 Coins).\n✅ Step 3: Daily Check-in (50 Coins).\n✅ Step 4: Simple Tasks (Earn Daily ₹50+).\n\n📌 10,000 Coins = ₹100 > Instant UPI Withdrawal! 💸💸\n\n⭐️ Zero Investment | Verified Payment | Don't Miss! ⭐️`;
+        const viralMsg = `EarnX - Loot Event ~ For All Users ✅✅\n📌 Reward For Every User 🔥🔥\n\n📌 Download Now: ${shareLink}\n\n✅ Step 1: Download & Login.\n✅ Step 2: Use Ref Code: ${code} (Unlocks 100 Bonus Coins after 5 Days & 5,000 Coins earned).\n✅ Step 3: Daily Check-in (50 Coins).\n✅ Step 4: Simple Tasks (Earn Daily ₹50+).\n\n📌 10,000 Coins = ₹100 > Instant UPI Withdrawal! 💸💸\n\n⭐️ Zero Investment | Verified Payment | Don't Miss! ⭐️`;
         
         try {
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Share) {
@@ -1119,6 +1156,7 @@
         }
     }
 
+    // 🔥 UPDATED: Put Referral in "Pending" State Instead of Instant Reward 🔥
     window.applyReferralFirebase = async function(){
         if(referralLock) return; referralLock = true;
         try {
@@ -1129,10 +1167,10 @@
             const code = el.value.trim().toUpperCase();
 
             if(!code) return window.showToast("Enter code");
-            if(window.state.user.referredBy === true) return window.showToast("Already used referral");
+            if(window.state.user.referredBy === true) return window.showToast("Already used a referral");
             if(code === window.state.user.refCode.toUpperCase()) return window.showToast("Cannot use your own code");
 
-            const { collection, query, where, getDocs, doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const q = query(collection(window.db, "earnx_users"), where("refCode", "==", code));
             const snapshot = await getDocs(q);
 
@@ -1142,13 +1180,13 @@
             let currentDevice = localStorage.getItem("earnx_device_id");
             if(refData.deviceId && refData.deviceId === currentDevice) { window.showToast("Fraud detected!"); return; }
 
-            await updateDoc(doc(window.db, "earnx_users", refDoc.id), { coins: (Number(refData.coins) || 0) + 100 });
-            
-            window.state.user.coins += 100; 
+            // Put in pending state instead of instant payout
             window.state.user.referredBy = true;
-            logTransaction("Referral Code Applied", 100, "earn");
+            window.state.user.pendingReferrer = refDoc.id;
 
-            window.saveState(); window.showToast("Referral applied +100 coins"); el.value = "";
+            window.saveState(); 
+            window.showToast("Code Applied! Bonus unlocks after 5 days & 5k coins."); 
+            el.value = "";
         } catch(e) { window.showToast("Error applying referral");
         } finally { referralLock = false; }
     }
