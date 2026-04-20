@@ -990,6 +990,7 @@
         window.checkReferralUnlock();
     }
 
+    // 🔥 BULLETPROOF AD SYSTEM 🔥
     async function showAd(callback) {
         if(isTimeLocked) return window.showToast("Please ensure correct phone time & active internet.");
         
@@ -1006,15 +1007,25 @@
 
                 await AdMob.prepareRewardVideoAd({ adId: adId });
 
-                let listener = AdMob.addListener('onRewardedVideoAdRewarded', (rewardItem) => {
+                let rewardGranted = false;
+
+                const rewardUser = () => {
+                    if(rewardGranted) return;
+                    rewardGranted = true;
                     lastAdTime = window.getTrueTime();
                     if(callback) callback();
-                    
-                    if (listener && listener.remove) {
-                        listener.remove();
-                    } else {
-                        AdMob.removeAllListeners();
+                };
+
+                let l1 = await AdMob.addListener('rewardedVideoAdRewarded', rewardUser);
+                let l2 = await AdMob.addListener('onRewardedVideoAdRewarded', rewardUser);
+
+                let dismissListener = await AdMob.addListener('rewardedVideoAdDismissed', () => {
+                    if(!rewardGranted) {
+                        window.showToast("Ad closed early. No reward.");
                     }
+                    if(l1) l1.remove();
+                    if(l2) l2.remove();
+                    if(dismissListener) dismissListener.remove();
                 });
 
                 await AdMob.showRewardVideoAd();
@@ -1022,6 +1033,10 @@
             } catch (error) {
                 console.error("Ad Error: ", error);
                 window.showToast("Ad not available right now.");
+                
+                window.state.tasks.lastWatch = 0;
+                window.state.tasks.lastStay = 0;
+                updateTimersUI();
             }
         } else {
             window.showToast("Test Mode (No AdMob)");
