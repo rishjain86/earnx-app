@@ -595,6 +595,7 @@
     let withdrawLock = false; 
     let referralLock = false;
     let rewardLock = false; 
+    let adTaskLock = false; 
     let toastTimeout;
     let saving = false;
     let coinSaveTimeout;
@@ -992,55 +993,55 @@
 
     // 🔥 BULLETPROOF AD SYSTEM 🔥
     async function showAd(callback) {
-        if(isTimeLocked) return window.showToast("Please ensure correct phone time & active internet.");
-        
+        if(isTimeLocked) {
+            window.showToast("Please ensure correct phone time.");
+            return callback(false);
+        }
+
         if(window.getTrueTime() - lastAdTime < 60000){
             window.showToast("Wait 1 min before next ad");
-            return;
+            return callback(false);
         }
 
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
             try {
-                window.showToast("Loading Ad...");
                 const { AdMob } = window.Capacitor.Plugins;
                 const adId = "ca-app-pub-6519206650027176/8005768127"; 
 
                 await AdMob.prepareRewardVideoAd({ adId: adId });
 
-                let rewardGranted = false;
+                let adHandled = false;
 
-                const rewardUser = () => {
-                    if(rewardGranted) return;
-                    rewardGranted = true;
-                    lastAdTime = window.getTrueTime();
-                    if(callback) callback();
-                };
-
-                let l1 = await AdMob.addListener('rewardedVideoAdRewarded', rewardUser);
-                let l2 = await AdMob.addListener('onRewardedVideoAdRewarded', rewardUser);
-
+                // 100% Reward Guarantee: Agar ad load ho gaya aur user ne close kiya, toh reward milega.
                 let dismissListener = await AdMob.addListener('rewardedVideoAdDismissed', () => {
-                    if(!rewardGranted) {
-                        window.showToast("Ad closed early. No reward.");
-                    }
-                    if(l1) l1.remove();
-                    if(l2) l2.remove();
+                    if(adHandled) return;
+                    adHandled = true;
+                    lastAdTime = window.getTrueTime();
                     if(dismissListener) dismissListener.remove();
+                    callback(true); // User closed ad -> Success!
+                });
+
+                // Safety backup
+                let rewardListener = await AdMob.addListener('rewardedVideoAdReward', () => {
+                    if(adHandled) return;
+                    adHandled = true;
+                    lastAdTime = window.getTrueTime();
+                    if(rewardListener) rewardListener.remove();
+                    if(dismissListener) dismissListener.remove();
+                    callback(true);
                 });
 
                 await AdMob.showRewardVideoAd();
 
             } catch (error) {
                 console.error("Ad Error: ", error);
-                window.showToast("Ad not available right now.");
-                
-                window.state.tasks.lastWatch = 0;
-                window.state.tasks.lastStay = 0;
-                updateTimersUI();
+                window.showToast("Ad not available right now. Try again later.");
+                callback(false); // Ad failed, do not block timer
             }
         } else {
             window.showToast("Test Mode (No AdMob)");
-            if(callback) callback();
+            lastAdTime = window.getTrueTime();
+            callback(true);
         }
     }
 
@@ -1052,28 +1053,36 @@
         rewardCoins(50, "Daily Check-in");
     }
 
+    // 🔥 TIMER FIX: Timer starts ONLY after successful Ad or Wait 🔥
     window.doWatchTask = function() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_WATCH) return window.showToast("Wait for timer!");
-        
-        window.state.tasks.lastWatch = window.getTrueTime();
-        window.saveState();
-        updateTimersUI();
+        if(adTaskLock) return;
 
-        showAd(() => { 
-            rewardCoins(100, "Watch Ad Task"); 
-            window.saveState(); 
+        adTaskLock = true;
+        window.showToast("Loading Ad...");
+
+        showAd((success) => {
+            adTaskLock = false;
+            if(success) {
+                window.state.tasks.lastWatch = window.getTrueTime();
+                rewardCoins(100, "Watch Ad Task");
+                window.saveState();
+                updateTimersUI();
+            }
         });
     }
 
     window.doStayTask = function() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_STAY) return window.showToast("Wait for timer!");
-        
+        if(adTaskLock) return;
+
         const sModal = document.getElementById('stay-modal'); 
         const sTime = document.getElementById('stay-countdown');
         if(!sModal || !sTime) return;
         
+        adTaskLock = true;
         sModal.style.display = 'flex'; 
         let timeLeft = 15; 
         sTime.innerText = timeLeft;
@@ -1083,13 +1092,13 @@
             if(timeLeft <= 0) {
                 clearInterval(sInt); sModal.style.display = 'none';
                 
-                window.state.tasks.lastStay = window.getTrueTime();
-                window.saveState();
-                updateTimersUI();
-
-                showAd(() => {
+                showAd((success) => {
+                    adTaskLock = false;
+                    // Mercy Reward: Agar ad fail bhi hua, toh usko coins milenge kyunki usne 15s wait kiya!
+                    window.state.tasks.lastStay = window.getTrueTime();
                     rewardCoins(200, "Stay Task");
                     window.saveState();
+                    updateTimersUI();
                 });
             }
         }, 1000);
@@ -1100,11 +1109,13 @@
         if(!window.state || !window.state.tasks) return;
         if(window.state.tasks.tapCount >= 20) return;
         if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_TAP) return window.showToast("Wait for timer!");
+        if(adTaskLock) return;
 
         let next = window.state.tasks.tapCount + 1;
         if(next === 10){
             if(window.getTrueTime() - lastAdTime < 60000) return window.showToast("Wait 1 min for next Ad");
-            showAd(()=>{});
+            adTaskLock = true;
+            showAd((success) => { adTaskLock = false; });
         }
         window.state.tasks.tapCount++;
         if(window.state.tasks.tapCount >= 20){
@@ -1123,6 +1134,7 @@
         const btn = document.getElementById('btn-spin');
         if(!btn || btn.disabled) return; 
         if(window.state.spin.spinsLeft <= 0) return window.showToast("No spins left.");
+        if(adTaskLock) return;
         
         btn.disabled = true;
         window.state.spin.spinsLeft--; window.state.spin.totalSpins++;
@@ -1140,7 +1152,10 @@
         setTimeout(() => {
             rewardCoins(prizeMap[safeRandom], "Spin Reward");
             if(window.state.spin.totalSpins % 3 === 0) {
-                if(window.getTrueTime() - lastAdTime >= 60000) { setTimeout(() => showAd(), 500); }
+                if(window.getTrueTime() - lastAdTime >= 60000) { 
+                    adTaskLock = true;
+                    setTimeout(() => showAd(()=>{ adTaskLock = false; }), 500); 
+                }
             }
         }, 4200);
         setTimeout(() => { btn.disabled = false; }, 4500);
@@ -1171,7 +1186,6 @@
         }
     }
 
-    // 🔥 UPDATED: Put Referral in "Pending" State Instead of Instant Reward 🔥
     window.applyReferralFirebase = async function(){
         if(referralLock) return; referralLock = true;
         try {
