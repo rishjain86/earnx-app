@@ -555,14 +555,13 @@
                 // 🔥 BLOCK SYSTEM CHECK 🔥
                 if (data.isBlocked === true) {
                     window.showToast("🚫 Your account is BLOCKED by Admin.");
-                    setTimeout(() => { window.logout(); }, 2500); // 2.5 sec baad app se bahar
-                    return; // Aage ka code nahi chalega
+                    setTimeout(() => { window.logout(); }, 2500); 
+                    return; 
                 }
 
                 // 🔥 PERSONAL ALERT CHECK 🔥
                 if (data.personalAlert && data.personalAlert.trim() !== "") {
                     alert("⚠️ ADMIN WARNING ⚠️\n\n" + data.personalAlert);
-                    // Ek baar dikhane ke baad Firebase se alert mita denge
                     try {
                         await updateDoc(ref, { personalAlert: "" });
                     } catch(e) { console.log("Failed to clear alert"); }
@@ -1352,6 +1351,7 @@
         window.checkReferralUnlock();
     }
 
+    // 🔥 NEW ADMOB FUNCTION (AdGuard / Fail Safe) 🔥
     window.showAd = async function(callback) {
         if(isTimeLocked) { 
             window.showToast("Please ensure correct phone time."); 
@@ -1376,7 +1376,9 @@
                     adHandled = true; 
                     lastAdTime = window.getTrueTime();
                     if(dismissListener) dismissListener.remove(); 
-                    callback(true); 
+                    
+                    window.showToast("Task Failed: Ad closed early!"); 
+                    callback(false); 
                 });
                 
                 let rewardListener = await AdMob.addListener('rewardedVideoAdReward', () => {
@@ -1385,19 +1387,20 @@
                     lastAdTime = window.getTrueTime();
                     if(rewardListener) rewardListener.remove(); 
                     if(dismissListener) dismissListener.remove(); 
-                    callback(true);
+                    
+                    callback(true); 
                 });
                 
                 await AdMob.showRewardVideoAd();
                 
             } catch (error) { 
-                window.showToast("Ad not available."); 
+                window.showToast("Ads are currently unavailable. Please try again later!"); 
                 callback(false); 
             }
         } else { 
-            window.showToast("Test Mode (No AdMob)"); 
+            window.showToast("Ads only work in the official Android App!"); 
             lastAdTime = window.getTrueTime(); 
-            callback(true); 
+            callback(false); 
         }
     }
 
@@ -1461,10 +1464,12 @@
                 sModal.style.display = 'none';
                 window.showAd((success) => {
                     adTaskLock = false;
-                    window.state.tasks.lastStay = window.getTrueTime();
-                    window.rewardCoins(200, "Stay Task");
-                    window.saveState();
-                    window.updateTimersUI();
+                    if(success) {
+                        window.state.tasks.lastStay = window.getTrueTime();
+                        window.rewardCoins(200, "Stay Task");
+                        window.saveState();
+                        window.updateTimersUI();
+                    }
                 });
             }
         }, 1000);
@@ -1486,8 +1491,9 @@
                 return window.showToast("Wait 1 min for Ad");
             }
             adTaskLock = true; 
-            window.showAd(() => { 
+            window.showAd((success) => { 
                 adTaskLock = false; 
+                // yaha sirf ad play hota hai 10th tap par. Coins 20th par hi milenge.
             });
         }
         
