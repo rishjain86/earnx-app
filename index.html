@@ -146,7 +146,7 @@
     <div class="card" style="width: 100%; max-width: 400px; text-align: center; border-color: var(--warning); position: relative; box-shadow: 0 10px 40px rgba(245, 158, 11, 0.3);">
         <h2 style="color: var(--warning); margin-bottom: 15px;"><i class="fa-solid fa-bell"></i> Important Update</h2>
         <p id="flash-notice-text" style="color: white; font-size: 1.1rem; margin-bottom: 25px; line-height: 1.5;"></p>
-        <button class="btn" style="background: var(--warning); color: black;" onclick="closeNoticeModal()">Got It!</button>
+        <button class="btn" style="background: var(--warning); color: black;" onclick="window.closeNoticeModal()">Got It!</button>
     </div>
 </div>
 
@@ -180,24 +180,24 @@
             <p class="mb-2" style="font-size: 0.85rem;">Secure access for your EarnX account.</p>
             
             <div id="web-login-section">
-                <button class="btn btn-google" onclick="loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
+                <button class="btn btn-google" onclick="window.loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
             </div>
 
             <div id="app-login-section" style="display: none;">
                 <input type="email" id="email-input" placeholder="Enter Email ID" style="margin-bottom: 10px;">
                 <input type="password" id="password-input" placeholder="Enter Password (Min 6 chars)" style="margin-bottom: 5px;">
-                <p style="font-size: 0.8rem; color: var(--primary); text-align: right; margin-bottom: 15px; cursor: pointer;" onclick="resetPassword()">Forgot Password?</p>
-                <button class="btn" onclick="loginWithEmail()">Login / Sign Up</button>
+                <p style="font-size: 0.8rem; color: var(--primary); text-align: right; margin-bottom: 15px; cursor: pointer;" onclick="window.resetPassword()">Forgot Password?</p>
+                <button class="btn" onclick="window.loginWithEmail()">Login / Sign Up</button>
                 <p style="font-size: 0.75rem; text-align: center; margin-top: 10px; color: var(--text-muted);">If email is not registered, a new account will be created automatically.</p>
             </div>
         </div>
-        <p style="text-align: center; font-size: 0.75rem; margin-top: 20px;">By continuing, you agree to our <span class="text-green" onclick="nav('terms')">Terms & Conditions</span>.</p>
+        <p style="text-align: center; font-size: 0.75rem; margin-top: 20px;">By continuing, you agree to our <span class="text-green" onclick="window.nav('terms')">Terms & Conditions</span>.</p>
     </div>
 
     <div id="screen-home" class="screen">
         <div class="header">
             <div class="header-title"><i class="fa-solid fa-coins"></i> EarnX</div>
-            <div class="coin-badge" onclick="nav('history')"><i class="fa-solid fa-gem"></i> <span class="global-coin-display" id="coins">0</span></div>
+            <div class="coin-badge" onclick="window.nav('history')"><i class="fa-solid fa-gem"></i> <span class="global-coin-display" id="coins">0</span></div>
         </div>
         
         <div class="card hero-card">
@@ -207,21 +207,21 @@
             <p style="margin-top: 10px; font-size: 0.8rem;">(10,000 Coins = ₹100)</p>
             <div style="margin-top: 15px; border-top: 1px solid var(--card-border); padding-top: 15px;" class="flex-between">
                 <span style="font-size: 0.9rem;">Daily Check-in</span>
-                <button class="btn" style="width: auto; padding: 8px 15px; font-size: 0.9rem;" id="btn-checkin" onclick="dailyCheckIn()">Claim 50</button>
+                <button class="btn" style="width: auto; padding: 8px 15px; font-size: 0.9rem;" id="btn-checkin" onclick="window.dailyCheckIn()">Claim 50</button>
             </div>
         </div>
 
         <h3>Quick Actions</h3>
         <div class="grid-actions mb-2">
-            <div class="action-card" onclick="nav('tasks')"><i class="fa-solid fa-list-check"></i><div style="font-weight: 600;">Tasks</div></div>
-            <div class="action-card" onclick="nav('spin')"><i class="fa-solid fa-dharmachakra"></i><div style="font-weight: 600;">Spin Wheel</div></div>
-            <div class="action-card" onclick="nav('referral')"><i class="fa-solid fa-users"></i><div style="font-weight: 600;">Referrals</div></div>
-            <div class="action-card" onclick="nav('withdraw')"><i class="fa-solid fa-wallet"></i><div style="font-weight: 600;">Withdraw</div></div>
+            <div class="action-card" onclick="window.nav('tasks')"><i class="fa-solid fa-list-check"></i><div style="font-weight: 600;">Tasks</div></div>
+            <div class="action-card" onclick="window.nav('spin')"><i class="fa-solid fa-dharmachakra"></i><div style="font-weight: 600;">Spin Wheel</div></div>
+            <div class="action-card" onclick="window.nav('referral')"><i class="fa-solid fa-users"></i><div style="font-weight: 600;">Referrals</div></div>
+            <div class="action-card" onclick="window.nav('withdraw')"><i class="fa-solid fa-wallet"></i><div style="font-weight: 600;">Withdraw</div></div>
         </div>
 
         <div class="flex-between">
             <h3>Recent Activity</h3>
-            <span style="font-size:0.8rem; color:var(--primary); cursor:pointer;" onclick="nav('history')">View All</span>
+            <span style="font-size:0.8rem; color:var(--primary); cursor:pointer;" onclick="window.nav('history')">View All</span>
         </div>
         <div class="card" id="home-recent-activity">
             <p style="text-align: center; color: var(--text-muted);">No recent activity.</p>
@@ -231,7 +231,7 @@
     <div id="screen-history" class="screen">
         <div class="header">
             <h2><i class="fa-solid fa-clock-rotate-left text-green"></i> Coin History</h2>
-            <i class="fa-solid fa-times" style="font-size: 1.5rem; cursor: pointer;" onclick="nav('home')"></i>
+            <i class="fa-solid fa-times" style="font-size: 1.5rem; cursor: pointer;" onclick="window.nav('home')"></i>
         </div>
         
         <div class="card hero-card" style="margin-bottom: 20px;">
@@ -248,7 +248,7 @@
     <div id="screen-tasks" class="screen">
         <div class="header">
             <h2><i class="fa-solid fa-list-check text-green"></i> Earn Tasks</h2>
-            <div class="coin-badge" onclick="nav('history')"><span class="global-coin-display">0</span></div>
+            <div class="coin-badge" onclick="window.nav('history')"><span class="global-coin-display">0</span></div>
         </div>
 
         <div class="card" style="border: 1px solid var(--primary); background: linear-gradient(to right, #1e293b, #0f172a);">
@@ -262,20 +262,21 @@
             
             <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; font-size: 0.75rem; color: var(--text-muted); text-align: left; margin-bottom: 15px;">
                 <b style="color: var(--warning);">Terms & Conditions:</b><br>
-                1. Account age 7+ days required.<br>
-                2. Must earn 1000 coins in last 3 days (tasks/spin only).<br>
-                3. Must Follow FB/Insta. Fake ID = Coin Deduction.
+                1. Account age strictly 2+ days required.<br>
+                2. Must earn 500 coins in last 3 days.<br>
+                3. <b style="color: var(--danger);">WARNING:</b> Must strictly Follow FB & Insta. If you do not follow or unfollow later, your Coins will be DEDUCTED and account may be blocked.
             </div>
 
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.8rem;" onclick="window.location.href='https://www.facebook.com/share/1Gh2PDFQEz/'"><i class="fa-brands fa-facebook"></i> Follow FB</button>
-                <button class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.8rem;" onclick="window.location.href='https://www.instagram.com/earnx_admin'"><i class="fa-brands fa-instagram"></i> Follow Insta</button>
+                <button class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.8rem;" onclick="window.openSocial('https://www.facebook.com/share/1Gh2PDFQEz/')"><i class="fa-brands fa-facebook"></i> Go to FB</button>
+                <button class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.8rem;" onclick="window.openSocial('https://www.instagram.com/earnx_admin')"><i class="fa-brands fa-instagram"></i> Go to Insta</button>
             </div>
 
-            <input type="text" id="mega-promo-code" placeholder="Enter Promo Code (Find on FB Page)" style="text-transform: uppercase;">
-            <input type="text" id="mega-fb-id" placeholder="Enter your FB Username/URL">
+            <input type="text" id="mega-promo-code" placeholder="Enter Promo Code (Find on FB/Insta)" style="text-transform: uppercase;">
+            <input type="text" id="mega-fb-id" placeholder="Enter your FB Username or URL">
+            <input type="text" id="mega-insta-id" placeholder="Enter your Insta Username or URL">
             
-            <button class="btn" id="btn-mega-task" onclick="doMegaTask()">Claim Reward</button>
+            <button class="btn" id="btn-mega-task" onclick="window.doMegaTask()">Claim Reward</button>
         </div>
 
         <div class="card">
@@ -283,7 +284,7 @@
                 <div><h3 style="margin-bottom: 2px;">Watch Ad</h3><p>Reward: 100 Coins</p></div>
                 <div class="timer-display" id="watch-timer-display">Ready</div>
             </div>
-            <button class="btn" id="btn-watch" onclick="doWatchTask()">Watch Ad</button>
+            <button class="btn" id="btn-watch" onclick="window.doWatchTask()">Watch Ad</button>
         </div>
 
         <div class="card">
@@ -291,7 +292,7 @@
                 <div><h3 style="margin-bottom: 2px;">Stay Task</h3><p>Wait 15s. Reward: 200 Coins</p></div>
                 <div class="timer-display" id="stay-timer-display">Ready</div>
             </div>
-            <button class="btn" id="btn-stay" onclick="doStayTask()">Start Task</button>
+            <button class="btn" id="btn-stay" onclick="window.doStayTask()">Start Task</button>
         </div>
 
         <div class="card">
@@ -301,7 +302,7 @@
             </div>
             <div class="flex-between">
                 <div style="font-size: 1.2rem; font-weight: bold;"><span id="tap-count">0</span> / 20</div>
-                <button class="btn" id="btn-tap" style="width: auto; padding: 10px 30px;" onclick="doTapTask()">TAP ME</button>
+                <button class="btn" id="btn-tap" style="width: auto; padding: 10px 30px;" onclick="window.doTapTask()">TAP ME</button>
             </div>
         </div>
     </div>
@@ -309,7 +310,7 @@
     <div id="screen-spin" class="screen">
         <div class="header">
             <h2><i class="fa-solid fa-dharmachakra text-green"></i> Spin & Earn</h2>
-            <div class="coin-badge" onclick="nav('history')"><span class="global-coin-display">0</span></div>
+            <div class="coin-badge" onclick="window.nav('history')"><span class="global-coin-display">0</span></div>
         </div>
 
         <div class="card" style="text-align: center;">
@@ -329,14 +330,14 @@
                 </div>
                 <div class="wheel-center"></div>
             </div>
-            <button class="btn" id="btn-spin" onclick="spinWheel()">SPIN NOW</button>
+            <button class="btn" id="btn-spin" onclick="window.spinWheel()">SPIN NOW</button>
         </div>
     </div>
 
     <div id="screen-withdraw" class="screen">
         <div class="header">
             <h2><i class="fa-solid fa-wallet text-green"></i> Withdraw</h2>
-            <div class="coin-badge" onclick="nav('history')"><span class="global-coin-display">0</span></div>
+            <div class="coin-badge" onclick="window.nav('history')"><span class="global-coin-display">0</span></div>
         </div>
 
         <div class="card">
@@ -344,7 +345,7 @@
             <p class="mb-2">Minimum withdrawal: 10,000 Coins (₹100)</p>
             <input type="text" id="upi-input" placeholder="Enter UPI ID (e.g. name@upi)">
             <p style="font-size: 0.8rem; margin-bottom: 15px; color: var(--danger);"><i class="fa-solid fa-circle-info"></i> All withdrawals are subject to verification (48-72 hours).</p>
-            <button class="btn" id="btn-withdraw" onclick="submitWithdraw()">Withdraw Now</button>
+            <button class="btn" id="btn-withdraw" onclick="window.submitWithdraw()">Withdraw Now</button>
         </div>
 
         <h3>My Withdrawals</h3>
@@ -356,7 +357,7 @@
     <div id="screen-referral" class="screen">
         <div class="header">
             <h2><i class="fa-solid fa-users text-green"></i> Refer & Earn</h2>
-            <div class="coin-badge" onclick="nav('history')"><span class="global-coin-display">0</span></div>
+            <div class="coin-badge" onclick="window.nav('history')"><span class="global-coin-display">0</span></div>
         </div>
 
         <div class="card" style="text-align: center;">
@@ -366,8 +367,8 @@
             <div style="background: var(--bg-darker); border: 2px dashed var(--primary); padding: 15px; border-radius: 10px; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; margin-bottom: 15px;" id="my-ref-code">------</div>
             
             <div style="display: flex; gap: 10px;">
-                <button class="btn btn-outline" style="flex: 1;" onclick="copyReferral()"><i class="fa-regular fa-copy"></i> Copy</button>
-                <button class="btn" style="flex: 1;" onclick="shareReferral()"><i class="fa-solid fa-share-nodes"></i> Share Link</button>
+                <button class="btn btn-outline" style="flex: 1;" onclick="window.copyReferral()"><i class="fa-regular fa-copy"></i> Copy</button>
+                <button class="btn" style="flex: 1;" onclick="window.shareReferral()"><i class="fa-solid fa-share-nodes"></i> Share Link</button>
             </div>
         </div>
 
@@ -375,7 +376,7 @@
             <h3>Have a Referral Code?</h3>
             <p class="mb-2" style="font-size: 0.85rem;">Enter code to unlock 100 bonus coins (Credited after 5 active days & 5,000 coins earned).</p>
             <input type="text" id="ref-input" placeholder="Enter code here" style="text-transform: uppercase;">
-            <button class="btn" onclick="applyReferralFirebase()">Apply Code</button>
+            <button class="btn" onclick="window.applyReferralFirebase()">Apply Code</button>
         </div>
     </div>
 
@@ -397,16 +398,16 @@
                 <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Mobile Number</label>
                 <input type="tel" id="profile-phone-input" placeholder="Enter mobile number">
                 
-                <button class="btn" id="btn-save-profile" style="margin-top: 10px;" onclick="saveProfileDetails()">Save Details</button>
+                <button class="btn" id="btn-save-profile" style="margin-top: 10px;" onclick="window.saveProfileDetails()">Save Details</button>
             </div>
         </div>
 
         <div class="card">
-            <div class="history-item" onclick="nav('terms')" style="cursor: pointer;">
+            <div class="history-item" onclick="window.nav('terms')" style="cursor: pointer;">
                 <span><i class="fa-solid fa-file-contract text-green" style="width: 25px;"></i> Terms & Conditions</span>
                 <i class="fa-solid fa-chevron-right"></i>
             </div>
-            <div class="history-item" onclick="logout()" style="cursor: pointer; border: none;">
+            <div class="history-item" onclick="window.logout()" style="cursor: pointer; border: none;">
                 <span class="text-danger" style="color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket" style="width: 25px;"></i> Logout</span>
             </div>
         </div>
@@ -419,7 +420,7 @@
     <div id="screen-terms" class="screen">
         <div class="header">
             <h2>Terms & Conditions</h2>
-            <i class="fa-solid fa-times" style="font-size: 1.5rem; cursor: pointer;" onclick="nav('profile')"></i>
+            <i class="fa-solid fa-times" style="font-size: 1.5rem; cursor: pointer;" onclick="window.nav('profile')"></i>
         </div>
         <div class="card">
             <ul class="tc-list">
@@ -428,16 +429,17 @@
                 <li><strong>Withdrawal Policy:</strong> Minimum withdrawal is 10,000 Coins (₹100). Verification takes 48-72 hours.</li>
                 <li><strong>Task Rules:</strong> You must complete ads and stay tasks fully. Closing them early will result in 0 rewards.</li>
                 <li><strong>Anti-Cheat:</strong> Use of VPN, bots, auto-clickers, or multiple accounts on one device will lead to a permanent ban and forfeiture of balance.</li>
+                <li><strong>Mega Task Warning:</strong> Following FB & Insta is mandatory. Unfollowing after getting coins will lead to coin deduction and permanent block.</li>
                 <li><strong>App Rights:</strong> We reserve the right to reject suspicious activity and update these terms at any time.</li>
             </ul>
         </div>
     </div>
 
     <div class="bottom-nav" id="bottom-nav" style="display: none;">
-        <div class="nav-item active" onclick="nav('home')" data-target="home"><i class="fa-solid fa-house"></i><span>Home</span></div>
-        <div class="nav-item" onclick="nav('tasks')" data-target="tasks"><i class="fa-solid fa-list-check"></i><span>Tasks</span></div>
-        <div class="nav-item" onclick="nav('spin')" data-target="spin"><i class="fa-solid fa-dharmachakra"></i><span>Spin</span></div>
-        <div class="nav-item" onclick="nav('profile')" data-target="profile"><i class="fa-solid fa-user"></i><span>Profile</span></div>
+        <div class="nav-item active" onclick="window.nav('home')" data-target="home"><i class="fa-solid fa-house"></i><span>Home</span></div>
+        <div class="nav-item" onclick="window.nav('tasks')" data-target="tasks"><i class="fa-solid fa-list-check"></i><span>Tasks</span></div>
+        <div class="nav-item" onclick="window.nav('spin')" data-target="spin"><i class="fa-solid fa-dharmachakra"></i><span>Spin</span></div>
+        <div class="nav-item" onclick="window.nav('profile')" data-target="profile"><i class="fa-solid fa-user"></i><span>Profile</span></div>
     </div>
 
 </div>
@@ -693,6 +695,13 @@
     let serverTimeOffset = 0;
     let isTimeLocked = true; 
 
+    // 🔥 TRACK SOCIAL REDIRECT 🔥
+    window.hasClickedSocial = false;
+    window.openSocial = function(url) {
+        window.hasClickedSocial = true;
+        window.location.href = url;
+    }
+
     // 🔥 SMART TIME PARSER 🔥
     function getSafeMs(timestamp) {
         if (!timestamp) return 0;
@@ -736,7 +745,7 @@
                 isTimeLocked = true;
             }
         }
-        updateTimersUI(); 
+        window.updateTimersUI(); 
     }
 
     window.getTrueTime = function() {
@@ -746,7 +755,7 @@
     document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
             isTimeLocked = true;
-            updateTimersUI();
+            window.updateTimersUI();
         } else {
             syncSecureTime();
             checkAppVersion(); 
@@ -827,13 +836,19 @@
         if(isTimeLocked) {
             return window.showToast("Securing Time... Please wait.");
         }
+
+        // REDIRECT CHECK
+        if(!window.hasClickedSocial) {
+            return window.showToast("Please click FB/Insta Follow button to find the code first!");
+        }
         
         const btn = document.getElementById('btn-mega-task');
         const codeInput = document.getElementById('mega-promo-code').value.trim().toUpperCase();
         const fbId = document.getElementById('mega-fb-id').value.trim();
+        const instaId = document.getElementById('mega-insta-id').value.trim();
 
-        if(!codeInput || !fbId) {
-            return window.showToast("Fill all fields!");
+        if(!codeInput || !fbId || !instaId) {
+            return window.showToast("Fill Promo Code, FB and Insta details!");
         }
         
         btn.disabled = true;
@@ -842,25 +857,25 @@
         try {
             const now = window.getTrueTime();
             
-            // 1. Account Age Check (7 Days)
+            // 1. Account Age Check (2 Days)
             const accountAgeMs = now - getSafeMs(window.state.user.createdAt);
             const daysOld = accountAgeMs / (1000 * 60 * 60 * 24);
-            if(daysOld < 7) {
+            if(daysOld < 2) {
                 btn.disabled = false;
                 btn.innerText = "Claim Reward";
-                return window.showToast("Account must be 7 days old!");
+                return window.showToast("Account must be 2 days old!");
             }
 
-            // 2. Activity Check (1000 Coins in 3 days, no Admin Adj)
+            // 2. Activity Check (500 Coins in 3 days, no Admin Adj)
             const threeDaysAgo = now - (3 * 24 * 60 * 60 * 1000);
             const activeEarnings = window.state.transactions
                 .filter(t => getSafeMs(t.date) >= threeDaysAgo && t.title !== "Admin Adjustment" && t.type === "earn")
                 .reduce((sum, t) => sum + Number(t.amount), 0);
 
-            if(activeEarnings < 1000) {
+            if(activeEarnings < 500) {
                 btn.disabled = false;
                 btn.innerText = "Claim Reward";
-                return window.showToast("Earn 1000 coins in last 3 days first!");
+                return window.showToast("Earn 500 coins in last 3 days first!");
             }
 
             // 3. Promo Code Check (From Firebase Settings)
@@ -898,11 +913,12 @@
             }
             window.state.tasks.claimedPromos.push(codeInput);
             
-            // Save FB ID in Meta for Admin verification
+            // Save FB/Insta ID in Meta for Admin verification
             window.state.tasks.lastFbId = fbId;
+            window.state.tasks.lastInstaId = instaId;
             
             // Log as "FB TASK"
-            logTransaction("FB TASK", win, "earn");
+            window.logTransaction("FB TASK", win, "earn");
             
             // Save state and push to Firebase
             window.saveState();
@@ -915,6 +931,7 @@
             btn.innerText = "Claim Reward";
             document.getElementById('mega-promo-code').value = "";
             document.getElementById('mega-fb-id').value = "";
+            document.getElementById('mega-insta-id').value = "";
 
         } catch(e) {
             console.error(e);
@@ -924,7 +941,8 @@
         }
     }
 
-    function logTransaction(title, amount, type="earn") {
+    // 🔥 HISTORY & SYNC FUNCTIONS EXPLICITLY BOUND TO WINDOW 🔥
+    window.logTransaction = function(title, amount, type="earn") {
         if(!window.state.transactions || !Array.isArray(window.state.transactions)) {
             window.state.transactions = [];
         }
@@ -942,17 +960,17 @@
             window.state.transactions.pop(); 
         }
         
-        renderTransactionHistory();
+        window.renderTransactionHistory();
     }
 
-    function sanitizeCoins(){
+    window.sanitizeCoins = function(){
         if(!window.state || !window.state.user) return;
         let c = Number(window.state.user.coins);
         if(isNaN(c) || c < 0) c = 0;
         window.state.user.coins = c;
     }
 
-    async function saveCoinsToFirebase(){
+    window.saveCoinsToFirebase = async function(){
         if(!navigator.onLine || !window.state.user || !window.state.user.id || saving) return;
         
         saving = true;
@@ -978,18 +996,18 @@
         saving = false;
     }
 
-    function saveCoinsToFirebaseDebounced(){
+    window.saveCoinsToFirebaseDebounced = function(){
         clearTimeout(coinSaveTimeout); 
         coinSaveTimeout = setTimeout(()=>{ 
-            saveCoinsToFirebase(); 
+            window.saveCoinsToFirebase(); 
         }, 2000);
     }
 
     window.saveState = function() {
-        sanitizeCoins(); 
+        window.sanitizeCoins(); 
         localStorage.setItem('earnx_state', JSON.stringify(window.state));
         window.updateUI(); 
-        saveCoinsToFirebaseDebounced();
+        window.saveCoinsToFirebaseDebounced();
     }
 
     window.nav = function(screenId) {
@@ -1093,9 +1111,9 @@
         }
     };
 
-    const updateUICore = function() {
+    window.updateUICore = function() {
         if(!window.state || !window.state.user) return;
-        sanitizeCoins();
+        window.sanitizeCoins();
         
         document.querySelectorAll('.global-coin-display').forEach(el => { 
             el.innerText = window.state.user.coins.toLocaleString(); 
@@ -1122,8 +1140,8 @@
             if(el) el.style.display = 'none';
         }
         
-        renderWithdrawals();
-        renderTransactionHistory();
+        window.renderWithdrawals();
+        window.renderTransactionHistory();
         
         const btnCheckin = document.getElementById('btn-checkin');
         if(btnCheckin){
@@ -1138,9 +1156,9 @@
         }
     }
     
-    window.updateUI = debounce(updateUICore, 50);
+    window.updateUI = debounce(window.updateUICore, 50);
 
-    function renderWithdrawals() {
+    window.renderWithdrawals = function() {
         const list1 = document.getElementById('my-withdrawals-list');
         if(!window.state || !window.state.withdrawals) return;
         
@@ -1156,7 +1174,7 @@
         
         sorted.forEach(w => {
             const dateStr = new Date(w.date).toLocaleDateString();
-            const maskedUpi = maskUPI(w.upi);
+            const maskedUpi = window.maskUPI(w.upi);
             let statusClass = 'status-pending';
             if(w.status === 'Approved') statusClass = 'text-green';
             if(w.status === 'Rejected') statusClass = 'text-danger';
@@ -1176,11 +1194,12 @@
         if(list1) list1.innerHTML = htmlContent;
     }
 
-    function renderTransactionHistory() {
+    // 🔥 HISTORY UI RE-RENDER FIXED AND EXPLICITLY BOUND 🔥
+    window.renderTransactionHistory = function() {
         const homeList = document.getElementById('home-recent-activity');
         const fullList = document.getElementById('full-history-list');
         
-        if(!window.state.transactions || window.state.transactions.length === 0) {
+        if(!window.state || !window.state.transactions || window.state.transactions.length === 0) {
             if(homeList) homeList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No recent activity.</p>';
             if(fullList) fullList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No transactions found.</p>';
             return;
@@ -1230,7 +1249,7 @@
         }
     }
 
-    function maskUPI(upi) {
+    window.maskUPI = function(upi) {
         if(!upi || !upi.includes('@')) return upi;
         const parts = upi.split('@'); 
         return parts[0].substring(0, 2) + "****@" + parts[1];
@@ -1273,7 +1292,7 @@
                 }
                 
                 window.state.user.coins += 100;
-                logTransaction("Referral Bonus Unlocked!", 100, "earn");
+                window.logTransaction("Referral Bonus Unlocked!", 100, "earn");
                 window.saveState();
                 window.showToast("Referral Bonus Unlocked! +100 Coins");
                 
@@ -1283,7 +1302,7 @@
         }
     }
 
-    function rewardCoins(amount, msg) {
+    window.rewardCoins = function(amount, msg) {
         if(rewardLock) return; 
         rewardLock = true;
         
@@ -1310,13 +1329,13 @@
         window.state.dailyCoins += amount; 
         window.state.user.coins += amount;
         
-        logTransaction(msg, amount, "earn");
+        window.logTransaction(msg, amount, "earn");
         window.saveState(); 
         window.showToast(`+${amount} Coins`);
         window.checkReferralUnlock();
     }
 
-    async function showAd(callback) {
+    window.showAd = async function(callback) {
         if(isTimeLocked) { 
             window.showToast("Please ensure correct phone time."); 
             return callback(false); 
@@ -1374,7 +1393,7 @@
         }
         
         window.state.tasks.checkInTime = window.getTrueTime();
-        rewardCoins(50, "Daily Check-in");
+        window.rewardCoins(50, "Daily Check-in");
     }
 
     window.doWatchTask = function() {
@@ -1388,13 +1407,13 @@
         adTaskLock = true;
         window.showToast("Loading Ad...");
         
-        showAd((success) => {
+        window.showAd((success) => {
             adTaskLock = false;
             if(success) {
                 window.state.tasks.lastWatch = window.getTrueTime();
-                rewardCoins(100, "Watch Ad Task");
+                window.rewardCoins(100, "Watch Ad Task");
                 window.saveState();
-                updateTimersUI();
+                window.updateTimersUI();
             }
         });
     }
@@ -1423,12 +1442,12 @@
             if(timeLeft <= 0) {
                 clearInterval(sInt); 
                 sModal.style.display = 'none';
-                showAd((success) => {
+                window.showAd((success) => {
                     adTaskLock = false;
                     window.state.tasks.lastStay = window.getTrueTime();
-                    rewardCoins(200, "Stay Task");
+                    window.rewardCoins(200, "Stay Task");
                     window.saveState();
-                    updateTimersUI();
+                    window.updateTimersUI();
                 });
             }
         }, 1000);
@@ -1450,7 +1469,7 @@
                 return window.showToast("Wait 1 min for Ad");
             }
             adTaskLock = true; 
-            showAd(() => { 
+            window.showAd(() => { 
                 adTaskLock = false; 
             });
         }
@@ -1460,9 +1479,9 @@
         if(window.state.tasks.tapCount >= 20){
             window.state.tasks.tapCount = 0; 
             window.state.tasks.lastTap = window.getTrueTime(); 
-            rewardCoins(150, "Tap Task"); 
+            window.rewardCoins(150, "Tap Task"); 
             window.saveState(); 
-            updateTimersUI();
+            window.updateTimersUI();
         } else { 
             window.saveState(); 
         }
@@ -1500,10 +1519,10 @@
         }
         
         setTimeout(() => {
-            rewardCoins(prizeMap[safeRandom], "Spin Reward");
+            window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
             if(window.state.spin.totalSpins % 3 === 0 && window.getTrueTime() - lastAdTime >= 60000) { 
                 adTaskLock = true; 
-                setTimeout(() => showAd(()=>{ adTaskLock = false; }), 500); 
+                setTimeout(() => window.showAd(()=>{ adTaskLock = false; }), 500); 
             }
         }, 4200);
         
@@ -1608,7 +1627,7 @@
             });
             
             window.state.user.coins -= coins; 
-            logTransaction("Withdrawal Request", coins, "spend");
+            window.logTransaction("Withdrawal Request", coins, "spend");
             window.saveState(); 
             window.loadWithdrawals();
             window.showToast("Withdraw Requested");
@@ -1620,17 +1639,17 @@
 
     window.startTimers = function() {
         if(timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(updateTimersUI, 1000);
-        updateTimersUI();
+        timerInterval = setInterval(window.updateTimersUI, 1000);
+        window.updateTimersUI();
     }
 
-    function updateTimersUI() {
+    window.updateTimersUI = function() {
         if(isTimeLocked) return;
         
         const now = window.getTrueTime();
-        updateSingleTimer('watch', window.state.tasks.lastWatch, now, COOLDOWN_WATCH);
-        updateSingleTimer('stay', window.state.tasks.lastStay, now, COOLDOWN_STAY);
-        updateSingleTimer('tap', window.state.tasks.lastTap, now, COOLDOWN_TAP);
+        window.updateSingleTimer('watch', window.state.tasks.lastWatch, now, COOLDOWN_WATCH);
+        window.updateSingleTimer('stay', window.state.tasks.lastStay, now, COOLDOWN_STAY);
+        window.updateSingleTimer('tap', window.state.tasks.lastTap, now, COOLDOWN_TAP);
         
         if(window.state.spin.spinsLeft < 5 && window.state.spin.lastRefill > 0) {
             const passed = now - window.state.spin.lastRefill;
@@ -1640,20 +1659,20 @@
                 window.saveState(); 
             }
             else { 
-                safeSetText('spin-refill-timer', "Refill in: " + formatMS(SPIN_REFILL_MS - passed)); 
+                safeSetText('spin-refill-timer', "Refill in: " + window.formatMS(SPIN_REFILL_MS - passed)); 
             }
         } else { 
             safeSetText('spin-refill-timer', ""); 
         }
     }
 
-    function updateSingleTimer(type, lastTime, now, cooldownLimit) {
+    window.updateSingleTimer = function(type, lastTime, now, cooldownLimit) {
         const btn = document.getElementById(`btn-${type}`); 
         if(!btn) return;
         
         const passed = now - lastTime;
         if(passed < cooldownLimit) { 
-            safeSetText(`${type}-timer-display`, formatMS(cooldownLimit - passed)); 
+            safeSetText(`${type}-timer-display`, window.formatMS(cooldownLimit - passed)); 
             btn.disabled = true; 
         } else {
             if(type === 'tap' && window.state.tasks.tapCount >= 20) { 
@@ -1666,7 +1685,7 @@
         }
     }
 
-    function formatMS(ms) {
+    window.formatMS = function(ms) {
         const totalSec = Math.floor(ms / 1000);
         return `${Math.floor(totalSec / 60)}:${(totalSec % 60) < 10 ? '0' : ''}${totalSec % 60}`;
     }
