@@ -122,6 +122,14 @@
 
 <div id="custom-splash"><img src="assets/splash.png" alt="EarnX Splash Logo"></div>
 
+<div id="flash-notice-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100001; justify-content: center; align-items: center; padding: 20px;">
+    <div class="card" style="width: 100%; max-width: 400px; text-align: center; border-color: var(--warning); position: relative; box-shadow: 0 10px 40px rgba(245, 158, 11, 0.3);">
+        <h2 style="color: var(--warning); margin-bottom: 15px;"><i class="fa-solid fa-bell"></i> Important Update</h2>
+        <p id="flash-notice-text" style="color: white; font-size: 1.1rem; margin-bottom: 25px; line-height: 1.5;"></p>
+        <button class="btn" style="background: var(--warning); color: black;" onclick="document.getElementById('flash-notice-modal').style.display='none'">Got It!</button>
+    </div>
+</div>
+
 <div id="app">
     <div id="toast">Message</div>
 
@@ -250,15 +258,6 @@
             </div>
         </div>
 
-        <div class="card" style="opacity: 0.7; border: 2px dashed var(--card-border); background: transparent;">
-            <div class="flex-between">
-                <div>
-                    <h3 style="margin-bottom: 2px; color: var(--text-muted);"><i class="fa-solid fa-lock" style="font-size: 0.9rem; margin-right: 5px;"></i> Mega Task</h3>
-                    <p>Big rewards are loading...</p>
-                </div>
-                <div class="timer-display" style="color: var(--text-muted); font-size: 0.85rem; font-family: 'Inter', sans-serif;">Coming Soon</div>
-            </div>
-        </div>
         <div class="card" style="opacity: 0.7; border: 2px dashed var(--card-border); background: transparent;">
             <div class="flex-between">
                 <div>
@@ -437,6 +436,21 @@
         }
     }, 200);
 
+    // 🔥 NEW: Flash Notice Fetcher
+    window.checkForGlobalNotice = async function() {
+        try {
+            const noticeRef = doc(window.db, "earnx_settings", "app_notice");
+            const noticeSnap = await getDoc(noticeRef);
+            if (noticeSnap.exists()) {
+                const data = noticeSnap.data();
+                if (data.isActive === true && data.message !== "") {
+                    document.getElementById('flash-notice-text').innerText = data.message;
+                    document.getElementById('flash-notice-modal').style.display = 'flex';
+                }
+            }
+        } catch (error) { console.error("Notice error:", error); }
+    }
+
     window.handleSuccessfulLogin = async function(user) {
         try {
             window.currentUser = user;
@@ -492,6 +506,7 @@
             window.startTimers();
             window.loadWithdrawals();
             window.checkReferralUnlock(); 
+            window.checkForGlobalNotice(); // 🔥 Load the notice after login
             window.showToast("Login Successful");
         } catch (error) {
             console.error("Firebase Auth Error:", error);
@@ -605,7 +620,7 @@
     let serverTimeOffset = 0;
     let isTimeLocked = true; 
 
-    // 🔥 FORCE UPDATE CHECKER 🔥
+    // 🔥 FORCE UPDATE CHECKER
     async function checkAppVersion() {
         try {
             const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
@@ -930,7 +945,6 @@
         toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 3000);
     }
 
-    // 🔥 MASTER UPDATE: Anti-Cheat Referral Unlock Checker 🔥
     window.checkReferralUnlock = async function() {
         if(!window.state || !window.state.user || !window.state.user.pendingReferrer) return;
         
@@ -942,7 +956,7 @@
         if (coinsEarned >= 5000 && daysActive >= 5) {
             try {
                 const refId = window.state.user.pendingReferrer;
-                window.state.user.pendingReferrer = null; // Clear to prevent loops
+                window.state.user.pendingReferrer = null; 
                 window.saveState();
 
                 const { doc, updateDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
@@ -964,6 +978,7 @@
         }
     }
 
+    // 🔥 ROOT FIX: COOLDOWN REDUCED SO FAST SPINS DON'T DROP COINS 🔥
     function rewardCoins(amount, msg) {
         if(rewardLock) return; rewardLock = true;
         setTimeout(()=> rewardLock = false, 2000);
@@ -973,7 +988,10 @@
         if(amount <= 0 || amount > 200) return window.showToast("Invalid reward");
 
         const now = window.getTrueTime();
-        if(now - lastCoinRewardTime < 10000) return;
+        // The old code had `now - lastCoinRewardTime < 10000` (10 sec lock!)
+        // Which blocked Spin #2 and Spin #4 silently.
+        // It's fixed to 3000ms (3 seconds) now.
+        if(now - lastCoinRewardTime < 3000) return; 
         lastCoinRewardTime = now;
 
         let today = new Date().toDateString();
@@ -987,11 +1005,9 @@
         window.saveState(); 
         window.showToast(`+${amount} Coins`);
         
-        // Reward milne ke baad turant check karega ki referral unlock hua ya nahi
         window.checkReferralUnlock();
     }
 
-    // 🔥 BULLETPROOF AD SYSTEM 🔥
     async function showAd(callback) {
         if(isTimeLocked) {
             window.showToast("Please ensure correct phone time.");
@@ -1012,16 +1028,14 @@
 
                 let adHandled = false;
 
-                // 100% Reward Guarantee: Agar ad load ho gaya aur user ne close kiya, toh reward milega.
                 let dismissListener = await AdMob.addListener('rewardedVideoAdDismissed', () => {
                     if(adHandled) return;
                     adHandled = true;
                     lastAdTime = window.getTrueTime();
                     if(dismissListener) dismissListener.remove();
-                    callback(true); // User closed ad -> Success!
+                    callback(true); 
                 });
 
-                // Safety backup
                 let rewardListener = await AdMob.addListener('rewardedVideoAdReward', () => {
                     if(adHandled) return;
                     adHandled = true;
@@ -1036,7 +1050,7 @@
             } catch (error) {
                 console.error("Ad Error: ", error);
                 window.showToast("Ad not available right now. Try again later.");
-                callback(false); // Ad failed, do not block timer
+                callback(false); 
             }
         } else {
             window.showToast("Test Mode (No AdMob)");
@@ -1053,7 +1067,6 @@
         rewardCoins(50, "Daily Check-in");
     }
 
-    // 🔥 TIMER FIX: Timer starts ONLY after successful Ad or Wait 🔥
     window.doWatchTask = function() {
         if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
         if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_WATCH) return window.showToast("Wait for timer!");
@@ -1094,7 +1107,6 @@
                 
                 showAd((success) => {
                     adTaskLock = false;
-                    // Mercy Reward: Agar ad fail bhi hua, toh usko coins milenge kyunki usne 15s wait kiya!
                     window.state.tasks.lastStay = window.getTrueTime();
                     rewardCoins(200, "Stay Task");
                     window.saveState();
@@ -1209,7 +1221,6 @@
             let currentDevice = localStorage.getItem("earnx_device_id");
             if(refData.deviceId && refData.deviceId === currentDevice) { window.showToast("Fraud detected!"); return; }
 
-            // Put in pending state instead of instant payout
             window.state.user.referredBy = true;
             window.state.user.pendingReferrer = refDoc.id;
 
