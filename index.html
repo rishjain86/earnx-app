@@ -431,7 +431,6 @@
                 <li><strong>Anti-Cheat:</strong> Use of VPN, bots, auto-clickers, or multiple accounts on one device will lead to a permanent ban and forfeiture of balance.</li>
                 <li><strong>Mega Task Warning:</strong> Following FB & Insta is mandatory. Unfollowing after getting coins will lead to coin deduction and permanent block.</li>
                 <li><strong>App Rights:</strong> We reserve the right to reject suspicious activity and update these terms at any time.</li>
-                <li><strong>Profile Completion:</strong> User must complete his profile details before initiating withdrawal. Till profile incomplete withdrawal will not be processed.</li>
             </ul>
         </div>
     </div>
@@ -552,6 +551,23 @@
                 window.state.transactions = [];
             } else {
                 const data = snap.data();
+
+                // 🔥 BLOCK SYSTEM CHECK 🔥
+                if (data.isBlocked === true) {
+                    window.showToast("🚫 Your account is BLOCKED by Admin.");
+                    setTimeout(() => { window.logout(); }, 2500); // 2.5 sec baad app se bahar
+                    return; // Aage ka code nahi chalega
+                }
+
+                // 🔥 PERSONAL ALERT CHECK 🔥
+                if (data.personalAlert && data.personalAlert.trim() !== "") {
+                    alert("⚠️ ADMIN WARNING ⚠️\n\n" + data.personalAlert);
+                    // Ek baar dikhane ke baad Firebase se alert mita denge
+                    try {
+                        await updateDoc(ref, { personalAlert: "" });
+                    } catch(e) { console.log("Failed to clear alert"); }
+                }
+
                 window.state.user = {
                     ...(window.state.user || {}),
                     id: user.uid,
