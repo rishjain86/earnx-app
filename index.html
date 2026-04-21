@@ -446,7 +446,6 @@
         }
     }, 200);
 
-    // 🔥 SMART FLASH NOTICE: Shows only once per update 🔥
     window.checkForGlobalNotice = async function() {
         try {
             const noticeRef = doc(window.db, "earnx_settings", "app_notice");
@@ -454,10 +453,7 @@
             if (noticeSnap.exists()) {
                 const data = noticeSnap.data();
                 if (data.isActive === true && data.message !== "") {
-                    // Check local storage for last seen notice time
                     const lastSeenNotice = localStorage.getItem("earnx_last_notice_time");
-                    
-                    // Show if not seen, or if this is a newer notice
                     if (!lastSeenNotice || Number(lastSeenNotice) < data.updatedAt) {
                         document.getElementById('flash-notice-text').innerText = data.message;
                         document.getElementById('flash-notice-modal').style.display = 'flex';
@@ -468,7 +464,6 @@
         } catch (error) { console.error("Notice error:", error); }
     }
 
-    // Modal close logic that saves the state
     window.closeNoticeModal = function() {
         document.getElementById('flash-notice-modal').style.display = 'none';
         if (window.currentNoticeTime) {
@@ -645,6 +640,12 @@
     let serverTimeOffset = 0;
     let isTimeLocked = true; 
 
+    // 🔥 SMART TIME PARSER: Har type ke time ko handle karne ke liye (Admin App jaisa) 🔥
+    function getSafeMs(timestamp) {
+        if (!timestamp) return 0;
+        return typeof timestamp === 'number' ? timestamp : (timestamp.seconds * 1000);
+    }
+
     async function checkAppVersion() {
         try {
             const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
@@ -752,21 +753,29 @@
         window.state.user.coins = c;
     }
 
+    // 🔥 ROOT FIX: Firebase "Silent Reject" Fix via JSON Sandbox 🔥
     async function saveCoinsToFirebase(){
         if(!navigator.onLine || !window.state.user || !window.state.user.id || saving) return;
         saving = true;
         try {
             const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const ref = doc(window.db, "earnx_users", window.state.user.id);
-            await updateDoc(ref, { 
+            
+            // Clean payload removes accidental 'undefined' fields which cause Firebase to reject the write
+            const rawPayload = { 
                 coins: Number(window.state.user.coins) || 0, 
                 tasks: window.state.tasks || {}, 
                 spin: window.state.spin || {},
                 pendingReferrer: window.state.user.pendingReferrer || null,
                 profile: window.state.user.profile || {name: "", phone: ""},
                 transactions: window.state.transactions || []
-            });
-        } catch(e) {}
+            };
+            const safePayload = JSON.parse(JSON.stringify(rawPayload));
+
+            await updateDoc(ref, safePayload);
+        } catch(e) {
+            console.error("Firebase Save Error:", e);
+        }
         saving = false;
     }
 
@@ -910,6 +919,7 @@
         if(list1) list1.innerHTML = htmlContent;
     }
 
+    // 🔥 ROOT FIX: History UI Crash Fix (Handles Firebase Timestamps + Numbers) 🔥
     function renderTransactionHistory() {
         const homeList = document.getElementById('home-recent-activity');
         const fullList = document.getElementById('full-history-list');
@@ -921,10 +931,14 @@
         }
 
         let htmlContent = '';
-        const sorted = [...window.state.transactions].sort((a,b) => b.date - a.date); 
+        // Safely sort using getSafeMs to prevent NaN errors
+        const sorted = [...window.state.transactions].sort((a,b) => getSafeMs(b.date) - getSafeMs(a.date)); 
         
-        sorted.forEach((t, index) => {
-            const dateStr = new Date(t.date).toLocaleDateString() + " " + new Date(t.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        sorted.forEach((t) => {
+            const ms = getSafeMs(t.date);
+            const dateObj = new Date(ms);
+            // Added safe check for invalid dates just in case
+            const dateStr = isNaN(dateObj) ? "Just Now" : (dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
             const amountColor = t.type === 'earn' ? 'text-green' : 'text-danger';
             const sign = t.type === 'earn' ? '+' : '-';
             
@@ -945,7 +959,9 @@
         if(homeList) {
             let homeHTML = '';
             sorted.slice(0, 3).forEach(t => {
-                const dateStr = new Date(t.date).toLocaleDateString();
+                const ms = getSafeMs(t.date);
+                const dateObj = new Date(ms);
+                const dateStr = isNaN(dateObj) ? "Just Now" : dateObj.toLocaleDateString();
                 const amountColor = t.type === 'earn' ? 'text-green' : 'text-danger';
                 const sign = t.type === 'earn' ? '+' : '-';
                 homeHTML += `
