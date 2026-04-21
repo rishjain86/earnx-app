@@ -446,6 +446,7 @@
         }
     }, 200);
 
+    // 🔥 SMART FLASH NOTICE: Shows only once & makes Links Clickable 🔥
     window.checkForGlobalNotice = async function() {
         try {
             const noticeRef = doc(window.db, "earnx_settings", "app_notice");
@@ -453,9 +454,21 @@
             if (noticeSnap.exists()) {
                 const data = noticeSnap.data();
                 if (data.isActive === true && data.message !== "") {
+                    // Check local storage for last seen notice time
                     const lastSeenNotice = localStorage.getItem("earnx_last_notice_time");
+                    
+                    // Show if not seen, or if this is a newer notice
                     if (!lastSeenNotice || Number(lastSeenNotice) < data.updatedAt) {
-                        document.getElementById('flash-notice-text').innerText = data.message;
+                        
+                        // 🚀 JADOO YAHAN HAI: Auto-Linkify & Newline Fix
+                        let rawMessage = data.message;
+                        // URL ko clickable anchor tag me badlo
+                        let formattedMsg = rawMessage.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #10b981; text-decoration: underline; font-weight: bold;">Link Par Click Karein</a>');
+                        // Enter (newline) ko HTML ke <br> me badlo taaki formatting na bigde
+                        formattedMsg = formattedMsg.replace(/\n/g, '<br>');
+
+                        // innerText ki jagah innerHTML use kiya taaki link active ho jaye
+                        document.getElementById('flash-notice-text').innerHTML = formattedMsg;
                         document.getElementById('flash-notice-modal').style.display = 'flex';
                         window.currentNoticeTime = data.updatedAt;
                     }
