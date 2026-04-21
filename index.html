@@ -126,7 +126,7 @@
     <div class="card" style="width: 100%; max-width: 400px; text-align: center; border-color: var(--warning); position: relative; box-shadow: 0 10px 40px rgba(245, 158, 11, 0.3);">
         <h2 style="color: var(--warning); margin-bottom: 15px;"><i class="fa-solid fa-bell"></i> Important Update</h2>
         <p id="flash-notice-text" style="color: white; font-size: 1.1rem; margin-bottom: 25px; line-height: 1.5;"></p>
-        <button class="btn" style="background: var(--warning); color: black;" onclick="document.getElementById('flash-notice-modal').style.display='none'">Got It!</button>
+        <button class="btn" style="background: var(--warning); color: black;" onclick="closeNoticeModal()">Got It!</button>
     </div>
 </div>
 
@@ -446,6 +446,7 @@
         }
     }, 200);
 
+    // 🔥 SMART FLASH NOTICE: Shows only once per update 🔥
     window.checkForGlobalNotice = async function() {
         try {
             const noticeRef = doc(window.db, "earnx_settings", "app_notice");
@@ -453,11 +454,26 @@
             if (noticeSnap.exists()) {
                 const data = noticeSnap.data();
                 if (data.isActive === true && data.message !== "") {
-                    document.getElementById('flash-notice-text').innerText = data.message;
-                    document.getElementById('flash-notice-modal').style.display = 'flex';
+                    // Check local storage for last seen notice time
+                    const lastSeenNotice = localStorage.getItem("earnx_last_notice_time");
+                    
+                    // Show if not seen, or if this is a newer notice
+                    if (!lastSeenNotice || Number(lastSeenNotice) < data.updatedAt) {
+                        document.getElementById('flash-notice-text').innerText = data.message;
+                        document.getElementById('flash-notice-modal').style.display = 'flex';
+                        window.currentNoticeTime = data.updatedAt;
+                    }
                 }
             }
         } catch (error) { console.error("Notice error:", error); }
+    }
+
+    // Modal close logic that saves the state
+    window.closeNoticeModal = function() {
+        document.getElementById('flash-notice-modal').style.display = 'none';
+        if (window.currentNoticeTime) {
+            localStorage.setItem("earnx_last_notice_time", window.currentNoticeTime);
+        }
     }
 
     window.handleSuccessfulLogin = async function(user) {
@@ -605,7 +621,7 @@
 
 <script>
     /* === GLOBAL VARIABLES & VERSION CONTROL === */
-    const APP_VERSION = 3.0; 
+    const APP_VERSION = 3.0; // 🔥 UPDATED TO 3.0 🔥
     
     const COIN_RATE = 100; 
     const COOLDOWN_WATCH = 15 * 60 * 1000; 
@@ -1158,7 +1174,6 @@
         window.saveState();
 
         const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6);
-        // 🔥 FIXED: Added exactly -30 degrees to match the center of the CSS rotated elements 🔥
         const targetDeg = (360 * 5) + (360 - (safeRandom * 60)) - 30 + (Math.random() * 40 - 20);
         
         const wheel = document.getElementById('wheel-inner');
