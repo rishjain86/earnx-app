@@ -116,11 +116,31 @@
         #custom-splash img { width: 70vw; max-width: 400px; height: auto; object-fit: contain; animation: pulse-splash 1.5s infinite alternate; }
         @keyframes pulse-splash { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.05); opacity: 1; } }
         .app-logo { width: 60vw; max-width: 300px; height: auto; margin-bottom: 20px; object-fit: contain; filter: drop-shadow(0px 10px 15px rgba(16, 185, 129, 0.4)); }
+
+        /* 🥳 Celebration Modal Styling 🥳 */
+        #celebration-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100002; justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 20px; }
+        .congrats-card { background: var(--card-bg); border: 2px solid var(--primary); border-radius: 24px; padding: 40px 20px; width: 100%; max-width: 350px; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; }
+        @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .win-amount { font-size: 3.5rem; font-weight: 800; color: gold; margin: 15px 0; text-shadow: 0 0 20px rgba(255,215,0,0.5); }
+        
+        .confetti-piece { position: absolute; width: 10px; height: 10px; background: #ffd700; top: -20px; opacity: 0; animation: confettiDrop 3s infinite linear; }
+        @keyframes confettiDrop { from { top: -20px; opacity: 1; transform: rotate(0deg); } to { top: 100%; opacity: 0; transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div id="custom-splash"><img src="assets/splash.png" alt="EarnX Splash Logo"></div>
+
+<div id="celebration-modal">
+    <div class="congrats-card">
+        <i class="fa-solid fa-crown" style="font-size: 4rem; color: gold; margin-bottom: 10px;"></i>
+        <h2 style="color: white; font-size: 1.8rem;">CONGRATULATIONS!</h2>
+        <p style="color: var(--text-muted);">You won from FB Loot Task</p>
+        <div class="win-amount" id="win-display">0</div>
+        <p style="color: var(--primary); font-weight: bold; margin-bottom: 25px;">Coins Added to Wallet ✓</p>
+        <button class="btn" onclick="document.getElementById('celebration-modal').style.display='none'">Awesome!</button>
+    </div>
+</div>
 
 <div id="flash-notice-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100001; justify-content: center; align-items: center; padding: 20px;">
     <div class="card" style="width: 100%; max-width: 400px; text-align: center; border-color: var(--warning); position: relative; box-shadow: 0 10px 40px rgba(245, 158, 11, 0.3);">
@@ -231,6 +251,33 @@
             <div class="coin-badge" onclick="nav('history')"><span class="global-coin-display">0</span></div>
         </div>
 
+        <div class="card" style="border: 1px solid var(--primary); background: linear-gradient(to right, #1e293b, #0f172a);">
+            <div class="flex-between mb-1">
+                <div>
+                    <h3 style="color: var(--primary); margin-bottom: 2px;"><i class="fa-solid fa-star"></i> MEGA TASK: FB LOOT</h3>
+                    <p>Earn up to 1,000 Coins!</p>
+                </div>
+                <div style="background: rgba(16, 185, 129, 0.2); padding: 5px 10px; border-radius: 5px; font-weight: bold; color: var(--primary); font-size: 0.8rem;">ACTIVE</div>
+            </div>
+            
+            <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; font-size: 0.75rem; color: var(--text-muted); text-align: left; margin-bottom: 15px;">
+                <b style="color: var(--warning);">Terms & Conditions:</b><br>
+                1. Account age 7+ days required.<br>
+                2. Must earn 1000 coins in last 3 days (tasks/spin only).<br>
+                3. Must Follow FB/Insta. Fake ID = Coin Deduction.
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.8rem;" onclick="window.location.href='https://www.facebook.com/share/1Gh2PDFQEz/'"><i class="fa-brands fa-facebook"></i> Follow FB</button>
+                <button class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.8rem;" onclick="window.location.href='https://www.instagram.com/earnx_admin'"><i class="fa-brands fa-instagram"></i> Follow Insta</button>
+            </div>
+
+            <input type="text" id="mega-promo-code" placeholder="Enter Promo Code (Find on FB Page)" style="text-transform: uppercase;">
+            <input type="text" id="mega-fb-id" placeholder="Enter your FB Username/URL">
+            
+            <button class="btn" id="btn-mega-task" onclick="doMegaTask()">Claim Reward</button>
+        </div>
+
         <div class="card">
             <div class="flex-between mb-1">
                 <div><h3 style="margin-bottom: 2px;">Watch Ad</h3><p>Reward: 100 Coins</p></div>
@@ -255,26 +302,6 @@
             <div class="flex-between">
                 <div style="font-size: 1.2rem; font-weight: bold;"><span id="tap-count">0</span> / 20</div>
                 <button class="btn" id="btn-tap" style="width: auto; padding: 10px 30px;" onclick="doTapTask()">TAP ME</button>
-            </div>
-        </div>
-
-        <div class="card" style="opacity: 0.7; border: 2px dashed var(--card-border); background: transparent;">
-            <div class="flex-between">
-                <div>
-                    <h3 style="margin-bottom: 2px; color: var(--text-muted);"><i class="fa-solid fa-lock" style="font-size: 0.9rem; margin-right: 5px;"></i> Mega Task</h3>
-                    <p>Big rewards are loading...</p>
-                </div>
-                <div class="timer-display" style="color: var(--text-muted); font-size: 0.85rem; font-family: 'Inter', sans-serif;">Coming Soon</div>
-            </div>
-        </div>
-
-        <div class="card" style="opacity: 0.7; border: 2px dashed var(--card-border); background: transparent;">
-            <div class="flex-between">
-                <div>
-                    <h3 style="margin-bottom: 2px; color: var(--text-muted);"><i class="fa-solid fa-lock" style="font-size: 0.9rem; margin-right: 5px;"></i> App Install</h3>
-                    <p>Install & earn 500+ coins</p>
-                </div>
-                <div class="timer-display" style="color: var(--text-muted); font-size: 0.85rem; font-family: 'Inter', sans-serif;">Coming Soon</div>
             </div>
         </div>
     </div>
@@ -446,7 +473,6 @@
         }
     }, 200);
 
-    // 🔥 SMART FLASH NOTICE: Expanded and Formatted 🔥
     window.checkForGlobalNotice = async function() {
         try {
             const noticeRef = doc(window.db, "earnx_settings", "app_notice");
@@ -459,11 +485,7 @@
                     
                     if (!lastSeenNotice || Number(lastSeenNotice) < data.updatedAt) {
                         let rawMessage = data.message;
-                        
-                        // URL ko clickable banaye
                         let formattedMsg = rawMessage.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #10b981; text-decoration: underline; font-weight: bold;">Link Par Click Karein</a>');
-                        
-                        // New line enter ko br tag me convert kare
                         formattedMsg = formattedMsg.replace(/\n/g, '<br>');
                         
                         document.getElementById('flash-notice-text').innerHTML = formattedMsg;
@@ -647,7 +669,7 @@
 
 <script>
     /* === GLOBAL VARIABLES & VERSION CONTROL === */
-    const APP_VERSION = 3.0; // 🔥 UPDATED TO 3.0 🔥
+    const APP_VERSION = 3.0;
     
     const COIN_RATE = 100; 
     const COOLDOWN_WATCH = 15 * 60 * 1000; 
@@ -671,7 +693,7 @@
     let serverTimeOffset = 0;
     let isTimeLocked = true; 
 
-    // 🔥 SMART TIME PARSER: History Crash Fix 🔥
+    // 🔥 SMART TIME PARSER 🔥
     function getSafeMs(timestamp) {
         if (!timestamp) return 0;
         return typeof timestamp === 'number' ? timestamp : (timestamp.seconds * 1000);
@@ -785,7 +807,123 @@
         }, 1000);
     });
 
-    // 🔥 SYNC FIX: Array Re-Initialize and Immediate Update 🔥
+    // 🔥 CONFETTI CELEBRATION FUNCTION 🔥
+    window.launchCelebration = function() {
+        const modal = document.getElementById('celebration-modal');
+        modal.style.display = 'flex';
+        for(let i=0; i<50; i++) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.left = Math.random() * 100 + '%';
+            piece.style.backgroundColor = ['#ffd700','#10b981','#ffffff','#f59e0b'][Math.floor(Math.random()*4)];
+            piece.style.animationDelay = Math.random() * 2 + 's';
+            modal.appendChild(piece);
+            setTimeout(() => piece.remove(), 3000);
+        }
+    }
+
+    // 🔥 MEGA TASK FB LOOT LOGIC 🔥
+    window.doMegaTask = async function() {
+        if(isTimeLocked) {
+            return window.showToast("Securing Time... Please wait.");
+        }
+        
+        const btn = document.getElementById('btn-mega-task');
+        const codeInput = document.getElementById('mega-promo-code').value.trim().toUpperCase();
+        const fbId = document.getElementById('mega-fb-id').value.trim();
+
+        if(!codeInput || !fbId) {
+            return window.showToast("Fill all fields!");
+        }
+        
+        btn.disabled = true;
+        btn.innerText = "Verifying...";
+
+        try {
+            const now = window.getTrueTime();
+            
+            // 1. Account Age Check (7 Days)
+            const accountAgeMs = now - getSafeMs(window.state.user.createdAt);
+            const daysOld = accountAgeMs / (1000 * 60 * 60 * 24);
+            if(daysOld < 7) {
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
+                return window.showToast("Account must be 7 days old!");
+            }
+
+            // 2. Activity Check (1000 Coins in 3 days, no Admin Adj)
+            const threeDaysAgo = now - (3 * 24 * 60 * 60 * 1000);
+            const activeEarnings = window.state.transactions
+                .filter(t => getSafeMs(t.date) >= threeDaysAgo && t.title !== "Admin Adjustment" && t.type === "earn")
+                .reduce((sum, t) => sum + Number(t.amount), 0);
+
+            if(activeEarnings < 1000) {
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
+                return window.showToast("Earn 1000 coins in last 3 days first!");
+            }
+
+            // 3. Promo Code Check (From Firebase Settings)
+            const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            const promoSnap = await getDoc(doc(window.db, "earnx_settings", "active_promo"));
+            
+            if(!promoSnap.exists() || codeInput !== promoSnap.data().code.toUpperCase()) {
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
+                return window.showToast("Invalid Promo Code!");
+            }
+
+            // 4. One-time usage check
+            if(window.state.tasks.claimedPromos && window.state.tasks.claimedPromos.includes(codeInput)) {
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
+                return window.showToast("Already claimed this code!");
+            }
+
+            // 5. Probability Reward Logic
+            const rand = Math.random() * 100;
+            let win = 0;
+            if(rand < 50) {
+                win = 500; // 50% chance
+            } else if(rand < 90) {
+                win = Math.floor(Math.random() * (400 - 100 + 1)) + 100; // 40% chance between 100-400
+            } else {
+                win = 1000; // 10% Jackpot
+            }
+
+            // 6. Execute Reward
+            window.state.user.coins += win;
+            if(!window.state.tasks.claimedPromos) {
+                window.state.tasks.claimedPromos = [];
+            }
+            window.state.tasks.claimedPromos.push(codeInput);
+            
+            // Save FB ID in Meta for Admin verification
+            window.state.tasks.lastFbId = fbId;
+            
+            // Log as "FB TASK"
+            logTransaction("FB TASK", win, "earn");
+            
+            // Save state and push to Firebase
+            window.saveState();
+
+            // 7. Celebration
+            document.getElementById('win-display').innerText = win;
+            window.launchCelebration();
+            
+            btn.disabled = false;
+            btn.innerText = "Claim Reward";
+            document.getElementById('mega-promo-code').value = "";
+            document.getElementById('mega-fb-id').value = "";
+
+        } catch(e) {
+            console.error(e);
+            btn.disabled = false;
+            btn.innerText = "Claim Reward";
+            window.showToast("Task Error. Check internet connection.");
+        }
+    }
+
     function logTransaction(title, amount, type="earn") {
         if(!window.state.transactions || !Array.isArray(window.state.transactions)) {
             window.state.transactions = [];
@@ -804,7 +942,6 @@
             window.state.transactions.pop(); 
         }
         
-        // Immediate UI render for logs
         renderTransactionHistory();
     }
 
@@ -815,7 +952,6 @@
         window.state.user.coins = c;
     }
 
-    // 🔥 ROOT FIX: Firebase "Silent Reject" Fix via JSON Parsing 🔥
     async function saveCoinsToFirebase(){
         if(!navigator.onLine || !window.state.user || !window.state.user.id || saving) return;
         
@@ -824,7 +960,6 @@
             const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const ref = doc(window.db, "earnx_users", window.state.user.id);
             
-            // Clean payload removes accidental 'undefined' fields
             const rawPayload = { 
                 coins: Number(window.state.user.coins) || 0, 
                 tasks: window.state.tasks || {}, 
@@ -1041,7 +1176,6 @@
         if(list1) list1.innerHTML = htmlContent;
     }
 
-    // 🔥 HISTORY UI RE-RENDER FIXED (Handles all object types safely) 🔥
     function renderTransactionHistory() {
         const homeList = document.getElementById('home-recent-activity');
         const fullList = document.getElementById('full-history-list');
@@ -1149,7 +1283,6 @@
         }
     }
 
-    // 🔥 SPIN WHEEL COOLDOWN FIX (3000ms) 🔥
     function rewardCoins(amount, msg) {
         if(rewardLock) return; 
         rewardLock = true;
@@ -1355,7 +1488,6 @@
         window.saveState();
         
         const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6);
-        // 🔥 CENTER OFFSET ADDED (- 30) 🔥
         const targetDeg = (360 * 5) + (360 - (safeRandom * 60)) - 30 + (Math.random() * 40 - 20);
         
         const wheel = document.getElementById('wheel-inner');
