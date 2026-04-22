@@ -64,6 +64,7 @@
         
         input { width: 100%; background: var(--bg-darker); border: 1px solid var(--card-border); color: white; padding: 14px; border-radius: 10px; font-size: 1rem; margin-bottom: 15px; outline: none; transition: border 0.3s; }
         input:focus { border-color: var(--primary); }
+        input:disabled { background: rgba(0,0,0,0.5); color: var(--text-muted); border-color: var(--card-border); cursor: not-allowed; }
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: var(--card-bg); border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
@@ -392,7 +393,12 @@
             <h3 id="profile-phone">Loading...</h3>
             
             <div style="text-align: left; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--card-border);">
-                <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Full Name</label>
+                
+                <div id="profile-lock-msg" style="display: none; font-size: 0.75rem; color: var(--warning); margin-bottom: 15px; background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 8px; border: 1px solid var(--warning);">
+                    <i class="fa-solid fa-lock"></i> Profile details are locked. Contact Admin to make changes.
+                </div>
+
+                <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Full Name (Must match UPI Name)</label>
                 <input type="text" id="profile-name-input" placeholder="Enter your full name">
                 
                 <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Mobile Number</label>
@@ -425,8 +431,8 @@
         <div class="card">
             <ul class="tc-list">
                 <li><strong>Virtual Currency:</strong> Coins are purely virtual rewards. 10,000 Coins = ₹100 Cash.</li>
+                <li><strong>Profile & Withdrawal Rules:</strong> Withdrawals will only be processed if your Profile is 100% complete. Your Profile Name MUST match the name on your UPI ID exactly. If data mismatches, your payout will be declined or kept pending. <b>Profile details can only be saved ONCE</b>, so fill them carefully! Minimum withdrawal is 10,000 Coins.</li>
                 <li><strong>Referral Bonus Rules:</strong> 100 Coins are credited to both users ONLY after the referred user stays active for 5 days AND earns a minimum of 5,000 coins.</li>
-                <li><strong>Withdrawal Policy:</strong> Minimum withdrawal is 10,000 Coins (₹100). Verification takes 48-72 hours.</li>
                 <li><strong>Task Rules:</strong> You must complete ads and stay tasks fully. Closing them early will result in 0 rewards.</li>
                 <li><strong>Anti-Cheat:</strong> Use of VPN, bots, auto-clickers, or multiple accounts on one device will lead to a permanent ban and forfeiture of balance.</li>
                 <li><strong>Mega Task Warning:</strong> Following FB & Insta is mandatory. Unfollowing after getting coins will lead to coin deduction and permanent block.</li>
@@ -687,7 +693,7 @@
 
 <script>
     /* === GLOBAL VARIABLES & VERSION CONTROL === */
-    const APP_VERSION = 3.0;
+    const APP_VERSION = 4.0;
     
     const COIN_RATE = 100; 
     const COOLDOWN_WATCH = 15 * 60 * 1000; 
@@ -1090,7 +1096,15 @@
         if(el) el.innerText = value; 
     }
 
+    // 🔥 PROFILE SAVE UPDATED WITH LOCK SYSTEM 🔥
     window.saveProfileDetails = async function() {
+        const hasName = window.state.user.profile && window.state.user.profile.name && window.state.user.profile.name.trim() !== "";
+        const hasPhone = window.state.user.profile && window.state.user.profile.phone && window.state.user.profile.phone.trim() !== "";
+        
+        if (hasName && hasPhone) {
+            return window.showToast("Profile is locked and cannot be changed.");
+        }
+
         const nameVal = document.getElementById('profile-name-input').value.trim();
         const phoneVal = document.getElementById('profile-phone-input').value.trim();
         const btn = document.getElementById('btn-save-profile');
@@ -1113,13 +1127,10 @@
             window.state.user.profile.phone = phoneVal;
             window.saveState();
             
-            btn.innerText = "Details Saved ✓";
-            window.showToast("Profile Updated!");
+            btn.innerText = "Profile Locked 🔒";
+            window.showToast("Profile Saved & Locked!");
             
-            setTimeout(() => { 
-                btn.innerText = "Save Details"; 
-                btn.disabled = false; 
-            }, 3000);
+            window.updateUICore(); 
         } catch(e) {
             btn.innerText = "Save Details";
             btn.disabled = false;
@@ -1144,11 +1155,31 @@
         
         const nameInput = document.getElementById('profile-name-input');
         const phoneInput = document.getElementById('profile-phone-input');
-        if(nameInput && window.state.user.profile && window.state.user.profile.name) {
-            nameInput.value = window.state.user.profile.name;
-        }
-        if(phoneInput && window.state.user.profile && window.state.user.profile.phone) {
-            phoneInput.value = window.state.user.profile.phone;
+        const btnSaveProfile = document.getElementById('btn-save-profile');
+        const lockMsg = document.getElementById('profile-lock-msg');
+
+        if(nameInput && phoneInput && btnSaveProfile) {
+            const hasName = window.state.user.profile && window.state.user.profile.name && window.state.user.profile.name.trim() !== "";
+            const hasPhone = window.state.user.profile && window.state.user.profile.phone && window.state.user.profile.phone.trim() !== "";
+            
+            if(hasName && hasPhone) {
+                nameInput.value = window.state.user.profile.name;
+                phoneInput.value = window.state.user.profile.phone;
+                nameInput.disabled = true;
+                phoneInput.disabled = true;
+                btnSaveProfile.disabled = true;
+                btnSaveProfile.innerText = "Profile Locked 🔒";
+                if(lockMsg) lockMsg.style.display = "block";
+            } else {
+                nameInput.disabled = false;
+                phoneInput.disabled = false;
+                btnSaveProfile.disabled = false;
+                btnSaveProfile.innerText = "Save Details";
+                if(lockMsg) lockMsg.style.display = "none";
+                
+                if(window.state.user.profile.name) nameInput.value = window.state.user.profile.name;
+                if(window.state.user.profile.phone) phoneInput.value = window.state.user.profile.phone;
+            }
         }
         
         if(window.state.user.referredBy){
@@ -1351,7 +1382,6 @@
         window.checkReferralUnlock();
     }
 
-    // 🔥 NEW ADMOB FUNCTION (AdGuard / Fail Safe) 🔥
     window.showAd = async function(callback) {
         if(isTimeLocked) { 
             window.showToast("Please ensure correct phone time."); 
@@ -1493,7 +1523,6 @@
             adTaskLock = true; 
             window.showAd((success) => { 
                 adTaskLock = false; 
-                // yaha sirf ad play hota hai 10th tap par. Coins 20th par hi milenge.
             });
         }
         
