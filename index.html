@@ -571,8 +571,12 @@
         if (window.Capacitor) {
             const webSec = document.getElementById('web-login-section');
             const appSec = document.getElementById('app-login-section');
-            if(webSec) webSec.style.display = 'none';
-            if(appSec) appSec.style.display = 'block';
+            if(webSec) {
+                webSec.style.display = 'none';
+            }
+            if(appSec) {
+                appSec.style.display = 'block';
+            }
         }
     }, 200);
 
@@ -597,12 +601,16 @@
                     }
                 }
             }
-        } catch (error) {}
+        } catch (error) {
+            console.error("Notice error:", error);
+        }
     }
 
     window.closeNoticeModal = function() {
         document.getElementById('flash-notice-modal').style.display = 'none';
-        if (window.currentNoticeTime) localStorage.setItem("earnx_last_notice_time", window.currentNoticeTime);
+        if (window.currentNoticeTime) {
+            localStorage.setItem("earnx_last_notice_time", window.currentNoticeTime);
+        }
     }
 
     window.handleSuccessfulLogin = async function(user) {
@@ -612,7 +620,10 @@
             const snap = await getDoc(ref);
 
             let deviceId = localStorage.getItem("earnx_device_id");
-            if(!deviceId){ deviceId = "DEV_" + Math.random().toString(36).substring(2, 15); localStorage.setItem("earnx_device_id", deviceId); }
+            if(!deviceId){
+                deviceId = "DEV_" + Math.random().toString(36).substring(2, 15);
+                localStorage.setItem("earnx_device_id", deviceId);
+            }
 
             const defaultTasks = { lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 };
             const defaultSpin = { spinsLeft:5, lastRefill:0, totalSpins:0 };
@@ -620,524 +631,1569 @@
 
             if(!snap.exists()){
                 const newRefCode = user.uid.substring(0,4).toUpperCase() + Math.floor(Math.random()*9000+1000);
-                const data = { coins: 0, refCode: newRefCode, deviceId: deviceId, createdAt: window.getTrueTime(), tasks: defaultTasks, spin: defaultSpin, shuffle: defaultShuffle, transactions: [] };
+                const data = {
+                    coins: 0,
+                    refCode: newRefCode,
+                    deviceId: deviceId,
+                    createdAt: window.getTrueTime(),
+                    tasks: defaultTasks,
+                    spin: defaultSpin,
+                    shuffle: defaultShuffle,
+                    transactions: []
+                };
                 await setDoc(ref, data);
-                window.state.user = { id: user.uid, phone: user.email, coins: 0, refCode: newRefCode, referredBy: false, pendingReferrer: null, createdAt: window.getTrueTime(), profile: {name: "", phone: ""} };
-                window.state.tasks = defaultTasks; window.state.spin = defaultSpin; window.state.shuffle = defaultShuffle; window.state.transactions = [];
+                
+                window.state.user = { 
+                    id: user.uid, 
+                    phone: user.email, 
+                    coins: 0, 
+                    refCode: newRefCode, 
+                    referredBy: false, 
+                    pendingReferrer: null, 
+                    createdAt: window.getTrueTime(), 
+                    profile: {name: "", phone: ""} 
+                };
+                window.state.tasks = defaultTasks;
+                window.state.spin = defaultSpin;
+                window.state.shuffle = defaultShuffle;
+                window.state.transactions = [];
             } else {
                 const data = snap.data();
-                if (data.isBlocked === true) { window.showToast("🚫 Your account is BLOCKED by Admin."); setTimeout(() => { window.logout(); }, 2500); return; }
-                if (data.personalAlert && data.personalAlert.trim() !== "") { alert("⚠️ ADMIN WARNING ⚠️\n\n" + data.personalAlert); try { await updateDoc(ref, { personalAlert: "" }); } catch(e) {} }
+
+                if (data.isBlocked === true) {
+                    window.showToast("🚫 Your account is BLOCKED by Admin.");
+                    setTimeout(() => { window.logout(); }, 2500); 
+                    return; 
+                }
+
+                if (data.personalAlert && data.personalAlert.trim() !== "") {
+                    alert("⚠️ ADMIN WARNING ⚠️\n\n" + data.personalAlert);
+                    try {
+                        await updateDoc(ref, { personalAlert: "" });
+                    } catch(e) { console.log("Failed to clear alert"); }
+                }
 
                 window.state.user = {
-                    ...(window.state.user || {}), id: user.uid, phone: user.email, coins: data.coins || 0,
-                    refCode: data.refCode, referredBy: data.referredBy || false, pendingReferrer: data.pendingReferrer || null,
-                    createdAt: data.createdAt || window.getTrueTime(), profile: data.profile || {name: "", phone: ""}
+                    ...(window.state.user || {}),
+                    id: user.uid,
+                    phone: user.email,
+                    coins: data.coins || 0,
+                    refCode: data.refCode,
+                    referredBy: data.referredBy || false,
+                    pendingReferrer: data.pendingReferrer || null,
+                    createdAt: data.createdAt || window.getTrueTime(),
+                    profile: data.profile || {name: "", phone: ""}
                 };
+                
                 window.state.tasks = { ...defaultTasks, ...(data.tasks || {}) };
-                window.state.spin = data.spin || defaultSpin; window.state.shuffle = data.shuffle || defaultShuffle; window.state.transactions = data.transactions || [];
+                window.state.spin = data.spin || defaultSpin;
+                window.state.shuffle = data.shuffle || defaultShuffle;
+                window.state.transactions = data.transactions || [];
             }
 
-            window.saveState(); window.nav('home'); window.startTimers(); window.loadWithdrawals(); window.checkReferralUnlock(); window.checkForGlobalNotice(); window.showToast("Login Successful");
-        } catch (error) { window.showToast("Connection error, please try again."); } finally { loginLoading = false; }
+            window.saveState();
+            window.nav('home'); 
+            window.startTimers();
+            window.loadWithdrawals();
+            window.checkReferralUnlock(); 
+            window.checkForGlobalNotice(); 
+            window.showToast("Login Successful");
+        } catch (error) {
+            console.error("Firebase Auth Error:", error);
+            window.showToast("Connection error, please try again.");
+        } finally {
+            loginLoading = false;
+        }
     };
 
     onAuthStateChanged(auth, async (user) => {
         if(user && !loginHandled){
             loginHandled = true;
             if(!window.state){
-                window.state = { user: null, tasks: { lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 }, spin: { spinsLeft:5, lastRefill:0, totalSpins:0 }, shuffle: { shufflesLeft:5, lastRefill:0, totalShuffles:0 }, withdrawals: [], transactions: [] };
+                window.state = {
+                    user: null,
+                    tasks: { lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 },
+                    spin: { spinsLeft:5,lastRefill:0,totalSpins:0 },
+                    shuffle: { shufflesLeft:5,lastRefill:0,totalShuffles:0 },
+                    withdrawals: [],
+                    transactions: []
+                };
             }
             await window.handleSuccessfulLogin(user);
-        } else if (!user) { loginHandled = false; }
+        } else if (!user) {
+            loginHandled = false;
+        }
     });
 
     window.loginWithGoogle = async function(){
-        if(loginLoading) return; loginLoading = true;
-        try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(err) { if (err.code !== 'auth/popup-closed-by-user') window.showToast("Login Error. Try again."); loginLoading = false; }
+        if(loginLoading) return;
+        loginLoading = true;
+        const provider = new GoogleAuthProvider();
+        try {
+            const result = await signInWithPopup(auth, provider);
+            await window.handleSuccessfulLogin(result.user);
+        } catch(err) {
+            console.error(err);
+            if (err.code !== 'auth/popup-closed-by-user') {
+                window.showToast("Login Error. Try again.");
+            }
+            loginLoading = false;
+        }
     };
 
     window.loginWithEmail = async function() {
         if(loginLoading) return;
-        const email = document.getElementById('email-input').value.trim(); const password = document.getElementById('password-input').value.trim();
-        if(!email || !password) return window.showToast("Enter Email and Password"); if(password.length < 6) return window.showToast("Password must be at least 6 characters");
-        loginLoading = true; window.showToast("Authenticating...");
+        const email = document.getElementById('email-input').value.trim();
+        const password = document.getElementById('password-input').value.trim();
+        
+        if(!email || !password) {
+            return window.showToast("Enter Email and Password");
+        }
+        if(password.length < 6) {
+            return window.showToast("Password must be at least 6 characters");
+        }
+        
+        loginLoading = true;
+        window.showToast("Authenticating...");
+        
         try {
-            const result = await signInWithEmailAndPassword(auth, email, password); await window.handleSuccessfulLogin(result.user);
+            const result = await signInWithEmailAndPassword(auth, email, password);
+            await window.handleSuccessfulLogin(result.user);
         } catch(err) {
             if(err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
-                try { window.showToast("Creating new account..."); const result = await createUserWithEmailAndPassword(auth, email, password); await window.handleSuccessfulLogin(result.user); } 
-                catch(regErr) { if (regErr.code === 'auth/email-already-in-use') window.showToast("Account exists. Use 'Forgot Password'."); else window.showToast("Error: " + (regErr.message.split('/')[1] || "Registration failed")); loginLoading = false; }
-            } else { window.showToast("Error: " + (err.message.split('/')[1] || "Login failed")); loginLoading = false; }
+                try {
+                    window.showToast("Creating new account...");
+                    const result = await createUserWithEmailAndPassword(auth, email, password);
+                    await window.handleSuccessfulLogin(result.user);
+                } catch(regErr) {
+                    if (regErr.code === 'auth/email-already-in-use') {
+                        window.showToast("Account exists. Use 'Forgot Password'.");
+                    } else {
+                        window.showToast("Error: " + (regErr.message.split('/')[1] || "Registration failed"));
+                    }
+                    loginLoading = false;
+                }
+            } else {
+                window.showToast("Error: " + (err.message.split('/')[1] || "Login failed"));
+                loginLoading = false;
+            }
         }
     };
 
     window.resetPassword = async function() {
         const email = document.getElementById('email-input').value.trim();
-        if(!email) return window.showToast("Please enter your email above first.");
-        try { await sendPasswordResetEmail(auth, email); window.showToast("Password Reset Link sent to your Email!"); } 
-        catch(err) { window.showToast("Error: " + (err.message.split('/')[1] || "Could not send link")); }
+        if(!email) {
+            return window.showToast("Please enter your email above first.");
+        }
+        try {
+            await sendPasswordResetEmail(auth, email);
+            window.showToast("Password Reset Link sent to your Email!");
+        } catch(err) {
+            window.showToast("Error: " + (err.message.split('/')[1] || "Could not send link"));
+        }
     };
 </script>
 
 <script>
     /* === GLOBAL VARIABLES & VERSION CONTROL === */
-    const APP_VERSION = 4.0; const COIN_RATE = 100; const COOLDOWN_TAP = 60 * 60 * 1000; const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; const MAX_DAILY_COINS = 5000;
-    let lastAdTime = 0; let timerInterval = null; let withdrawLock = false; let referralLock = false; let rewardLock = false; let adTaskLock = false; let toastTimeout; let saving = false; let coinSaveTimeout; let appLoaded = false; let lastCoinRewardTime = 0; let serverTimeOffset = 0; let isTimeLocked = true; 
+    const APP_VERSION = 4.0;
+    
+    const COIN_RATE = 100; 
+    const COOLDOWN_TAP = 60 * 60 * 1000;   
+    const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; 
+    const MAX_DAILY_COINS = 5000;
 
-    window.hasClickedSocial = false; window.openSocial = function(url) { window.hasClickedSocial = true; window.location.href = url; }
-    function getSafeMs(timestamp) { if (!timestamp) return 0; return typeof timestamp === 'number' ? timestamp : (timestamp.seconds * 1000); }
+    let lastAdTime = 0; 
+    let timerInterval = null;
+    let withdrawLock = false; 
+    let referralLock = false;
+    let rewardLock = false; 
+    let adTaskLock = false; 
+    let toastTimeout;
+    let saving = false;
+    let coinSaveTimeout;
+    let appLoaded = false;
+    let lastCoinRewardTime = 0;
+
+    let serverTimeOffset = 0;
+    let isTimeLocked = true; 
+
+    window.hasClickedSocial = false;
+    window.openSocial = function(url) {
+        window.hasClickedSocial = true;
+        window.location.href = url;
+    }
+
+    function getSafeMs(timestamp) {
+        if (!timestamp) return 0;
+        return typeof timestamp === 'number' ? timestamp : (timestamp.seconds * 1000);
+    }
 
     async function checkAppVersion() {
-        try { const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js"); const snap = await getDoc(doc(window.db, "earnx_settings", "app_config")); if(snap.exists() && snap.data().latest_version > APP_VERSION) document.getElementById('update-modal').style.display = 'flex'; } catch(e) {}
+        try {
+            const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            const configRef = doc(window.db, "earnx_settings", "app_config");
+            const snap = await getDoc(configRef);
+            
+            if(snap.exists()) {
+                const data = snap.data();
+                if(data.latest_version > APP_VERSION) {
+                    document.getElementById('update-modal').style.display = 'flex';
+                }
+            }
+        } catch(e) {
+            console.log("Version Check Skipped");
+        }
     }
 
     async function syncSecureTime() {
-        try { const response = await fetch("https://worldtimeapi.org/api/timezone/Etc/UTC"); if (!response.ok) throw new Error(); serverTimeOffset = new Date((await response.json()).datetime).getTime() - Date.now(); isTimeLocked = false; } 
-        catch (error) { try { const response2 = await fetch("https://timeapi.io/api/Time/current/zone?timeZone=UTC"); if (!response2.ok) throw new Error(); serverTimeOffset = new Date((await response2.json()).dateTime).getTime() - Date.now(); isTimeLocked = false; } catch(e) { isTimeLocked = true; } }
+        try {
+            const response = await fetch("https://worldtimeapi.org/api/timezone/Etc/UTC");
+            if (!response.ok) throw new Error("API 1 down");
+            
+            const data = await response.json();
+            serverTimeOffset = new Date(data.datetime).getTime() - Date.now();
+            isTimeLocked = false;
+        } catch (error) {
+            try {
+                const response2 = await fetch("https://timeapi.io/api/Time/current/zone?timeZone=UTC");
+                if (!response2.ok) throw new Error("API 2 down");
+                
+                const data2 = await response2.json();
+                serverTimeOffset = new Date(data2.dateTime).getTime() - Date.now();
+                isTimeLocked = false;
+            } catch(e) {
+                isTimeLocked = true;
+            }
+        }
         window.updateTimersUI(); 
     }
 
-    window.getTrueTime = function() { return Date.now() + serverTimeOffset; }
-    document.addEventListener("visibilitychange", () => { if (document.hidden) { isTimeLocked = true; window.updateTimersUI(); } else { syncSecureTime(); checkAppVersion(); } });
-    function safeLoadState(){ try { const saved = localStorage.getItem('earnx_state'); return saved ? JSON.parse(saved) : null; } catch(e) { localStorage.removeItem('earnx_state'); return null; } }
+    window.getTrueTime = function() {
+        return Date.now() + serverTimeOffset;
+    }
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            isTimeLocked = true;
+            window.updateTimersUI();
+        } else {
+            syncSecureTime();
+            checkAppVersion(); 
+        }
+    });
+
+    function safeLoadState(){
+        try { 
+            const saved = localStorage.getItem('earnx_state'); 
+            return saved ? JSON.parse(saved) : null;
+        } catch(e) { 
+            localStorage.removeItem('earnx_state'); 
+            return null; 
+        }
+    }
 
     async function init() {
-        if(appLoaded) return; appLoaded = true; await syncSecureTime(); setTimeout(() => { if(window.db) checkAppVersion(); }, 2000);
-        const saved = safeLoadState(); if(saved) window.state = saved;
-        if(!window.state){ window.state = { user:null, tasks:{ lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 }, spin:{ spinsLeft:5,lastRefill:0,totalSpins:0 }, shuffle:{ shufflesLeft:5,lastRefill:0,totalShuffles:0 }, withdrawals:[], transactions:[] }; }
-        if(!window.state.transactions) window.state.transactions = []; if(!window.state.shuffle) window.state.shuffle = { shufflesLeft:5,lastRefill:0,totalShuffles:0 };
-        if(!window.state.spin.lastRefill && window.state.spin.spinsLeft < 5) window.state.spin.lastRefill = window.getTrueTime();
-        if(!window.state.shuffle.lastRefill && window.state.shuffle.shufflesLeft < 5) window.state.shuffle.lastRefill = window.getTrueTime();
-        window.updateUI(); window.nav('login');
+        if(appLoaded) return;
+        appLoaded = true;
+        
+        await syncSecureTime(); 
+        
+        setTimeout(() => { 
+            if(window.db) checkAppVersion(); 
+        }, 2000);
+        
+        const saved = safeLoadState();
+        if(saved) window.state = saved;
+        
+        if(!window.state){
+            window.state = {
+                user:null,
+                tasks:{ lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 },
+                spin:{ spinsLeft:5,lastRefill:0,totalSpins:0 },
+                shuffle:{ shufflesLeft:5,lastRefill:0,totalShuffles:0 },
+                withdrawals:[],
+                transactions:[]
+            };
+        }
+        
+        if(!window.state.transactions) {
+            window.state.transactions = [];
+        }
+        
+        if(!window.state.shuffle) {
+            window.state.shuffle = { shufflesLeft:5,lastRefill:0,totalShuffles:0 };
+        }
+
+        // Clean up legacy tasks properties safely if they exist
+        if(window.state.tasks && window.state.tasks.lastWatch !== undefined) {
+            delete window.state.tasks.lastWatch;
+        }
+        if(window.state.tasks && window.state.tasks.lastStay !== undefined) {
+            delete window.state.tasks.lastStay;
+        }
+        
+        if(!window.state.spin.lastRefill && window.state.spin.spinsLeft < 5){
+            window.state.spin.lastRefill = window.getTrueTime();
+        }
+
+        if(!window.state.shuffle.lastRefill && window.state.shuffle.shufflesLeft < 5){
+            window.state.shuffle.lastRefill = window.getTrueTime();
+        }
+        
+        window.updateUI();
+        window.nav('login');
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        init(); setTimeout(() => { if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) window.Capacitor.Plugins.AdMob.initialize().catch(e=>{}); }, 1000);
-        window.renderShuffleCards();
+        init();
+        setTimeout(() => {
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+                window.Capacitor.Plugins.AdMob.initialize().catch(e => console.log("AdMob Init Error"));
+            }
+        }, 1000);
+        window.renderShuffleCards(); // Init Shuffle Cards HTML
     });
 
     window.launchCelebration = function() {
-        const modal = document.getElementById('celebration-modal'); modal.style.display = 'flex';
-        for(let i=0; i<50; i++) { const piece = document.createElement('div'); piece.className = 'confetti-piece'; piece.style.left = Math.random() * 100 + '%'; piece.style.backgroundColor = ['#ffd700','#10b981','#ffffff','#f59e0b'][Math.floor(Math.random()*4)]; piece.style.animationDelay = Math.random() * 2 + 's'; modal.appendChild(piece); setTimeout(() => piece.remove(), 3000); }
+        const modal = document.getElementById('celebration-modal');
+        modal.style.display = 'flex';
+        for(let i=0; i<50; i++) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.left = Math.random() * 100 + '%';
+            piece.style.backgroundColor = ['#ffd700','#10b981','#ffffff','#f59e0b'][Math.floor(Math.random()*4)];
+            piece.style.animationDelay = Math.random() * 2 + 's';
+            modal.appendChild(piece);
+            setTimeout(() => piece.remove(), 3000);
+        }
     }
 
     window.doMegaTask = async function() {
-        if(isTimeLocked) return window.showToast("Securing Time... Please wait.");
-        if(!window.hasClickedSocial) return window.showToast("Please click FB/Insta Follow button to find the code first!");
-        const btn = document.getElementById('btn-mega-task'); const codeInput = document.getElementById('mega-promo-code').value.trim().toUpperCase(); const fbId = document.getElementById('mega-fb-id').value.trim(); const instaId = document.getElementById('mega-insta-id').value.trim();
-        if(!codeInput || !fbId || !instaId) return window.showToast("Fill Promo Code, FB and Insta details!");
-        btn.disabled = true; btn.innerText = "Verifying...";
+        if(isTimeLocked) {
+            return window.showToast("Securing Time... Please wait.");
+        }
+
+        // REDIRECT CHECK
+        if(!window.hasClickedSocial) {
+            return window.showToast("Please click FB/Insta Follow button to find the code first!");
+        }
+        
+        const btn = document.getElementById('btn-mega-task');
+        const codeInput = document.getElementById('mega-promo-code').value.trim().toUpperCase();
+        const fbId = document.getElementById('mega-fb-id').value.trim();
+        const instaId = document.getElementById('mega-insta-id').value.trim();
+
+        if(!codeInput || !fbId || !instaId) {
+            return window.showToast("Fill Promo Code, FB and Insta details!");
+        }
+        
+        btn.disabled = true;
+        btn.innerText = "Verifying...";
+
         try {
             const now = window.getTrueTime();
-            if((now - getSafeMs(window.state.user.createdAt)) / (1000 * 60 * 60 * 24) < 2) { btn.disabled = false; btn.innerText = "Claim Reward"; return window.showToast("Account must be 2 days old!"); }
-            const activeEarnings = window.state.transactions.filter(t => getSafeMs(t.date) >= (now - (3 * 24 * 60 * 60 * 1000)) && t.title !== "Admin Adjustment" && t.type === "earn").reduce((sum, t) => sum + Number(t.amount), 0);
-            if(activeEarnings < 500) { btn.disabled = false; btn.innerText = "Claim Reward"; return window.showToast("Earn 500 coins in last 3 days first!"); }
+            
+            // 1. Account Age Check (2 Days)
+            const accountAgeMs = now - getSafeMs(window.state.user.createdAt);
+            const daysOld = accountAgeMs / (1000 * 60 * 60 * 24);
+            if(daysOld < 2) {
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
+                return window.showToast("Account must be 2 days old!");
+            }
+
+            // 2. Activity Check (500 Coins in 3 days, no Admin Adj)
+            const threeDaysAgo = now - (3 * 24 * 60 * 60 * 1000);
+            const activeEarnings = window.state.transactions
+                .filter(t => getSafeMs(t.date) >= threeDaysAgo && t.title !== "Admin Adjustment" && t.type === "earn")
+                .reduce((sum, t) => sum + Number(t.amount), 0);
+
+            if(activeEarnings < 500) {
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
+                return window.showToast("Earn 500 coins in last 3 days first!");
+            }
+
+            // 3. Promo Code Check (From Firebase Settings)
             const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const promoSnap = await getDoc(doc(window.db, "earnx_settings", "active_promo"));
-            if(!promoSnap.exists() || codeInput !== promoSnap.data().code.toUpperCase()) { btn.disabled = false; btn.innerText = "Claim Reward"; return window.showToast("Invalid Promo Code!"); }
-            if(window.state.tasks.claimedPromos && window.state.tasks.claimedPromos.includes(codeInput)) { btn.disabled = false; btn.innerText = "Claim Reward"; return window.showToast("Already claimed this code!"); }
-            const rand = Math.random() * 100; let win = 0; if(rand < 50) win = 500; else if(rand < 90) win = Math.floor(Math.random() * 301) + 100; else win = 1000; 
-            window.state.user.coins += win; if(!window.state.tasks.claimedPromos) window.state.tasks.claimedPromos = []; window.state.tasks.claimedPromos.push(codeInput); window.state.tasks.lastFbId = fbId; window.state.tasks.lastInstaId = instaId;
-            window.logTransaction("FB TASK", win, "earn"); window.saveState(); document.getElementById('win-display').innerText = win; window.launchCelebration();
-            btn.disabled = false; btn.innerText = "Claim Reward"; document.getElementById('mega-promo-code').value = ""; document.getElementById('mega-fb-id').value = ""; document.getElementById('mega-insta-id').value = "";
-        } catch(e) { btn.disabled = false; btn.innerText = "Claim Reward"; window.showToast("Task Error. Check internet connection."); }
+            
+            if(!promoSnap.exists() || codeInput !== promoSnap.data().code.toUpperCase()) {
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
+                return window.showToast("Invalid Promo Code!");
+            }
+
+            // 4. One-time usage check
+            if(window.state.tasks.claimedPromos && window.state.tasks.claimedPromos.includes(codeInput)) {
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
+                return window.showToast("Already claimed this code!");
+            }
+
+            // 5. Probability Reward Logic
+            const rand = Math.random() * 100;
+            let win = 0;
+            if(rand < 50) {
+                win = 500; // 50% chance
+            } else if(rand < 90) {
+                win = Math.floor(Math.random() * (400 - 100 + 1)) + 100; // 40% chance between 100-400
+            } else {
+                win = 1000; // 10% Jackpot
+            }
+
+            // 6. Execute Reward
+            window.state.user.coins += win;
+            if(!window.state.tasks.claimedPromos) {
+                window.state.tasks.claimedPromos = [];
+            }
+            window.state.tasks.claimedPromos.push(codeInput);
+            
+            // Save FB/Insta ID in Meta for Admin verification
+            window.state.tasks.lastFbId = fbId;
+            window.state.tasks.lastInstaId = instaId;
+            
+            // Log as "FB TASK"
+            window.logTransaction("FB TASK", win, "earn");
+            
+            // Save state and push to Firebase
+            window.saveState();
+
+            // 7. Celebration
+            document.getElementById('win-display').innerText = win;
+            window.launchCelebration();
+            
+            btn.disabled = false;
+            btn.innerText = "Claim Reward";
+            document.getElementById('mega-promo-code').value = "";
+            document.getElementById('mega-fb-id').value = "";
+            document.getElementById('mega-insta-id').value = "";
+
+        } catch(e) {
+            console.error(e);
+            btn.disabled = false;
+            btn.innerText = "Claim Reward";
+            window.showToast("Task Error. Check internet connection.");
+        }
     }
 
     window.logTransaction = function(title, amount, type="earn") {
-        if(!window.state.transactions || !Array.isArray(window.state.transactions)) window.state.transactions = [];
-        window.state.transactions.unshift({ title: title, amount: amount, type: type, date: window.getTrueTime() });
-        if(window.state.transactions.length > 50) window.state.transactions.pop(); window.renderTransactionHistory();
+        if(!window.state.transactions || !Array.isArray(window.state.transactions)) {
+            window.state.transactions = [];
+        }
+        
+        const newLog = { 
+            title: title, 
+            amount: amount, 
+            type: type, 
+            date: window.getTrueTime() 
+        };
+        
+        window.state.transactions.unshift(newLog);
+        
+        if(window.state.transactions.length > 50) { 
+            window.state.transactions.pop(); 
+        }
+        
+        window.renderTransactionHistory();
     }
 
-    window.sanitizeCoins = function(){ if(!window.state || !window.state.user) return; let c = Number(window.state.user.coins); if(isNaN(c) || c < 0) c = 0; window.state.user.coins = c; }
+    window.sanitizeCoins = function(){
+        if(!window.state || !window.state.user) return;
+        let c = Number(window.state.user.coins);
+        if(isNaN(c) || c < 0) c = 0;
+        window.state.user.coins = c;
+    }
 
     window.saveCoinsToFirebase = async function(){
-        if(!navigator.onLine || !window.state.user || !window.state.user.id || saving) return; saving = true;
+        if(!navigator.onLine || !window.state.user || !window.state.user.id || saving) return;
+        
+        saving = true;
         try {
             const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-            await updateDoc(doc(window.db, "earnx_users", window.state.user.id), JSON.parse(JSON.stringify({ coins: Number(window.state.user.coins) || 0, tasks: window.state.tasks || {}, spin: window.state.spin || {}, shuffle: window.state.shuffle || {}, pendingReferrer: window.state.user.pendingReferrer || null, profile: window.state.user.profile || {name: "", phone: ""}, transactions: window.state.transactions || [] })));
-        } catch(e) {} saving = false;
+            const ref = doc(window.db, "earnx_users", window.state.user.id);
+            
+            const rawPayload = { 
+                coins: Number(window.state.user.coins) || 0, 
+                tasks: window.state.tasks || {}, 
+                spin: window.state.spin || {},
+                shuffle: window.state.shuffle || {},
+                pendingReferrer: window.state.user.pendingReferrer || null,
+                profile: window.state.user.profile || {name: "", phone: ""},
+                transactions: window.state.transactions || []
+            };
+            
+            const safePayload = JSON.parse(JSON.stringify(rawPayload));
+            await updateDoc(ref, safePayload);
+            
+        } catch(e) {
+            console.error("Firebase Sync Error:", e);
+        }
+        saving = false;
     }
-    window.saveCoinsToFirebaseDebounced = function(){ clearTimeout(coinSaveTimeout); coinSaveTimeout = setTimeout(()=>{ window.saveCoinsToFirebase(); }, 2000); }
-    window.saveState = function() { window.sanitizeCoins(); localStorage.setItem('earnx_state', JSON.stringify(window.state)); window.updateUI(); window.saveCoinsToFirebaseDebounced(); }
+
+    window.saveCoinsToFirebaseDebounced = function(){
+        clearTimeout(coinSaveTimeout); 
+        coinSaveTimeout = setTimeout(()=>{ 
+            window.saveCoinsToFirebase(); 
+        }, 2000);
+    }
+
+    window.saveState = function() {
+        window.sanitizeCoins(); 
+        localStorage.setItem('earnx_state', JSON.stringify(window.state));
+        window.updateUI(); 
+        window.saveCoinsToFirebaseDebounced();
+    }
 
     window.nav = function(screenId) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); const target = document.getElementById(`screen-${screenId}`); if(target) target.classList.add('active');
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        const target = document.getElementById(`screen-${screenId}`);
+        if(target) target.classList.add('active');
+        
         const bNav = document.getElementById('bottom-nav');
-        if (bNav) { if (['login', 'history', 'terms', 'math', 'scratch', 'shuffle'].includes(screenId)) bNav.style.display = 'none'; else bNav.style.display = 'flex'; }
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); const activeItem = document.querySelector(`.nav-item[data-target="${screenId}"]`); if(activeItem) activeItem.classList.add('active');
-        if(screenId === 'math') window.generateMathProblem(); if(screenId === 'scratch') setTimeout(() => { window.initScratchCard(); }, 50);
+        if (bNav) {
+            if (['login', 'history', 'terms', 'math', 'scratch', 'shuffle'].includes(screenId)) {
+                bNav.style.display = 'none';
+            } else {
+                bNav.style.display = 'flex';
+            }
+        }
+        
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        const activeItem = document.querySelector(`.nav-item[data-target="${screenId}"]`);
+        if(activeItem) activeItem.classList.add('active');
+
+        // Gamified Tasks Init Hooks
+        if(screenId === 'math') {
+            window.generateMathProblem();
+        }
+        if(screenId === 'scratch') {
+            setTimeout(() => { window.initScratchCard(); }, 50);
+        }
     }
 
-    window.logout = function() { import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js").then(({ getAuth, signOut }) => { signOut(getAuth()); window.currentUser = null; localStorage.clear(); location.reload(); }); }
-    function debounce(fn, delay=300){ let t; return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn(...args), delay); } }
+    window.logout = function() {
+        import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js").then(({ getAuth, signOut }) => {
+            signOut(getAuth()); 
+            window.currentUser = null; 
+            localStorage.clear(); 
+            location.reload();
+        });
+    }
+
+    function debounce(fn, delay=300){
+        let t; 
+        return (...args)=>{ 
+            clearTimeout(t); 
+            t = setTimeout(()=>fn(...args), delay); 
+        }
+    }
 
     window.loadWithdrawals = debounce(async function(){
         if(!window.currentUser) return;
         try {
             const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-            const snap = await getDocs(query(collection(window.db, "earnx_withdrawals"), where("userId", "==", window.currentUser.uid)));
-            window.state.withdrawals = []; snap.forEach(doc=>{ const d = doc.data(); window.state.withdrawals.push({ amount: (d.coins / 10000) * 100, upi: d.upiId, date: d.createdAt ? (d.createdAt.seconds * 1000) : window.getTrueTime(), status: d.status }); }); window.saveState();
-        } catch(e) {}
+            const q = query(collection(window.db, "earnx_withdrawals"), where("userId", "==", window.currentUser.uid));
+            const snap = await getDocs(q);
+            
+            window.state.withdrawals = [];
+            snap.forEach(doc=>{
+                const d = doc.data();
+                window.state.withdrawals.push({ 
+                    amount: (d.coins / 10000) * 100, 
+                    upi: d.upiId, 
+                    date: d.createdAt ? (d.createdAt.seconds * 1000) : window.getTrueTime(), 
+                    status: d.status 
+                });
+            });
+            window.saveState();
+        } catch(e) {
+            console.error("Load withdrawals error", e);
+        }
     }, 300);
 
-    function safeSetText(id, value){ const el = document.getElementById(id); if(el) el.innerText = value; }
+    function safeSetText(id, value){ 
+        const el = document.getElementById(id); 
+        if(el) el.innerText = value; 
+    }
 
     window.saveProfileDetails = async function() {
-        const hasName = window.state.user.profile && window.state.user.profile.name && window.state.user.profile.name.trim() !== ""; const hasPhone = window.state.user.profile && window.state.user.profile.phone && window.state.user.profile.phone.trim() !== "";
-        if (hasName && hasPhone) return window.showToast("Profile is locked and cannot be changed.");
-        const nameVal = document.getElementById('profile-name-input').value.trim(); const phoneVal = document.getElementById('profile-phone-input').value.trim(); const btn = document.getElementById('btn-save-profile');
-        if(!nameVal || !phoneVal) return window.showToast("Please fill both details");
-        btn.disabled = true; btn.innerText = "Saving...";
+        const hasName = window.state.user.profile && window.state.user.profile.name && window.state.user.profile.name.trim() !== "";
+        const hasPhone = window.state.user.profile && window.state.user.profile.phone && window.state.user.profile.phone.trim() !== "";
+        
+        if (hasName && hasPhone) {
+            return window.showToast("Profile is locked and cannot be changed.");
+        }
+
+        const nameVal = document.getElementById('profile-name-input').value.trim();
+        const phoneVal = document.getElementById('profile-phone-input').value.trim();
+        const btn = document.getElementById('btn-save-profile');
+        
+        if(!nameVal || !phoneVal) {
+            return window.showToast("Please fill both details");
+        }
+        
+        btn.disabled = true;
+        btn.innerText = "Saving...";
         try {
-            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js"); await updateDoc(doc(window.db, "earnx_users", window.state.user.id), { "profile.name": nameVal, "profile.phone": phoneVal });
-            if(!window.state.user.profile) window.state.user.profile = {}; window.state.user.profile.name = nameVal; window.state.user.profile.phone = phoneVal; window.saveState();
-            btn.innerText = "Profile Locked 🔒"; window.showToast("Profile Saved & Locked!"); window.updateUICore(); 
-        } catch(e) { btn.innerText = "Save Details"; btn.disabled = false; window.showToast("Error saving profile"); }
+            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            await updateDoc(doc(window.db, "earnx_users", window.state.user.id), { 
+                "profile.name": nameVal, 
+                "profile.phone": phoneVal 
+            });
+            
+            if(!window.state.user.profile) window.state.user.profile = {};
+            window.state.user.profile.name = nameVal;
+            window.state.user.profile.phone = phoneVal;
+            window.saveState();
+            
+            btn.innerText = "Profile Locked 🔒";
+            window.showToast("Profile Saved & Locked!");
+            
+            window.updateUICore(); 
+        } catch(e) {
+            btn.innerText = "Save Details";
+            btn.disabled = false;
+            window.showToast("Error saving profile");
+        }
     };
 
     window.updateUICore = function() {
-        if(!window.state || !window.state.user) return; window.sanitizeCoins();
-        document.querySelectorAll('.global-coin-display').forEach(el => { el.innerText = window.state.user.coins.toLocaleString(); });
-        safeSetText('rupee-display', (window.state.user.coins / (10000 / COIN_RATE)).toFixed(2)); safeSetText('profile-phone', window.state.user.phone); safeSetText('profile-uid', window.state.user.id); safeSetText('my-ref-code', window.state.user.refCode); safeSetText('tap-count', window.state.tasks.tapCount || 0); safeSetText('spin-count-display', window.state.spin.spinsLeft); safeSetText('shuffles-left', window.state.shuffle.shufflesLeft);
+        if(!window.state || !window.state.user) return;
+        window.sanitizeCoins();
         
-        const nameInput = document.getElementById('profile-name-input'); const phoneInput = document.getElementById('profile-phone-input'); const btnSaveProfile = document.getElementById('btn-save-profile'); const lockMsg = document.getElementById('profile-lock-msg');
+        document.querySelectorAll('.global-coin-display').forEach(el => { 
+            el.innerText = window.state.user.coins.toLocaleString(); 
+        });
+        
+        safeSetText('rupee-display', (window.state.user.coins / (10000 / COIN_RATE)).toFixed(2));
+        safeSetText('profile-phone', window.state.user.phone);
+        safeSetText('profile-uid', window.state.user.id);
+        safeSetText('my-ref-code', window.state.user.refCode);
+        safeSetText('tap-count', window.state.tasks.tapCount || 0);
+        safeSetText('spin-count-display', window.state.spin.spinsLeft);
+        safeSetText('shuffles-left', window.state.shuffle.shufflesLeft);
+        
+        const nameInput = document.getElementById('profile-name-input');
+        const phoneInput = document.getElementById('profile-phone-input');
+        const btnSaveProfile = document.getElementById('btn-save-profile');
+        const lockMsg = document.getElementById('profile-lock-msg');
+
         if(nameInput && phoneInput && btnSaveProfile) {
-            const hasName = window.state.user.profile && window.state.user.profile.name && window.state.user.profile.name.trim() !== ""; const hasPhone = window.state.user.profile && window.state.user.profile.phone && window.state.user.profile.phone.trim() !== "";
-            if(hasName && hasPhone) { nameInput.value = window.state.user.profile.name; phoneInput.value = window.state.user.profile.phone; nameInput.disabled = true; phoneInput.disabled = true; btnSaveProfile.disabled = true; btnSaveProfile.innerText = "Profile Locked 🔒"; if(lockMsg) lockMsg.style.display = "block"; } 
-            else { nameInput.disabled = false; phoneInput.disabled = false; btnSaveProfile.disabled = false; btnSaveProfile.innerText = "Save Details"; if(lockMsg) lockMsg.style.display = "none"; if(window.state.user.profile.name) nameInput.value = window.state.user.profile.name; if(window.state.user.profile.phone) phoneInput.value = window.state.user.profile.phone; }
+            const hasName = window.state.user.profile && window.state.user.profile.name && window.state.user.profile.name.trim() !== "";
+            const hasPhone = window.state.user.profile && window.state.user.profile.phone && window.state.user.profile.phone.trim() !== "";
+            
+            if(hasName && hasPhone) {
+                nameInput.value = window.state.user.profile.name;
+                phoneInput.value = window.state.user.profile.phone;
+                nameInput.disabled = true;
+                phoneInput.disabled = true;
+                btnSaveProfile.disabled = true;
+                btnSaveProfile.innerText = "Profile Locked 🔒";
+                if(lockMsg) lockMsg.style.display = "block";
+            } else {
+                nameInput.disabled = false;
+                phoneInput.disabled = false;
+                btnSaveProfile.disabled = false;
+                btnSaveProfile.innerText = "Save Details";
+                if(lockMsg) lockMsg.style.display = "none";
+                
+                if(window.state.user.profile.name) nameInput.value = window.state.user.profile.name;
+                if(window.state.user.profile.phone) phoneInput.value = window.state.user.profile.phone;
+            }
         }
-        if(window.state.user.referredBy){ const el = document.getElementById('enter-ref-section'); if(el) el.style.display = 'none'; }
-        window.renderWithdrawals(); window.renderTransactionHistory();
+        
+        if(window.state.user.referredBy){
+            const el = document.getElementById('enter-ref-section');
+            if(el) el.style.display = 'none';
+        }
+        
+        window.renderWithdrawals();
+        window.renderTransactionHistory();
+        
         const btnCheckin = document.getElementById('btn-checkin');
-        if(btnCheckin){ if(window.getTrueTime() - (window.state.tasks.checkInTime || 0) < 86400000){ btnCheckin.disabled = true; btnCheckin.innerText = "Claimed"; } else { btnCheckin.disabled = false; btnCheckin.innerText = "Claim 50"; } }
+        if(btnCheckin){
+            const last = window.state.tasks.checkInTime || 0;
+            if(window.getTrueTime() - last < 86400000){
+                btnCheckin.disabled = true; 
+                btnCheckin.innerText = "Claimed";
+            } else {
+                btnCheckin.disabled = false; 
+                btnCheckin.innerText = "Claim 50";
+            }
+        }
     }
+    
     window.updateUI = debounce(window.updateUICore, 50);
 
     window.renderWithdrawals = function() {
-        const list1 = document.getElementById('my-withdrawals-list'); if(!window.state || !window.state.withdrawals) return;
-        if(window.state.withdrawals.length === 0) { if(list1) list1.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No withdrawals yet.</p>'; return; }
-        let htmlContent = ''; [...window.state.withdrawals].sort((a,b) => b.date - a.date).forEach(w => {
-            const dateStr = new Date(w.date).toLocaleDateString(); const maskedUpi = window.maskUPI(w.upi);
-            let statusClass = w.status === 'Approved' ? 'text-green' : (w.status === 'Rejected' ? 'text-danger' : 'status-pending');
-            htmlContent += `<div class="history-item"><div class="h-info"><span class="h-upi">₹${w.amount} &rarr; ${maskedUpi}</span><span class="h-time">${dateStr}</span></div><div class="h-status ${statusClass}" style="${w.status === 'Approved' || w.status === 'Rejected' ? 'background:transparent; padding:0;' : ''}">${w.status}</div></div>`;
+        const list1 = document.getElementById('my-withdrawals-list');
+        if(!window.state || !window.state.withdrawals) return;
+        
+        if(window.state.withdrawals.length === 0) {
+            if(list1) {
+                list1.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No withdrawals yet.</p>';
+            }
+            return;
+        }
+        
+        let htmlContent = '';
+        const sorted = [...window.state.withdrawals].sort((a,b) => b.date - a.date); 
+        
+        sorted.forEach(w => {
+            const dateStr = new Date(w.date).toLocaleDateString();
+            const maskedUpi = window.maskUPI(w.upi);
+            let statusClass = 'status-pending';
+            if(w.status === 'Approved') statusClass = 'text-green';
+            if(w.status === 'Rejected') statusClass = 'text-danger';
+            
+            htmlContent += `
+                <div class="history-item">
+                    <div class="h-info">
+                        <span class="h-upi">₹${w.amount} &rarr; ${maskedUpi}</span>
+                        <span class="h-time">${dateStr}</span>
+                    </div>
+                    <div class="h-status ${statusClass}" style="${w.status === 'Approved' || w.status === 'Rejected' ? 'background:transparent; padding:0;' : ''}">
+                        ${w.status}
+                    </div>
+                </div>`;
         });
+        
         if(list1) list1.innerHTML = htmlContent;
     }
 
     window.renderTransactionHistory = function() {
-        const homeList = document.getElementById('home-recent-activity'); const fullList = document.getElementById('full-history-list');
+        const homeList = document.getElementById('home-recent-activity');
+        const fullList = document.getElementById('full-history-list');
+        
         if(!window.state || !window.state.transactions || window.state.transactions.length === 0) {
-            if(homeList) homeList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No recent activity.</p>'; if(fullList) fullList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No transactions found.</p>'; return;
+            if(homeList) homeList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No recent activity.</p>';
+            if(fullList) fullList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No transactions found.</p>';
+            return;
         }
-        let htmlContent = ''; const sorted = [...window.state.transactions].sort((a,b) => getSafeMs(b.date) - getSafeMs(a.date)); 
+        
+        let htmlContent = '';
+        const sorted = [...window.state.transactions].sort((a,b) => getSafeMs(b.date) - getSafeMs(a.date)); 
+        
         sorted.forEach((t) => {
-            const dateObj = new Date(getSafeMs(t.date)); const dateStr = isNaN(dateObj) ? "Just Now" : (dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
-            htmlContent += `<div class="history-item"><div class="h-info"><span class="h-title">${t.title}</span><span class="h-time">${dateStr}</span></div><div class="h-status ${t.type === 'earn' ? 'text-green' : 'text-danger'}" style="font-size: 1rem; background:transparent;">${t.type === 'earn'?'+':'-'}${t.amount}</div></div>`;
+            const ms = getSafeMs(t.date);
+            const dateObj = new Date(ms);
+            const dateStr = isNaN(dateObj) ? "Just Now" : (dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+            const amountColor = t.type === 'earn' ? 'text-green' : 'text-danger';
+            const sign = t.type === 'earn' ? '+' : '-';
+            
+            htmlContent += `
+            <div class="history-item">
+                <div class="h-info">
+                    <span class="h-title">${t.title}</span>
+                    <span class="h-time">${dateStr}</span>
+                </div>
+                <div class="h-status ${amountColor}" style="font-size: 1rem; background:transparent;">${sign}${t.amount}</div>
+            </div>`;
         });
+        
         if(fullList) fullList.innerHTML = htmlContent;
+        
         if(homeList) {
-            let homeHTML = ''; sorted.slice(0, 3).forEach(t => {
-                const dateObj = new Date(getSafeMs(t.date)); const dateStr = isNaN(dateObj) ? "Just Now" : dateObj.toLocaleDateString();
-                homeHTML += `<div class="history-item"><div class="h-info"><span class="h-title">${t.title}</span><span class="h-time">${dateStr}</span></div><div class="h-status ${t.type === 'earn' ? 'text-green' : 'text-danger'}" style="background:transparent;">${t.type === 'earn'?'+':'-'}${t.amount}</div></div>`;
+            let homeHTML = '';
+            sorted.slice(0, 3).forEach(t => {
+                const ms = getSafeMs(t.date);
+                const dateObj = new Date(ms);
+                const dateStr = isNaN(dateObj) ? "Just Now" : dateObj.toLocaleDateString();
+                const amountColor = t.type === 'earn' ? 'text-green' : 'text-danger';
+                const sign = t.type === 'earn' ? '+' : '-';
+                
+                homeHTML += `
+                <div class="history-item">
+                    <div class="h-info">
+                        <span class="h-title">${t.title}</span>
+                        <span class="h-time">${dateStr}</span>
+                    </div>
+                    <div class="h-status ${amountColor}" style="background:transparent;">${sign}${t.amount}</div>
+                </div>`;
             });
             homeList.innerHTML = homeHTML;
         }
     }
 
-    window.maskUPI = function(upi) { if(!upi || !upi.includes('@')) return upi; const parts = upi.split('@'); return parts[0].substring(0, 2) + "****@" + parts[1]; }
-    window.showToast = function(msg) { const toast = document.getElementById('toast'); if(!toast) return; clearTimeout(toastTimeout); toast.innerText = msg; toast.style.display = 'block'; toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 3000); }
+    window.maskUPI = function(upi) {
+        if(!upi || !upi.includes('@')) return upi;
+        const parts = upi.split('@'); 
+        return parts[0].substring(0, 2) + "****@" + parts[1];
+    }
+
+    window.showToast = function(msg) {
+        const toast = document.getElementById('toast'); 
+        if(!toast) return;
+        
+        clearTimeout(toastTimeout); 
+        toast.innerText = msg; 
+        toast.style.display = 'block';
+        
+        toastTimeout = setTimeout(() => { 
+            toast.style.display = 'none'; 
+        }, 3000);
+    }
 
     window.checkReferralUnlock = async function() {
         if(!window.state || !window.state.user || !window.state.user.pendingReferrer) return;
-        if (window.state.user.coins >= 5000 && ((window.getTrueTime() - (window.state.user.createdAt || window.getTrueTime())) / (1000 * 60 * 60 * 24)) >= 5) {
+        
+        const coinsEarned = window.state.user.coins;
+        const creationTime = window.state.user.createdAt || window.getTrueTime();
+        const msActive = window.getTrueTime() - creationTime;
+        const daysActive = msActive / (1000 * 60 * 60 * 24);
+        
+        if (coinsEarned >= 5000 && daysActive >= 5) {
             try {
-                const refId = window.state.user.pendingReferrer; window.state.user.pendingReferrer = null; window.saveState();
+                const refId = window.state.user.pendingReferrer;
+                window.state.user.pendingReferrer = null; 
+                window.saveState();
+                
                 const { doc, updateDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-                const refDocRef = doc(window.db, "earnx_users", refId); const refSnap = await getDoc(refDocRef);
-                if(refSnap.exists()) await updateDoc(refDocRef, { coins: (Number(refSnap.data().coins) || 0) + 100 });
-                window.state.user.coins += 100; window.logTransaction("Referral Bonus Unlocked!", 100, "earn"); window.saveState(); window.showToast("Referral Bonus Unlocked! +100 Coins");
-            } catch(e) {}
+                const refDocRef = doc(window.db, "earnx_users", refId);
+                const refSnap = await getDoc(refDocRef);
+                
+                if(refSnap.exists()) {
+                    const refData = refSnap.data();
+                    await updateDoc(refDocRef, { coins: (Number(refData.coins) || 0) + 100 });
+                }
+                
+                window.state.user.coins += 100;
+                window.logTransaction("Referral Bonus Unlocked!", 100, "earn");
+                window.saveState();
+                window.showToast("Referral Bonus Unlocked! +100 Coins");
+                
+            } catch(e) { console.error("Error unlocking referral", e); }
         }
     }
 
     window.rewardCoins = function(amount, msg) {
-        if(rewardLock) return; rewardLock = true; setTimeout(()=> { rewardLock = false; }, 2000);
-        if(!navigator.onLine) return window.showToast("No internet"); if(!window.state || !window.state.user) return window.showToast("Login required");
+        if(rewardLock) return; 
+        rewardLock = true;
+        
+        setTimeout(()=> { rewardLock = false; }, 2000);
+        
+        if(!navigator.onLine) return window.showToast("No internet");
+        if(!window.state || !window.state.user) return window.showToast("Login required");
         if(amount <= 0 || amount > 200) return window.showToast("Invalid reward");
-        const now = window.getTrueTime(); if(now - lastCoinRewardTime < 3000) return; lastCoinRewardTime = now;
-        let today = new Date().toDateString(); if(window.state.lastRewardDate !== today){ window.state.dailyCoins = 0; window.state.lastRewardDate = today; }
-        if((window.state.dailyCoins || 0) >= MAX_DAILY_COINS) return window.showToast("Daily limit reached");
-        window.state.dailyCoins += amount; window.state.user.coins += amount;
-        window.logTransaction(msg, amount, "earn"); window.saveState(); window.showToast(`+${amount} Coins`); window.checkReferralUnlock();
+        
+        const now = window.getTrueTime();
+        if(now - lastCoinRewardTime < 3000) return; 
+        lastCoinRewardTime = now;
+        
+        let today = new Date().toDateString();
+        if(window.state.lastRewardDate !== today){ 
+            window.state.dailyCoins = 0; 
+            window.state.lastRewardDate = today; 
+        }
+        
+        if((window.state.dailyCoins || 0) >= MAX_DAILY_COINS) {
+            return window.showToast("Daily limit reached");
+        }
+        
+        window.state.dailyCoins += amount; 
+        window.state.user.coins += amount;
+        
+        window.logTransaction(msg, amount, "earn");
+        window.saveState(); 
+        window.showToast(`+${amount} Coins`);
+        window.checkReferralUnlock();
     }
 
-    // 🔥 AdMob showAd Logic updated with Compensation 25% 🔥
+    /* 🔥 AdMob showAd Logic FIXED (Failed Ads + Compensation) 🔥 */
     window.showAd = async function(callback) {
-        if(isTimeLocked) { window.showToast("Please ensure correct phone time."); return callback('cooldown'); }
-        if(window.getTrueTime() - lastAdTime < 60000){ window.showToast("Wait 1 min before next ad"); return callback('cooldown'); }
+        if(isTimeLocked) { 
+            window.showToast("Please ensure correct phone time."); 
+            return callback('cooldown'); 
+        }
+        
+        if(window.getTrueTime() - lastAdTime < 60000){ 
+            window.showToast("Wait 1 min before next ad"); 
+            return callback('cooldown'); 
+        }
+        
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
             try {
-                const { AdMob } = window.Capacitor.Plugins; await AdMob.prepareRewardVideoAd({ adId: "ca-app-pub-6519206650027176/8005768127" });
+                const { AdMob } = window.Capacitor.Plugins;
+                const adId = "ca-app-pub-6519206650027176/8005768127"; 
+                await AdMob.prepareRewardVideoAd({ adId: adId });
+                
                 let adHandled = false;
+                
                 let dismissListener = await AdMob.addListener('rewardedVideoAdDismissed', () => {
-                    if(adHandled) return; adHandled = true; lastAdTime = window.getTrueTime(); if(dismissListener) dismissListener.remove(); callback('closed'); 
+                    if(adHandled) return; 
+                    adHandled = true; 
+                    lastAdTime = window.getTrueTime();
+                    if(dismissListener) dismissListener.remove(); 
+                    callback('closed'); 
                 });
+                
                 let rewardListener = await AdMob.addListener('rewardedVideoAdReward', () => {
-                    if(adHandled) return; adHandled = true; lastAdTime = window.getTrueTime(); if(rewardListener) rewardListener.remove(); if(dismissListener) dismissListener.remove(); callback('success'); 
+                    if(adHandled) return; 
+                    adHandled = true; 
+                    lastAdTime = window.getTrueTime();
+                    if(rewardListener) rewardListener.remove(); 
+                    if(dismissListener) dismissListener.remove(); 
+                    callback('success'); 
                 });
+
+                let failListener = await AdMob.addListener('rewardedVideoAdFailedToShow', () => {
+                    if(adHandled) return; 
+                    adHandled = true; 
+                    lastAdTime = window.getTrueTime();
+                    if(failListener) failListener.remove(); 
+                    if(dismissListener) dismissListener.remove(); 
+                    callback('error'); 
+                });
+                
                 await AdMob.showRewardVideoAd();
-            } catch (error) { callback('error'); }
-        } else { lastAdTime = window.getTrueTime(); callback('error'); }
+                
+            } catch (error) { 
+                callback('error'); 
+            }
+        } else { 
+            lastAdTime = window.getTrueTime(); 
+            callback('error'); 
+        }
     }
 
     window.dailyCheckIn = function() {
         if(isTimeLocked) return window.showToast("Securing Time...");
-        if(window.getTrueTime() - (window.state.tasks.checkInTime || 0) < 86400000) return window.showToast("Already claimed today");
-        window.state.tasks.checkInTime = window.getTrueTime(); window.rewardCoins(50, "Daily Check-in");
+        const last = window.state.tasks.checkInTime || 0;
+        if(window.getTrueTime() - last < 86400000) {
+            return window.showToast("Already claimed today");
+        }
+        
+        window.state.tasks.checkInTime = window.getTrueTime();
+        window.rewardCoins(50, "Daily Check-in");
     }
 
     /* 🔥 MATH MANIA LOGIC 🔥 */
     window.mathAnswer = 0;
+    
     window.generateMathProblem = function() {
-        if(window.getTrueTime() < (window.state.tasks.mathCooldownEnd || 0)) { window.showToast("Math Mania is cooling down!"); window.nav('tasks'); return; }
-        const ops = ['+', '-', '*', '/']; const op = ops[Math.floor(Math.random() * ops.length)]; let n1, n2;
-        if (op === '+') { n1 = Math.floor(Math.random() * 20) + 1; n2 = Math.floor(Math.random() * 20) + 1; window.mathAnswer = n1 + n2; } 
-        else if (op === '-') { n2 = Math.floor(Math.random() * 20) + 1; n1 = Math.floor(Math.random() * 20) + n2 + 1; window.mathAnswer = n1 - n2; } 
-        else if (op === '*') { n1 = Math.floor(Math.random() * 10) + 1; n2 = Math.floor(Math.random() * 10) + 1; window.mathAnswer = n1 * n2; } 
-        else if (op === '/') { window.mathAnswer = Math.floor(Math.random() * 10) + 1; n2 = Math.floor(Math.random() * 10) + 1; n1 = window.mathAnswer * n2; }
-        let uiOp = op; if(op === '*') uiOp = '×'; if(op === '/') uiOp = '÷';
-        document.getElementById('math-question').innerText = `${n1} ${uiOp} ${n2}`; document.getElementById('math-answer').value = "";
-        const btn = document.getElementById('btn-submit-math'); btn.disabled = false; btn.innerText = "Submit Answer";
+        if(window.getTrueTime() < (window.state.tasks.mathCooldownEnd || 0)) {
+            window.showToast("Math Mania is cooling down!");
+            window.nav('tasks');
+            return;
+        }
+
+        const ops = ['+', '-', '*', '/'];
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        let n1, n2;
+
+        if (op === '+') {
+            n1 = Math.floor(Math.random() * 20) + 1;
+            n2 = Math.floor(Math.random() * 20) + 1;
+            window.mathAnswer = n1 + n2;
+        } else if (op === '-') {
+            n2 = Math.floor(Math.random() * 20) + 1;
+            n1 = Math.floor(Math.random() * 20) + n2 + 1;
+            window.mathAnswer = n1 - n2;
+        } else if (op === '*') {
+            n1 = Math.floor(Math.random() * 10) + 1;
+            n2 = Math.floor(Math.random() * 10) + 1;
+            window.mathAnswer = n1 * n2;
+        } else if (op === '/') {
+            window.mathAnswer = Math.floor(Math.random() * 10) + 1;
+            n2 = Math.floor(Math.random() * 10) + 1;
+            n1 = window.mathAnswer * n2;
+        }
+
+        let uiOp = op;
+        if(op === '*') uiOp = '×';
+        if(op === '/') uiOp = '÷';
+
+        document.getElementById('math-question').innerText = `${n1} ${uiOp} ${n2}`;
+        document.getElementById('math-answer').value = "";
+        
+        const btn = document.getElementById('btn-submit-math');
+        btn.disabled = false;
+        btn.innerText = "Submit Answer";
+
         document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts || 0) + "/5";
     }
 
     window.submitMathAnswer = function() {
         if(adTaskLock) return;
-        const userInput = document.getElementById('math-answer').value; if (userInput === "") return window.showToast("Enter an answer!");
-        const btn = document.getElementById('btn-submit-math'); btn.disabled = true;
+        
+        const userInput = document.getElementById('math-answer').value;
+        if (userInput === "") {
+            return window.showToast("Enter an answer!");
+        }
+
+        const btn = document.getElementById('btn-submit-math');
+        btn.disabled = true;
 
         if (parseInt(userInput) === window.mathAnswer) {
-            if(!window.state.tasks.mathAttempts) window.state.tasks.mathAttempts = 0; window.state.tasks.mathAttempts++;
-            let attempts = window.state.tasks.mathAttempts; let reward = 20;
+            if(!window.state.tasks.mathAttempts) window.state.tasks.mathAttempts = 0;
+            window.state.tasks.mathAttempts++;
+            
+            let attempts = window.state.tasks.mathAttempts;
+            let reward = 20;
 
             if (attempts === 2 || attempts === 5) {
-                btn.innerText = "Loading Ad..."; adTaskLock = true;
+                btn.innerText = "Loading Ad...";
+                adTaskLock = true;
+                
                 window.showAd((status) => {
                     adTaskLock = false;
-                    if(status === 'success') { window.processMathSuccess(reward, attempts); } 
-                    else if (status === 'error') { window.showToast("Ad unavailable. 25% Compensation given!"); window.processMathSuccess(Math.floor(reward * 0.25), attempts); }
-                    else { 
-                        if(status === 'closed') window.showToast("Ad closed early! Reward canceled.");
-                        btn.disabled = false; btn.innerText = "Submit Answer"; window.state.tasks.mathAttempts--; document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts) + "/5"; 
+                    
+                    if(status === 'success') {
+                        window.processMathSuccess(reward, attempts);
+                    } else if (status === 'error' || status === 'cooldown') { 
+                        window.showToast("Ad unavailable. 25% Compensation given!"); 
+                        window.processMathSuccess(Math.floor(reward * 0.25), attempts); 
+                    } else { 
+                        // Closed early
+                        if(status === 'closed') {
+                            window.showToast("Ad closed early! Reward canceled.");
+                        }
+                        btn.disabled = false;
+                        btn.innerText = "Submit Answer";
+                        window.state.tasks.mathAttempts--; 
+                        document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts) + "/5"; 
                     }
                 });
-            } else { btn.innerText = "Correct!"; setTimeout(() => window.processMathSuccess(reward, attempts), 500); }
-        } else { window.showToast("Wrong Answer! Try again."); btn.disabled = false; btn.innerText = "Submit Answer"; document.getElementById('math-answer').value = ""; }
+            } else {
+                btn.innerText = "Correct!";
+                setTimeout(() => window.processMathSuccess(reward, attempts), 500);
+            }
+        } else {
+            window.showToast("Wrong Answer! Try again.");
+            btn.disabled = false;
+            btn.innerText = "Submit Answer";
+            document.getElementById('math-answer').value = "";
+        }
     }
 
     window.processMathSuccess = function(reward, attempts) {
         window.rewardCoins(reward, "Math Mania");
-        if (attempts >= 5) { window.state.tasks.mathCooldownEnd = window.getTrueTime() + (45 * 60 * 1000); window.state.tasks.mathAttempts = 0; window.showToast("Cooling down for 45 mins"); setTimeout(() => window.nav('tasks'), 1500); } 
-        else { window.generateMathProblem(); } window.saveState(); window.updateTimersUI();
+        
+        if (attempts >= 5) {
+            window.state.tasks.mathCooldownEnd = window.getTrueTime() + (45 * 60 * 1000);
+            window.state.tasks.mathAttempts = 0;
+            window.showToast("Cooling down for 45 mins");
+            setTimeout(() => window.nav('tasks'), 1500);
+        } else {
+            window.generateMathProblem();
+        }
+        
+        window.saveState();
+        window.updateTimersUI();
     }
+
 
     /* 🔥 LUCKY SCRATCH LOGIC 🔥 */
     window.isScratchFinished = false;
+    
     window.initScratchCard = function() {
         const now = window.getTrueTime();
-        if(now < (window.state.tasks.scratchCooldownEnd || 0)) { window.showToast("Scratch is cooling down!"); window.nav('tasks'); return; }
-        if(now < (window.state.tasks.scratchNextTime || 0)) { window.showToast("Wait 1 min before next scratch!"); window.nav('tasks'); return; }
         
-        window.isScratchFinished = false; document.getElementById('scratch-status').innerText = "Scratch 60% to claim"; document.getElementById('scratch-status').style.color = "var(--text-muted)"; document.getElementById('btn-next-scratch').style.display = 'none';
-        window.currentScratchCoins = Math.floor(Math.random() * (50 - 10 + 1)) + 10; document.getElementById('scratch-coin-value').innerText = `+${window.currentScratchCoins}`;
+        if(now < (window.state.tasks.scratchCooldownEnd || 0)) { 
+            window.showToast("Scratch is cooling down!"); 
+            window.nav('tasks'); 
+            return; 
+        }
+        
+        if(now < (window.state.tasks.scratchNextTime || 0)) { 
+            window.showToast("Wait 1 min before next scratch!"); 
+            window.nav('tasks'); 
+            return; 
+        }
+        
+        window.isScratchFinished = false;
+        document.getElementById('scratch-status').innerText = "Scratch 60% to claim";
+        document.getElementById('scratch-status').style.color = "var(--text-muted)";
+        document.getElementById('btn-next-scratch').style.display = 'none';
+        
+        window.currentScratchCoins = Math.floor(Math.random() * (50 - 10 + 1)) + 10;
+        document.getElementById('scratch-coin-value').innerText = `+${window.currentScratchCoins}`;
 
-        const canvas = document.getElementById('scratch-canvas'); const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#334155'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.font = "bold 18px Inter"; ctx.fillStyle = "#94a3b8"; ctx.textAlign = "center"; ctx.fillText("SCRATCH HERE", canvas.width / 2, canvas.height / 2 + 6);
-        ctx.globalCompositeOperation = 'destination-out'; document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts || 0) + "/5";
+        const canvas = document.getElementById('scratch-canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.font = "bold 18px Inter";
+        ctx.fillStyle = "#94a3b8";
+        ctx.textAlign = "center";
+        ctx.fillText("SCRATCH HERE", canvas.width / 2, canvas.height / 2 + 6);
+
+        ctx.globalCompositeOperation = 'destination-out';
+
+        document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts || 0) + "/5";
 
         function scratch(e) {
-            if (window.isScratchFinished) return; e.preventDefault(); const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            ctx.beginPath(); ctx.arc(clientX - rect.left, clientY - rect.top, 25, 0, Math.PI * 2); ctx.fill(); checkPercent();
+            if (window.isScratchFinished) return;
+            e.preventDefault(); 
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            ctx.beginPath();
+            ctx.arc(clientX - rect.left, clientY - rect.top, 25, 0, Math.PI * 2);
+            ctx.fill();
+            checkPercent();
         }
 
         function checkPercent() {
-            const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data; let transparentPixels = 0;
-            for (let i = 0; i < pixels.length; i += 16) if (pixels[i + 3] === 0) transparentPixels++;
+            const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            let transparentPixels = 0;
+            for (let i = 0; i < pixels.length; i += 16) {
+                if (pixels[i + 3] === 0) transparentPixels++;
+            }
+            
             if ((transparentPixels / (pixels.length / 16)) * 100 > 60 && !window.isScratchFinished) {
-                window.isScratchFinished = true; ctx.clearRect(0, 0, canvas.width, canvas.height); document.getElementById('scratch-status').innerText = "Verifying...";
-                if(!window.state.tasks.scratchAttempts) window.state.tasks.scratchAttempts = 0; window.state.tasks.scratchAttempts++; let attempts = window.state.tasks.scratchAttempts;
+                window.isScratchFinished = true;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                document.getElementById('scratch-status').innerText = "Verifying...";
+                
+                if(!window.state.tasks.scratchAttempts) window.state.tasks.scratchAttempts = 0;
+                window.state.tasks.scratchAttempts++;
+                let attempts = window.state.tasks.scratchAttempts;
 
                 if(attempts === 2 || attempts === 5) {
-                    adTaskLock = true; window.showToast("Loading Ad...");
+                    adTaskLock = true;
+                    window.showToast("Loading Ad...");
+                    
                     window.showAd((status) => {
                         adTaskLock = false;
-                        if(status === 'success') { window.processScratchSuccess(attempts, window.currentScratchCoins); } 
-                        else if (status === 'error') { window.showToast("Ad unavailable. 25% Compensation given!"); window.processScratchSuccess(attempts, Math.floor(window.currentScratchCoins * 0.25)); }
-                        else { 
-                            if(status === 'closed') window.showToast("Ad closed early! Reward canceled.");
-                            window.state.tasks.scratchAttempts--; document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts) + "/5"; document.getElementById('btn-next-scratch').style.display = 'inline-block'; document.getElementById('scratch-status').innerText = "Ad failed. Try Next Card."; 
+                        if(status === 'success') {
+                            window.processScratchSuccess(attempts, window.currentScratchCoins);
+                        } else if (status === 'error' || status === 'cooldown') { 
+                            window.showToast("Ad unavailable. 25% Compensation given!"); 
+                            window.processScratchSuccess(attempts, Math.floor(window.currentScratchCoins * 0.25)); 
+                        } else { 
+                            if(status === 'closed') {
+                                window.showToast("Ad closed early! Reward canceled.");
+                            }
+                            window.state.tasks.scratchAttempts--; 
+                            document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts) + "/5"; 
+                            document.getElementById('btn-next-scratch').style.display = 'inline-block'; 
+                            document.getElementById('scratch-status').innerText = "Ad failed. Try Next Card."; 
                         }
                     });
-                } else { window.processScratchSuccess(attempts, window.currentScratchCoins); }
+                } else {
+                    window.processScratchSuccess(attempts, window.currentScratchCoins);
+                }
             }
         }
-        canvas.onmousedown = () => { canvas.onmousemove = scratch; }; canvas.onmouseup = () => { canvas.onmousemove = null; }; canvas.onmouseleave = () => { canvas.onmousemove = null; }; canvas.ontouchstart = (e) => { scratch(e); canvas.ontouchmove = scratch; }; canvas.ontouchend = () => { canvas.ontouchmove = null; };
+
+        canvas.onmousedown = () => { canvas.onmousemove = scratch; };
+        canvas.onmouseup = () => { canvas.onmousemove = null; };
+        canvas.onmouseleave = () => { canvas.onmousemove = null; };
+        canvas.ontouchstart = (e) => { scratch(e); canvas.ontouchmove = scratch; };
+        canvas.ontouchend = () => { canvas.ontouchmove = null; };
     }
 
     window.processScratchSuccess = function(attempts, coinsEarned) {
-        window.rewardCoins(coinsEarned, "Lucky Scratch"); document.getElementById('scratch-status').innerText = "Reward Claimed!"; document.getElementById('scratch-status').style.color = "var(--primary)";
-        if (attempts >= 5) { window.state.tasks.scratchCooldownEnd = window.getTrueTime() + (30 * 60 * 1000); window.state.tasks.scratchAttempts = 0; window.showToast("Cooling down for 30 mins"); setTimeout(() => window.nav('tasks'), 1500); } 
-        else { window.state.tasks.scratchNextTime = window.getTrueTime() + (60 * 1000); document.getElementById('btn-next-scratch').style.display = 'inline-block'; } window.saveState(); window.updateTimersUI();
+        window.rewardCoins(coinsEarned, "Lucky Scratch");
+        document.getElementById('scratch-status').innerText = "Reward Claimed!";
+        document.getElementById('scratch-status').style.color = "var(--primary)";
+
+        if (attempts >= 5) {
+            window.state.tasks.scratchCooldownEnd = window.getTrueTime() + (30 * 60 * 1000);
+            window.state.tasks.scratchAttempts = 0;
+            window.showToast("Cooling down for 30 mins");
+            setTimeout(() => window.nav('tasks'), 1500);
+        } else {
+            window.state.tasks.scratchNextTime = window.getTrueTime() + (60 * 1000);
+            document.getElementById('btn-next-scratch').style.display = 'inline-block';
+        }
+        
+        window.saveState();
+        window.updateTimersUI();
     }
+
 
     /* 🔥 TAP TASK LOGIC 🔥 */
     window.doTapTask = function() {
-        if(isTimeLocked) return window.showToast("Securing Time..."); if(!window.state || !window.state.tasks) return;
+        if(isTimeLocked) return window.showToast("Securing Time...");
+        if(!window.state || !window.state.tasks) return;
         if(window.state.tasks.tapCount >= 20) return;
         if(window.getTrueTime() < (window.state.tasks.lastTap || 0) + COOLDOWN_TAP) return window.showToast("Wait for timer!");
-        if(window.getTrueTime() < (window.state.tasks.tapNextTime || 0)) return window.showToast("Wait 2 seconds between taps!");
+        
+        if(window.getTrueTime() < (window.state.tasks.tapNextTime || 0)) {
+            return window.showToast("Wait 2 seconds between taps!");
+        }
         if(adTaskLock) return;
 
         if((window.state.tasks.tapCount + 1) === 10){
-            adTaskLock = true; window.showToast("Loading Ad..."); 
+            adTaskLock = true;
+            window.showToast("Loading Ad..."); 
             window.showAd((status) => { 
                 adTaskLock = false; 
-                if(status === 'error') window.showToast("Ad unavailable right now.");
+                if(status === 'error' || status === 'cooldown') {
+                    window.showToast("Ad unavailable right now.");
+                }
             });
         }
         
-        window.state.tasks.tapCount++; window.state.tasks.tapNextTime = window.getTrueTime() + 2000;
-        if(window.state.tasks.tapCount >= 20){ window.state.tasks.tapCount = 0; window.state.tasks.lastTap = window.getTrueTime(); window.rewardCoins(150, "Tap Task"); window.saveState(); window.updateTimersUI(); } 
-        else { window.saveState(); } document.getElementById('tap-count').innerText = window.state.tasks.tapCount;
+        window.state.tasks.tapCount++;
+        window.state.tasks.tapNextTime = window.getTrueTime() + 2000; // 2 seconds lock
+        
+        if(window.state.tasks.tapCount >= 20){
+            window.state.tasks.tapCount = 0; 
+            window.state.tasks.lastTap = window.getTrueTime(); 
+            window.rewardCoins(150, "Tap Task"); 
+            window.saveState();
+            window.updateTimersUI();
+        } else {
+            window.saveState();
+        }
+        document.getElementById('tap-count').innerText = window.state.tasks.tapCount;
     }
+
 
     /* 🔥 EX SHUFFLE TASK LOGIC 🔥 */
     window.shuffleCardsClickable = false;
-    const shuffleCardTranslations = [{ tx: '110%', ty: '60%' }, { tx: '0%', ty: '60%' }, { tx: '-110%', ty: '60%' }, { tx: '110%', ty: '-60%' }, { tx: '0%', ty: '-60%' }, { tx: '-110%', ty: '-60%' }];
+    const shuffleCardTranslations = [
+        { tx: '110%', ty: '60%' },   { tx: '0%', ty: '60%' },     { tx: '-110%', ty: '60%' },
+        { tx: '110%', ty: '-60%' },  { tx: '0%', ty: '-60%' },    { tx: '-110%', ty: '-60%' }
+    ];
+
     window.renderShuffleCards = function() {
-        const container = document.getElementById('shuffle-card-container'); if(!container) return; container.innerHTML = '';
-        for(let i = 0; i < 6; i++) { container.innerHTML += `<div class="shuffle-card disabled" id="scard-${i}" onclick="window.flipShuffleCard(${i})" style="--tx: ${shuffleCardTranslations[i].tx}; --ty: ${shuffleCardTranslations[i].ty};"><div class="sc-front" id="sfront-${i}"></div><div class="sc-back"><i class="fa-solid fa-rocket"></i><span>EARNX</span></div></div>`; }
+        const container = document.getElementById('shuffle-card-container');
+        if(!container) return;
+        container.innerHTML = '';
+        for(let i = 0; i < 6; i++) { 
+            container.innerHTML += `
+                <div class="shuffle-card disabled" id="scard-${i}" onclick="window.flipShuffleCard(${i})" style="--tx: ${shuffleCardTranslations[i].tx}; --ty: ${shuffleCardTranslations[i].ty};">
+                    <div class="sc-front" id="sfront-${i}"></div>
+                    <div class="sc-back">
+                        <i class="fa-solid fa-rocket"></i>
+                        <span>EARNX</span>
+                    </div>
+                </div>
+            `;
+        }
     }
 
     window.startShuffleTask = function() {
-        if(isTimeLocked) return window.showToast("Securing Time..."); if(window.state.shuffle.shufflesLeft <= 0) return window.showToast("Limit Reached!"); if(adTaskLock) return;
-        const btn = document.getElementById('shuffle-btn'); const grid = document.getElementById('shuffle-card-container');
-        btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mixing...'; window.shuffleCardsClickable = false;
+        if(isTimeLocked) return window.showToast("Securing Time...");
+        if(window.state.shuffle.shufflesLeft <= 0) return window.showToast("Limit Reached!");
+        if(adTaskLock) return;
+
+        const btn = document.getElementById('shuffle-btn');
+        const grid = document.getElementById('shuffle-card-container');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mixing...';
+        window.shuffleCardsClickable = false;
+
         document.querySelectorAll('.shuffle-card').forEach(card => card.classList.remove('flipped'));
 
         setTimeout(() => {
-            grid.classList.add('animating-grid'); document.querySelectorAll('.shuffle-card').forEach(card => card.classList.add('animating-card'));
-            setTimeout(() => { grid.classList.remove('animating-grid'); document.querySelectorAll('.shuffle-card').forEach(card => { card.classList.remove('animating-card'); card.classList.remove('disabled'); }); btn.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Pick a Card!'; window.shuffleCardsClickable = true; }, 1200);
+            grid.classList.add('animating-grid');
+            document.querySelectorAll('.shuffle-card').forEach(card => card.classList.add('animating-card'));
+
+            setTimeout(() => {
+                grid.classList.remove('animating-grid');
+                document.querySelectorAll('.shuffle-card').forEach(card => {
+                    card.classList.remove('animating-card');
+                    card.classList.remove('disabled'); 
+                });
+                btn.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Pick a Card!';
+                window.shuffleCardsClickable = true;
+            }, 1200);
+
         }, 300);
     }
 
     window.flipShuffleCard = function(index) {
-        if(!window.shuffleCardsClickable) return; window.shuffleCardsClickable = false; 
+        if(!window.shuffleCardsClickable) return;
+        window.shuffleCardsClickable = false; 
+        
         document.querySelectorAll('.shuffle-card').forEach(c => c.classList.add('disabled'));
 
         let wonCoins = Math.floor(Math.random() * (100 - 10 + 1)) + 10;
-        document.getElementById(`sfront-${index}`).innerHTML = `<i class="fa-solid fa-coins"></i><span>+${wonCoins}</span>`; document.getElementById(`scard-${index}`).classList.add('flipped');
+        document.getElementById(`sfront-${index}`).innerHTML = `<i class="fa-solid fa-coins"></i><span>+${wonCoins}</span>`;
+        document.getElementById(`scard-${index}`).classList.add('flipped');
 
-        window.state.shuffle.shufflesLeft--; window.state.shuffle.totalShuffles++;
-        if(window.state.shuffle.shufflesLeft === 4) window.state.shuffle.lastRefill = window.getTrueTime();
-        document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; window.saveState();
+        window.state.shuffle.shufflesLeft--;
+        window.state.shuffle.totalShuffles++;
+        
+        if(window.state.shuffle.shufflesLeft === 4) {
+            window.state.shuffle.lastRefill = window.getTrueTime();
+        }
+        
+        document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft;
+        window.saveState();
 
         if (window.state.shuffle.totalShuffles % 3 === 0 || window.state.shuffle.totalShuffles === 2 || window.state.shuffle.totalShuffles === 5) {
             setTimeout(() => {
-                adTaskLock = true; window.showToast("Loading Ad...");
+                adTaskLock = true;
+                window.showToast("Loading Ad...");
                 window.showAd((status) => {
                     adTaskLock = false;
-                    if(status === 'success') { window.processShuffleReward(wonCoins); } 
-                    else if (status === 'error') { window.showToast("Ad unavailable. 25% Compensation given!"); window.processShuffleReward(Math.floor(wonCoins * 0.25)); }
-                    else { 
-                        if(status === 'closed') window.showToast("Ad closed early! Reward canceled.");
-                        window.state.shuffle.shufflesLeft++; window.state.shuffle.totalShuffles--; document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; window.saveState(); window.resetShuffleUI(); 
+                    if(status === 'success') {
+                        window.processShuffleReward(wonCoins);
+                    } else if (status === 'error' || status === 'cooldown') { 
+                        window.showToast("Ad unavailable. 25% Compensation given!"); 
+                        window.processShuffleReward(Math.floor(wonCoins * 0.25)); 
+                    } else { 
+                        if(status === 'closed') {
+                            window.showToast("Ad closed early! Reward canceled.");
+                        }
+                        window.state.shuffle.shufflesLeft++; 
+                        window.state.shuffle.totalShuffles--; 
+                        document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; 
+                        window.saveState(); 
+                        window.resetShuffleUI(); 
                     }
                 });
             }, 800); 
-        } else { setTimeout(() => { window.processShuffleReward(wonCoins); }, 800); }
+        } else {
+            setTimeout(() => {
+                window.processShuffleReward(wonCoins);
+            }, 800);
+        }
     }
 
-    window.processShuffleReward = function(coins) { window.rewardCoins(coins, "Shuffle Task"); window.resetShuffleUI(); }
+    window.processShuffleReward = function(coins) {
+        window.rewardCoins(coins, "Shuffle Task");
+        window.resetShuffleUI();
+    }
+
     window.resetShuffleUI = function() {
         const btn = document.getElementById('shuffle-btn');
-        if(window.state.shuffle.shufflesLeft > 0) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Mix Again'; } else { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Limit Reached'; }
+        if(window.state.shuffle.shufflesLeft > 0) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Mix Again';
+        } else {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Limit Reached';
+        }
     }
 
     const prizeMap = [100, 75, 50, 20, 10, 5]; 
     window.spinWheel = function() {
-        if(isTimeLocked) return window.showToast("Securing Time..."); const btn = document.getElementById('btn-spin'); if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0 || adTaskLock) return;
-        btn.disabled = true; window.state.spin.spinsLeft--; window.state.spin.totalSpins++; if(window.state.spin.spinsLeft === 4) window.state.spin.lastRefill = window.getTrueTime(); window.saveState();
-        const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6); const targetDeg = (360 * 5) + (360 - (safeRandom * 60)) - 30 + (Math.random() * 40 - 20);
+        if(isTimeLocked) return window.showToast("Securing Time...");
+        const btn = document.getElementById('btn-spin');
+        
+        if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0 || adTaskLock) return;
+        
+        btn.disabled = true;
+        window.state.spin.spinsLeft--; 
+        window.state.spin.totalSpins++;
+        
+        if(window.state.spin.spinsLeft === 4) window.state.spin.lastRefill = window.getTrueTime();
+        window.saveState();
+        
+        const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6);
+        const targetDeg = (360 * 5) + (360 - (safeRandom * 60)) - 30 + (Math.random() * 40 - 20);
+        
         const wheel = document.getElementById('wheel-inner');
-        if(wheel) { wheel.style.transition = 'none'; wheel.style.transform = `rotate(0deg)`; void wheel.offsetWidth; wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)'; wheel.style.transform = `rotate(${targetDeg}deg)`; }
+        if(wheel) {
+            wheel.style.transition = 'none'; 
+            wheel.style.transform = `rotate(0deg)`; 
+            void wheel.offsetWidth;
+            wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)'; 
+            wheel.style.transform = `rotate(${targetDeg}deg)`;
+        }
+        
         setTimeout(() => {
             window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
             if(window.state.spin.totalSpins % 3 === 0) { 
                 adTaskLock = true; 
-                setTimeout(() => window.showAd((status)=>{ adTaskLock = false; if(status === 'error') window.showToast("Ad unavailable right now."); }), 500); 
+                setTimeout(() => window.showAd((status)=>{ 
+                    adTaskLock = false; 
+                    if(status === 'error' || status === 'cooldown') {
+                        window.showToast("Ad unavailable right now.");
+                    }
+                }), 500); 
             }
         }, 4200);
+        
         setTimeout(() => { btn.disabled = false; }, 4500);
     }
 
     window.applyReferralFirebase = async function(){
-        if(referralLock || !navigator.onLine || !window.state.user) return; referralLock = true;
+        if(referralLock || !navigator.onLine || !window.state.user) return;
+        referralLock = true;
         try {
-            const el = document.getElementById('ref-input'); const code = el.value.trim().toUpperCase();
-            if(!code || window.state.user.referredBy || code === window.state.user.refCode.toUpperCase()) return window.showToast("Invalid code");
+            const el = document.getElementById('ref-input'); 
+            const code = el.value.trim().toUpperCase();
+            
+            if(!code || window.state.user.referredBy || code === window.state.user.refCode.toUpperCase()) {
+                return window.showToast("Invalid code");
+            }
+            
             const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const snapshot = await getDocs(query(collection(window.db, "earnx_users"), where("refCode", "==", code)));
+            
             if(snapshot.empty) return window.showToast("Invalid code");
-            const refDoc = snapshot.docs[0]; if(refDoc.data().deviceId === localStorage.getItem("earnx_device_id")) return window.showToast("Fraud detected!");
-            window.state.user.referredBy = true; window.state.user.pendingReferrer = refDoc.id; window.saveState(); window.showToast("Code Applied!"); el.value = "";
-        } catch(e) { window.showToast("Error applying referral"); } finally { referralLock = false; }
+            
+            const refDoc = snapshot.docs[0];
+            if(refDoc.data().deviceId === localStorage.getItem("earnx_device_id")) {
+                return window.showToast("Fraud detected!");
+            }
+            
+            window.state.user.referredBy = true; 
+            window.state.user.pendingReferrer = refDoc.id;
+            window.saveState(); 
+            window.showToast("Code Applied!"); 
+            el.value = "";
+        } catch(e) {
+            window.showToast("Error applying referral");
+        } finally {
+            referralLock = false;
+        }
     }
 
     window.submitWithdraw = async function(){
-        if(withdrawLock || !navigator.onLine) return; withdrawLock = true; setTimeout(()=> { withdrawLock = false; }, 5000); 
+        if(withdrawLock || !navigator.onLine) return; 
+        withdrawLock = true;
+        setTimeout(()=> { withdrawLock = false; }, 5000); 
+        
         try {
-            const coins = Math.floor(window.state.user.coins / 10000) * 10000; if(coins < 10000) return window.showToast("Min 10k coins");
-            const upi = document.getElementById('upi-input').value.trim(); if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)) return window.showToast("Invalid UPI");
+            const coins = Math.floor(window.state.user.coins / 10000) * 10000;
+            if(coins < 10000) return window.showToast("Min 10k coins");
+            
+            const upi = document.getElementById('upi-input').value.trim();
+            if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)) return window.showToast("Invalid UPI");
+            
             const { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-            const userRef = doc(window.db, "earnx_users", window.currentUser.uid); const currentCoins = (await getDoc(userRef)).data().coins || 0;
+            const userRef = doc(window.db, "earnx_users", window.currentUser.uid);
+            const currentCoins = (await getDoc(userRef)).data().coins || 0;
+            
             if(currentCoins < coins) return window.showToast("Balance mismatch");
-            await updateDoc(userRef, { coins: currentCoins - coins }); await addDoc(collection(window.db, "earnx_withdrawals"), { userId: window.currentUser.uid, coins: coins, upiId: upi, status: "Pending", createdAt: serverTimestamp() });
-            window.state.user.coins -= coins; window.logTransaction("Withdrawal Request", coins, "spend"); window.saveState(); window.loadWithdrawals(); window.showToast("Withdraw Requested");
-        } catch(e){ window.showToast("Withdraw failed"); }
+            
+            await updateDoc(userRef, { coins: currentCoins - coins });
+            await addDoc(collection(window.db, "earnx_withdrawals"), { 
+                userId: window.currentUser.uid, 
+                coins: coins, 
+                upiId: upi, 
+                status: "Pending", 
+                createdAt: serverTimestamp() 
+            });
+            
+            window.state.user.coins -= coins; 
+            window.logTransaction("Withdrawal Request", coins, "spend");
+            window.saveState(); 
+            window.loadWithdrawals();
+            window.showToast("Withdraw Requested");
+        } catch(e){
+            window.showToast("Withdraw failed");
+        }
     };
 
-    window.startTimers = function() { if(timerInterval) clearInterval(timerInterval); timerInterval = setInterval(window.updateTimersUI, 1000); window.updateTimersUI(); }
+    window.startTimers = function() {
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(window.updateTimersUI, 1000);
+        window.updateTimersUI();
+    }
 
+    /* 🔥 UI TIMERS FIXED FOR TASKS SCREEN 🔥 */
     window.updateTimersUI = function() {
-        if(isTimeLocked) return; const now = window.getTrueTime();
+        if(isTimeLocked) return;
+        const now = window.getTrueTime();
+        
+        // Tap Timer
         window.updateSingleTimer('tap', window.state.tasks.lastTap || 0, now, COOLDOWN_TAP);
 
+        // Math Timer
         const mathEnd = window.state.tasks.mathCooldownEnd || 0;
-        if (mathEnd > now) { safeSetText('math-timer-display', window.formatMS(mathEnd - now)); const btnMath = document.getElementById('btn-math'); if(btnMath) btnMath.disabled = true; } 
-        else { safeSetText('math-timer-display', "Ready"); const btnMath = document.getElementById('btn-math'); if(btnMath) btnMath.disabled = false; }
+        if (mathEnd > now) {
+            safeSetText('math-timer-display', window.formatMS(mathEnd - now));
+            const btnMath = document.getElementById('btn-math');
+            if(btnMath) btnMath.disabled = true;
+        } else {
+            safeSetText('math-timer-display', "Ready");
+            const btnMath = document.getElementById('btn-math');
+            if(btnMath) btnMath.disabled = false;
+        }
 
+        // Scratch Timer
         const scratchTarget = Math.max((window.state.tasks.scratchCooldownEnd || 0), (window.state.tasks.scratchNextTime || 0));
-        if (scratchTarget > now) { safeSetText('scratch-timer-display', window.formatMS(scratchTarget - now)); const btnScratch = document.getElementById('btn-scratch'); if(btnScratch) btnScratch.disabled = true; } 
-        else { safeSetText('scratch-timer-display', "Ready"); const btnScratch = document.getElementById('btn-scratch'); if(btnScratch) btnScratch.disabled = false; }
+        if (scratchTarget > now) {
+            safeSetText('scratch-timer-display', window.formatMS(scratchTarget - now));
+            const btnScratch = document.getElementById('btn-scratch');
+            if(btnScratch) btnScratch.disabled = true;
+        } else {
+            safeSetText('scratch-timer-display', "Ready");
+            const btnScratch = document.getElementById('btn-scratch');
+            if(btnScratch) btnScratch.disabled = false;
+        }
         
-        if(window.state.spin.spinsLeft < 5 && window.state.spin.lastRefill > 0) { const passed = now - window.state.spin.lastRefill; if(passed >= SPIN_REFILL_MS) { window.state.spin.spinsLeft = 5; window.state.spin.lastRefill = 0; window.saveState(); } else { safeSetText('spin-refill-timer', "Refill in: " + window.formatMS(SPIN_REFILL_MS - passed)); } } else { safeSetText('spin-refill-timer', ""); }
-        if(window.state.shuffle.shufflesLeft < 5 && window.state.shuffle.lastRefill > 0) { const passedShuffle = now - window.state.shuffle.lastRefill; if(passedShuffle >= SPIN_REFILL_MS) { window.state.shuffle.shufflesLeft = 5; window.state.shuffle.lastRefill = 0; window.saveState(); safeSetText('shuffle-timer-display', "Ready"); } else { safeSetText('shuffle-timer-display', window.formatMS(SPIN_REFILL_MS - passedShuffle)); } } else { safeSetText('shuffle-timer-display', "Ready"); }
+        // Spin Refill
+        if(window.state.spin.spinsLeft < 5 && window.state.spin.lastRefill > 0) {
+            const passed = now - window.state.spin.lastRefill;
+            if(passed >= SPIN_REFILL_MS) { 
+                window.state.spin.spinsLeft = 5; 
+                window.state.spin.lastRefill = 0; 
+                window.saveState(); 
+            } else { 
+                safeSetText('spin-refill-timer', "Refill in: " + window.formatMS(SPIN_REFILL_MS - passed)); 
+            }
+        } else { 
+            safeSetText('spin-refill-timer', ""); 
+        }
+
+        // Shuffle Refill Fix (Fix for Tasks Screen UI)
+        if(window.state.shuffle.shufflesLeft < 5 && window.state.shuffle.lastRefill > 0) {
+            const passedShuffle = now - window.state.shuffle.lastRefill;
+            if(passedShuffle >= SPIN_REFILL_MS) { 
+                window.state.shuffle.shufflesLeft = 5; 
+                window.state.shuffle.lastRefill = 0; 
+                window.saveState(); 
+                safeSetText('shuffle-timer-display', "Ready");
+                const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
+                if(btnGotoShuffle) btnGotoShuffle.disabled = false;
+            } else { 
+                if(window.state.shuffle.shufflesLeft <= 0) {
+                    safeSetText('shuffle-timer-display', window.formatMS(SPIN_REFILL_MS - passedShuffle));
+                    const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
+                    if(btnGotoShuffle) btnGotoShuffle.disabled = true;
+                } else {
+                    safeSetText('shuffle-timer-display', "Ready");
+                    const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
+                    if(btnGotoShuffle) btnGotoShuffle.disabled = false;
+                }
+            }
+        } else { 
+            safeSetText('shuffle-timer-display', "Ready");
+            const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
+            if(btnGotoShuffle) btnGotoShuffle.disabled = false;
+        }
     }
 
     window.updateSingleTimer = function(type, lastTime, now, cooldownLimit) {
-        const btn = document.getElementById(`btn-${type}`); if(!btn) return; const passed = now - lastTime;
-        if(passed < cooldownLimit) { safeSetText(`${type}-timer-display`, window.formatMS(cooldownLimit - passed)); btn.disabled = true; } 
-        else { if(type === 'tap' && window.state.tasks.tapCount >= 20) { safeSetText(`${type}-timer-display`, "Complete"); btn.disabled = true; } else { safeSetText(`${type}-timer-display`, "Ready"); btn.disabled = false; } }
+        const btn = document.getElementById(`btn-${type}`);
+        if(!btn) return;
+        
+        const passed = now - lastTime;
+        if(passed < cooldownLimit) {
+            safeSetText(`${type}-timer-display`, window.formatMS(cooldownLimit - passed));
+            btn.disabled = true;
+        } else {
+            if(type === 'tap' && window.state.tasks.tapCount >= 20) {
+                safeSetText(`${type}-timer-display`, "Complete");
+                btn.disabled = true;
+            } else {
+                safeSetText(`${type}-timer-display`, "Ready");
+                btn.disabled = false;
+            }
+        }
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) window.Capacitor.Plugins.SplashScreen.hide(); 
-        setTimeout(function() { let splash = document.getElementById('custom-splash'); if(splash) { splash.style.opacity = '0'; setTimeout(() => { splash.style.display = 'none'; }, 600); } }, 2500); 
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
+            window.Capacitor.Plugins.SplashScreen.hide();
+        }
+        
+        setTimeout(function() {
+            let splash = document.getElementById('custom-splash');
+            if(splash) {
+                splash.style.opacity = '0';
+                setTimeout(() => { splash.style.display = 'none'; }, 600);
+            }
+        }, 2500); 
     });
 </script>
 </body>
