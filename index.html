@@ -140,7 +140,10 @@
         .sc-front { background: linear-gradient(135deg, #047857, #065f46); border: 2px solid var(--primary); transform: rotateY(180deg); }
         .sc-front i { font-size: 2.2rem; color: var(--warning); margin-bottom: 5px; filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8)); }
         .sc-front span { font-size: 1.3rem; font-weight: 800; color: var(--warning); }
-        .ad-banner { width: 100%; max-width: 360px; height: 50px; margin: 0 auto 15px auto; background: rgba(255, 255, 255, 0.1); border: 1px dashed var(--warning); border-radius: 8px; display: flex; justify-content: center; align-items: center; color: var(--warning); font-size: 0.85rem; font-weight: 600; letter-spacing: 1px; }
+        
+        /* 🔥 CLEAN AD BANNER (No Text, No Border, Invisible if empty) 🔥 */
+        .ad-banner { width: 100%; max-width: 360px; min-height: 50px; margin: 0 auto 15px auto; display: flex; justify-content: center; align-items: center; }
+        
         @keyframes mixup-container { 0% { transform: scale(1) rotate(0deg); } 50% { transform: scale(0.8) rotate(360deg); } 100% { transform: scale(1) rotate(720deg); } }
         @keyframes mixup-cards { 0% { transform: translate(0, 0); opacity: 1; } 50% { transform: translate(var(--tx), var(--ty)) rotate(180deg); opacity: 0.9; } 100% { transform: translate(0, 0) rotate(360deg); opacity: 1; } }
         .animating-grid { animation: mixup-container 1.2s ease-in-out; }
@@ -304,7 +307,7 @@
                 <div><h3 style="margin-bottom: 2px;">EX Shuffle</h3><p>Mix Cards & Win. Reward: Up to 100</p></div>
                 <div class="timer-display" id="shuffle-timer-display">Ready</div>
             </div>
-            <button class="btn" style="background: linear-gradient(135deg, #d97706, #fbbf24); color: #000;" id="btn-goto-shuffle" onclick="window.nav('shuffle')"><i class="fa-solid fa-wand-magic-sparkles"></i> Play Shuffle</button>
+            <button class="btn" id="btn-goto-shuffle" onclick="window.nav('shuffle')"><i class="fa-solid fa-wand-magic-sparkles"></i> Play Shuffle</button>
         </div>
 
         <div class="card">
@@ -347,23 +350,17 @@
         </div>
         <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">(Refills every 3 hours)</p>
         
-        <div class="ad-banner">
-            <i class="fa-solid fa-ad" style="margin-right: 8px;"></i> AdMob Banner (ca-app-pub-6519206650027176/2795745416)
-        </div>
+        <div class="ad-banner" id="shuffle-ad-top"></div>
 
         <div class="cards-container">
             <div class="cards-grid" id="shuffle-card-container">
                 </div>
         </div>
 
-        <div class="ad-banner">
-            <i class="fa-solid fa-ad" style="margin-right: 8px;"></i> AdMob Banner (ca-app-pub-6519206650027176/2795745416)
-        </div>
+        <div class="ad-banner" id="shuffle-ad-bottom"></div>
 
         <div style="display:flex; justify-content: center; margin-bottom: 20px;">
-            <button class="btn" id="shuffle-btn" onclick="window.startShuffleTask()" style="background: linear-gradient(to right, var(--gold-dark), var(--gold)); color: #021c13; text-transform: uppercase; letter-spacing: 1px;">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Mix Cards
-            </button>
+            <button class="btn" id="shuffle-btn" onclick="window.startShuffleTask()"><i class="fa-solid fa-wand-magic-sparkles"></i> Mix Cards</button>
         </div>
     </div>
 
@@ -1813,12 +1810,11 @@
         if(window.state.shuffle.shufflesLeft > 0) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Mix Again';
+            // Button style is already handled by CSS class .btn now
         } else {
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Limit Reached';
-            btn.style.background = "var(--card-border)";
-            btn.style.color = "var(--text-muted)";
-            btn.style.boxShadow = "none";
+            // Disabled style is handled automatically by .btn:disabled class
         }
     }
 
