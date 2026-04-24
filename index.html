@@ -126,6 +126,25 @@
         
         .confetti-piece { position: absolute; width: 10px; height: 10px; background: #ffd700; top: -20px; opacity: 0; animation: confettiDrop 3s infinite linear; }
         @keyframes confettiDrop { from { top: -20px; opacity: 1; transform: rotate(0deg); } to { top: 100%; opacity: 0; transform: rotate(360deg); } }
+
+        /* 🔥 EX SHUFFLE TASK CSS 🔥 */
+        .cards-container { position: relative; max-width: 360px; margin: 0 auto 15px auto; perspective: 1000px; }
+        .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; transition: transform 0.5s ease; }
+        .shuffle-card { width: 100%; aspect-ratio: 3/4; cursor: pointer; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); }
+        .shuffle-card.flipped { transform: rotateY(180deg); }
+        .shuffle-card.disabled { pointer-events: none; }
+        .sc-front, .sc-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .sc-back { background: linear-gradient(135deg, #065f46, #064e3b); border: 2px solid var(--warning); }
+        .sc-back i { font-size: 2.2rem; color: var(--warning); margin-bottom: 5px; filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5)); }
+        .sc-back span { font-size: 0.9rem; font-weight: 800; letter-spacing: 1px; color: var(--text-light); }
+        .sc-front { background: linear-gradient(135deg, #047857, #065f46); border: 2px solid var(--primary); transform: rotateY(180deg); }
+        .sc-front i { font-size: 2.2rem; color: var(--warning); margin-bottom: 5px; filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8)); }
+        .sc-front span { font-size: 1.3rem; font-weight: 800; color: var(--warning); }
+        .ad-banner { width: 100%; max-width: 360px; height: 50px; margin: 0 auto 15px auto; background: rgba(255, 255, 255, 0.1); border: 1px dashed var(--warning); border-radius: 8px; display: flex; justify-content: center; align-items: center; color: var(--warning); font-size: 0.85rem; font-weight: 600; letter-spacing: 1px; }
+        @keyframes mixup-container { 0% { transform: scale(1) rotate(0deg); } 50% { transform: scale(0.8) rotate(360deg); } 100% { transform: scale(1) rotate(720deg); } }
+        @keyframes mixup-cards { 0% { transform: translate(0, 0); opacity: 1; } 50% { transform: translate(var(--tx), var(--ty)) rotate(180deg); opacity: 0.9; } 100% { transform: translate(0, 0) rotate(360deg); opacity: 1; } }
+        .animating-grid { animation: mixup-container 1.2s ease-in-out; }
+        .animating-card { animation: mixup-cards 1.2s ease-in-out; }
     </style>
 </head>
 <body>
@@ -280,6 +299,14 @@
             <button class="btn" id="btn-mega-task" onclick="window.doMegaTask()">Claim Reward</button>
         </div>
 
+        <div class="card" style="border-left: 4px solid var(--warning);">
+            <div class="flex-between mb-1">
+                <div><h3 style="margin-bottom: 2px;">EX Shuffle</h3><p>Mix Cards & Win. Reward: Up to 100</p></div>
+                <div class="timer-display" id="shuffle-timer-display">Ready</div>
+            </div>
+            <button class="btn" style="background: linear-gradient(135deg, #d97706, #fbbf24); color: #000;" id="btn-goto-shuffle" onclick="window.nav('shuffle')"><i class="fa-solid fa-wand-magic-sparkles"></i> Play Shuffle</button>
+        </div>
+
         <div class="card">
             <div class="flex-between mb-1">
                 <div><h3 style="margin-bottom: 2px;">Watch Ad</h3><p>Reward: 100 Coins</p></div>
@@ -305,6 +332,38 @@
                 <div style="font-size: 1.2rem; font-weight: bold;"><span id="tap-count">0</span> / 20</div>
                 <button class="btn" id="btn-tap" style="width: auto; padding: 10px 30px;" onclick="window.doTapTask()">TAP ME</button>
             </div>
+        </div>
+    </div>
+
+    <div id="screen-shuffle" class="screen">
+        <div class="header">
+            <h2><i class="fa-solid fa-wand-magic-sparkles text-green"></i> EX Shuffle</h2>
+            <i class="fa-solid fa-times" style="font-size: 1.5rem; cursor: pointer;" onclick="window.nav('tasks')"></i>
+        </div>
+        
+        <div class="header-box" style="margin-top: 10px;">
+            <div><i class="fa-solid fa-bolt" style="color: var(--primary);"></i> Left: <span id="shuffles-left" style="color: var(--primary);">5</span>/5</div>
+            <div><i class="fa-solid fa-wallet" style="color: var(--warning);"></i> <span class="global-coin-display" style="color: var(--warning);">0</span></div>
+        </div>
+        <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">(Refills every 3 hours)</p>
+        
+        <div class="ad-banner">
+            <i class="fa-solid fa-ad" style="margin-right: 8px;"></i> AdMob Banner (ca-app-pub-6519206650027176/2795745416)
+        </div>
+
+        <div class="cards-container">
+            <div class="cards-grid" id="shuffle-card-container">
+                </div>
+        </div>
+
+        <div class="ad-banner">
+            <i class="fa-solid fa-ad" style="margin-right: 8px;"></i> AdMob Banner (ca-app-pub-6519206650027176/2795745416)
+        </div>
+
+        <div style="display:flex; justify-content: center; margin-bottom: 20px;">
+            <button class="btn" id="shuffle-btn" onclick="window.startShuffleTask()" style="background: linear-gradient(to right, var(--gold-dark), var(--gold)); color: #021c13; text-transform: uppercase; letter-spacing: 1px;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Mix Cards
+            </button>
         </div>
     </div>
 
@@ -528,6 +587,8 @@
 
             const defaultTasks = { lastWatch:0, lastStay:0, lastTap:0, tapCount:0, checkInTime:0 };
             const defaultSpin = { spinsLeft:5, lastRefill:0, totalSpins:0 };
+            // 🔥 DEFAULT SHUFFLE TASK 🔥
+            const defaultShuffle = { shufflesLeft:5, lastRefill:0, totalShuffles:0 };
 
             if(!snap.exists()){
                 const newRefCode = user.uid.substring(0,4).toUpperCase() + Math.floor(Math.random()*9000+1000);
@@ -538,6 +599,7 @@
                     createdAt: window.getTrueTime(),
                     tasks: defaultTasks,
                     spin: defaultSpin,
+                    shuffle: defaultShuffle,
                     transactions: []
                 };
                 await setDoc(ref, data);
@@ -554,18 +616,17 @@
                 };
                 window.state.tasks = defaultTasks;
                 window.state.spin = defaultSpin;
+                window.state.shuffle = defaultShuffle;
                 window.state.transactions = [];
             } else {
                 const data = snap.data();
 
-                // 🔥 BLOCK SYSTEM CHECK 🔥
                 if (data.isBlocked === true) {
                     window.showToast("🚫 Your account is BLOCKED by Admin.");
                     setTimeout(() => { window.logout(); }, 2500); 
                     return; 
                 }
 
-                // 🔥 PERSONAL ALERT CHECK 🔥
                 if (data.personalAlert && data.personalAlert.trim() !== "") {
                     alert("⚠️ ADMIN WARNING ⚠️\n\n" + data.personalAlert);
                     try {
@@ -586,6 +647,7 @@
                 };
                 window.state.tasks = data.tasks || defaultTasks;
                 window.state.spin = data.spin || defaultSpin;
+                window.state.shuffle = data.shuffle || defaultShuffle;
                 window.state.transactions = data.transactions || [];
             }
 
@@ -612,6 +674,7 @@
                     user: null,
                     tasks: { lastWatch:0,lastStay:0,lastTap:0,tapCount:0,checkInTime:0 },
                     spin: { spinsLeft:5,lastRefill:0,totalSpins:0 },
+                    shuffle: { shufflesLeft:5,lastRefill:0,totalShuffles:0 },
                     withdrawals: [],
                     transactions: []
                 };
@@ -717,14 +780,12 @@
     let serverTimeOffset = 0;
     let isTimeLocked = true; 
 
-    // 🔥 TRACK SOCIAL REDIRECT 🔥
     window.hasClickedSocial = false;
     window.openSocial = function(url) {
         window.hasClickedSocial = true;
         window.location.href = url;
     }
 
-    // 🔥 SMART TIME PARSER 🔥
     function getSafeMs(timestamp) {
         if (!timestamp) return 0;
         return typeof timestamp === 'number' ? timestamp : (timestamp.seconds * 1000);
@@ -812,17 +873,20 @@
                 user:null,
                 tasks:{ lastWatch:0,lastStay:0,lastTap:0,tapCount:0,checkInTime:0 },
                 spin:{ spinsLeft:5,lastRefill:0,totalSpins:0 },
+                shuffle:{ shufflesLeft:5,lastRefill:0,totalShuffles:0 },
                 withdrawals:[],
                 transactions:[]
             };
         }
         
-        if(!window.state.transactions) {
-            window.state.transactions = [];
-        }
+        if(!window.state.transactions) window.state.transactions = [];
+        if(!window.state.shuffle) window.state.shuffle = { shufflesLeft:5,lastRefill:0,totalShuffles:0 };
         
         if(!window.state.spin.lastRefill && window.state.spin.spinsLeft < 5){
             window.state.spin.lastRefill = window.getTrueTime();
+        }
+        if(!window.state.shuffle.lastRefill && window.state.shuffle.shufflesLeft < 5){
+            window.state.shuffle.lastRefill = window.getTrueTime();
         }
         
         window.updateUI();
@@ -836,9 +900,9 @@
                 window.Capacitor.Plugins.AdMob.initialize().catch(e => console.log("AdMob Init Error"));
             }
         }, 1000);
+        window.renderShuffleCards(); // Init Shuffle Cards HTML
     });
 
-    // 🔥 CONFETTI CELEBRATION FUNCTION 🔥
     window.launchCelebration = function() {
         const modal = document.getElementById('celebration-modal');
         modal.style.display = 'flex';
@@ -853,13 +917,9 @@
         }
     }
 
-    // 🔥 MEGA TASK FB LOOT LOGIC 🔥
     window.doMegaTask = async function() {
-        if(isTimeLocked) {
-            return window.showToast("Securing Time... Please wait.");
-        }
+        if(isTimeLocked) return window.showToast("Securing Time... Please wait.");
 
-        // REDIRECT CHECK
         if(!window.hasClickedSocial) {
             return window.showToast("Please click FB/Insta Follow button to find the code first!");
         }
@@ -879,7 +939,6 @@
         try {
             const now = window.getTrueTime();
             
-            // 1. Account Age Check (2 Days)
             const accountAgeMs = now - getSafeMs(window.state.user.createdAt);
             const daysOld = accountAgeMs / (1000 * 60 * 60 * 24);
             if(daysOld < 2) {
@@ -888,7 +947,6 @@
                 return window.showToast("Account must be 2 days old!");
             }
 
-            // 2. Activity Check (500 Coins in 3 days, no Admin Adj)
             const threeDaysAgo = now - (3 * 24 * 60 * 60 * 1000);
             const activeEarnings = window.state.transactions
                 .filter(t => getSafeMs(t.date) >= threeDaysAgo && t.title !== "Admin Adjustment" && t.type === "earn")
@@ -900,7 +958,6 @@
                 return window.showToast("Earn 500 coins in last 3 days first!");
             }
 
-            // 3. Promo Code Check (From Firebase Settings)
             const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const promoSnap = await getDoc(doc(window.db, "earnx_settings", "active_promo"));
             
@@ -910,42 +967,28 @@
                 return window.showToast("Invalid Promo Code!");
             }
 
-            // 4. One-time usage check
             if(window.state.tasks.claimedPromos && window.state.tasks.claimedPromos.includes(codeInput)) {
                 btn.disabled = false;
                 btn.innerText = "Claim Reward";
                 return window.showToast("Already claimed this code!");
             }
 
-            // 5. Probability Reward Logic
             const rand = Math.random() * 100;
             let win = 0;
-            if(rand < 50) {
-                win = 500; // 50% chance
-            } else if(rand < 90) {
-                win = Math.floor(Math.random() * (400 - 100 + 1)) + 100; // 40% chance between 100-400
-            } else {
-                win = 1000; // 10% Jackpot
-            }
+            if(rand < 50) { win = 500; } 
+            else if(rand < 90) { win = Math.floor(Math.random() * (400 - 100 + 1)) + 100; } 
+            else { win = 1000; }
 
-            // 6. Execute Reward
             window.state.user.coins += win;
-            if(!window.state.tasks.claimedPromos) {
-                window.state.tasks.claimedPromos = [];
-            }
+            if(!window.state.tasks.claimedPromos) { window.state.tasks.claimedPromos = []; }
             window.state.tasks.claimedPromos.push(codeInput);
             
-            // Save FB/Insta ID in Meta for Admin verification
             window.state.tasks.lastFbId = fbId;
             window.state.tasks.lastInstaId = instaId;
             
-            // Log as "FB TASK"
             window.logTransaction("FB TASK", win, "earn");
-            
-            // Save state and push to Firebase
             window.saveState();
 
-            // 7. Celebration
             document.getElementById('win-display').innerText = win;
             window.launchCelebration();
             
@@ -963,24 +1006,15 @@
         }
     }
 
-    // 🔥 HISTORY & SYNC FUNCTIONS EXPLICITLY BOUND TO WINDOW 🔥
     window.logTransaction = function(title, amount, type="earn") {
         if(!window.state.transactions || !Array.isArray(window.state.transactions)) {
             window.state.transactions = [];
         }
         
-        const newLog = { 
-            title: title, 
-            amount: amount, 
-            type: type, 
-            date: window.getTrueTime() 
-        };
+        const newLog = { title: title, amount: amount, type: type, date: window.getTrueTime() };
         
         window.state.transactions.unshift(newLog);
-        
-        if(window.state.transactions.length > 50) { 
-            window.state.transactions.pop(); 
-        }
+        if(window.state.transactions.length > 50) { window.state.transactions.pop(); }
         
         window.renderTransactionHistory();
     }
@@ -1004,6 +1038,7 @@
                 coins: Number(window.state.user.coins) || 0, 
                 tasks: window.state.tasks || {}, 
                 spin: window.state.spin || {},
+                shuffle: window.state.shuffle || {},
                 pendingReferrer: window.state.user.pendingReferrer || null,
                 profile: window.state.user.profile || {name: "", phone: ""},
                 transactions: window.state.transactions || []
@@ -1020,9 +1055,7 @@
 
     window.saveCoinsToFirebaseDebounced = function(){
         clearTimeout(coinSaveTimeout); 
-        coinSaveTimeout = setTimeout(()=>{ 
-            window.saveCoinsToFirebase(); 
-        }, 2000);
+        coinSaveTimeout = setTimeout(()=>{ window.saveCoinsToFirebase(); }, 2000);
     }
 
     window.saveState = function() {
@@ -1062,10 +1095,7 @@
 
     function debounce(fn, delay=300){
         let t; 
-        return (...args)=>{ 
-            clearTimeout(t); 
-            t = setTimeout(()=>fn(...args), delay); 
-        }
+        return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn(...args), delay); }
     }
 
     window.loadWithdrawals = debounce(async function(){
@@ -1096,7 +1126,6 @@
         if(el) el.innerText = value; 
     }
 
-    // 🔥 PROFILE SAVE UPDATED WITH LOCK SYSTEM 🔥
     window.saveProfileDetails = async function() {
         const hasName = window.state.user.profile && window.state.user.profile.name && window.state.user.profile.name.trim() !== "";
         const hasPhone = window.state.user.profile && window.state.user.profile.phone && window.state.user.profile.phone.trim() !== "";
@@ -1152,6 +1181,7 @@
         safeSetText('my-ref-code', window.state.user.refCode);
         safeSetText('tap-count', window.state.tasks.tapCount);
         safeSetText('spin-count-display', window.state.spin.spinsLeft);
+        safeSetText('shuffles-left', window.state.shuffle.shufflesLeft);
         
         const nameInput = document.getElementById('profile-name-input');
         const phoneInput = document.getElementById('profile-phone-input');
@@ -1210,9 +1240,7 @@
         if(!window.state || !window.state.withdrawals) return;
         
         if(window.state.withdrawals.length === 0) {
-            if(list1) {
-                list1.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No withdrawals yet.</p>';
-            }
+            if(list1) list1.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No withdrawals yet.</p>';
             return;
         }
         
@@ -1241,7 +1269,6 @@
         if(list1) list1.innerHTML = htmlContent;
     }
 
-    // 🔥 HISTORY UI RE-RENDER FIXED AND EXPLICITLY BOUND 🔥
     window.renderTransactionHistory = function() {
         const homeList = document.getElementById('home-recent-activity');
         const fullList = document.getElementById('full-history-list');
@@ -1343,9 +1370,7 @@
                 window.saveState();
                 window.showToast("Referral Bonus Unlocked! +100 Coins");
                 
-            } catch(e) { 
-                console.error("Error unlocking referral", e); 
-            }
+            } catch(e) { console.error("Error unlocking referral", e); }
         }
     }
 
@@ -1406,7 +1431,6 @@
                     adHandled = true; 
                     lastAdTime = window.getTrueTime();
                     if(dismissListener) dismissListener.remove(); 
-                    
                     window.showToast("Task Failed: Ad closed early!"); 
                     callback(false); 
                 });
@@ -1417,7 +1441,6 @@
                     lastAdTime = window.getTrueTime();
                     if(rewardListener) rewardListener.remove(); 
                     if(dismissListener) dismissListener.remove(); 
-                    
                     callback(true); 
                 });
                 
@@ -1436,11 +1459,8 @@
 
     window.dailyCheckIn = function() {
         if(isTimeLocked) return window.showToast("Securing Time...");
-        
         const last = window.state.tasks.checkInTime || 0;
-        if(window.getTrueTime() - last < 86400000) {
-            return window.showToast("Already claimed today");
-        }
+        if(window.getTrueTime() - last < 86400000) return window.showToast("Already claimed today");
         
         window.state.tasks.checkInTime = window.getTrueTime();
         window.rewardCoins(50, "Daily Check-in");
@@ -1448,15 +1468,11 @@
 
     window.doWatchTask = function() {
         if(isTimeLocked) return window.showToast("Securing Time...");
-        
-        if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_WATCH) {
-            return window.showToast("Wait for timer!");
-        }
-        
+        if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_WATCH) return window.showToast("Wait for timer!");
         if(adTaskLock) return;
+        
         adTaskLock = true;
         window.showToast("Loading Ad...");
-        
         window.showAd((success) => {
             adTaskLock = false;
             if(success) {
@@ -1470,11 +1486,7 @@
 
     window.doStayTask = function() {
         if(isTimeLocked) return window.showToast("Securing Time...");
-        
-        if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_STAY) {
-            return window.showToast("Wait for timer!");
-        }
-        
+        if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_STAY) return window.showToast("Wait for timer!");
         if(adTaskLock) return;
         
         const sModal = document.getElementById('stay-modal'); 
@@ -1509,21 +1521,14 @@
         if(isTimeLocked) return window.showToast("Securing Time...");
         if(!window.state || !window.state.tasks) return;
         if(window.state.tasks.tapCount >= 20) return;
-        if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_TAP) {
-            return window.showToast("Wait for timer!");
-        }
-        
+        if(window.getTrueTime() - window.state.tasks.lastTap < COOLDOWN_TAP) return window.showToast("Wait for timer!");
         if(adTaskLock) return;
         
         let next = window.state.tasks.tapCount + 1;
         if(next === 10){
-            if(window.getTrueTime() - lastAdTime < 60000) {
-                return window.showToast("Wait 1 min for Ad");
-            }
+            if(window.getTrueTime() - lastAdTime < 60000) return window.showToast("Wait 1 min for Ad");
             adTaskLock = true; 
-            window.showAd((success) => { 
-                adTaskLock = false; 
-            });
+            window.showAd((success) => { adTaskLock = false; });
         }
         
         window.state.tasks.tapCount++;
@@ -1534,28 +1539,21 @@
             window.rewardCoins(150, "Tap Task"); 
             window.saveState(); 
             window.updateTimersUI();
-        } else { 
-            window.saveState(); 
-        }
+        } else { window.saveState(); }
     }
 
     const prizeMap = [100, 75, 50, 20, 10, 5]; 
-    
     window.spinWheel = function() {
         if(isTimeLocked) return window.showToast("Securing Time...");
         const btn = document.getElementById('btn-spin');
         
-        if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0 || adTaskLock) {
-            return;
-        }
+        if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0 || adTaskLock) return;
         
         btn.disabled = true;
         window.state.spin.spinsLeft--; 
         window.state.spin.totalSpins++;
         
-        if(window.state.spin.spinsLeft === 4) {
-            window.state.spin.lastRefill = window.getTrueTime();
-        }
+        if(window.state.spin.spinsLeft === 4) window.state.spin.lastRefill = window.getTrueTime();
         window.saveState();
         
         const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6);
@@ -1578,18 +1576,12 @@
             }
         }, 4200);
         
-        setTimeout(() => { 
-            btn.disabled = false; 
-        }, 4500);
+        setTimeout(() => { btn.disabled = false; }, 4500);
     }
 
     window.copyReferral = function() {
         const code = window.state.user.refCode;
-        navigator.clipboard.writeText(code).then(() => { 
-            window.showToast("Code Copied: " + code);
-        }).catch(() => { 
-            window.showToast("Code Copied!"); 
-        });
+        navigator.clipboard.writeText(code).then(() => { window.showToast("Code Copied: " + code); }).catch(() => { window.showToast("Code Copied!"); });
     }
 
     window.shareReferral = async function() {
@@ -1602,12 +1594,8 @@
                 await window.Capacitor.Plugins.Share.share({ title: 'EarnX Loot', text: viralMsg, url: shareLink });
             } else if (navigator.share) {
                 await navigator.share({ title: 'EarnX Loot', text: viralMsg, url: shareLink });
-            } else { 
-                throw new Error(); 
-            }
-        } catch(e) { 
-            window.showToast("Viral Message Copied!"); 
-        }
+            } else { throw new Error(); }
+        } catch(e) { window.showToast("Viral Message Copied!"); }
     }
 
     window.applyReferralFirebase = async function(){
@@ -1617,38 +1605,26 @@
             const el = document.getElementById('ref-input'); 
             const code = el.value.trim().toUpperCase();
             
-            if(!code || window.state.user.referredBy || code === window.state.user.refCode.toUpperCase()) {
-                return window.showToast("Invalid code");
-            }
+            if(!code || window.state.user.referredBy || code === window.state.user.refCode.toUpperCase()) return window.showToast("Invalid code");
             
             const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const snapshot = await getDocs(query(collection(window.db, "earnx_users"), where("refCode", "==", code)));
             
-            if(snapshot.empty) {
-                return window.showToast("Invalid code");
-            }
+            if(snapshot.empty) return window.showToast("Invalid code");
             
             const refDoc = snapshot.docs[0];
-            if(refDoc.data().deviceId === localStorage.getItem("earnx_device_id")) {
-                return window.showToast("Fraud detected!");
-            }
+            if(refDoc.data().deviceId === localStorage.getItem("earnx_device_id")) return window.showToast("Fraud detected!");
             
             window.state.user.referredBy = true; 
             window.state.user.pendingReferrer = refDoc.id;
             window.saveState(); 
             window.showToast("Code Applied!"); 
             el.value = "";
-            
-        } catch(e) { 
-            window.showToast("Error applying referral");
-        } finally { 
-            referralLock = false; 
-        }
+        } catch(e) { window.showToast("Error applying referral"); } finally { referralLock = false; }
     }
 
     window.submitWithdraw = async function(){
         if(withdrawLock || !navigator.onLine) return; 
-        
         withdrawLock = true;
         setTimeout(()=> { withdrawLock = false; }, 5000); 
         
@@ -1657,25 +1633,17 @@
             if(coins < 10000) return window.showToast("Min 10k coins");
             
             const upi = document.getElementById('upi-input').value.trim();
-            if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)) {
-                return window.showToast("Invalid UPI");
-            }
+            if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)) return window.showToast("Invalid UPI");
             
             const { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const userRef = doc(window.db, "earnx_users", window.currentUser.uid);
             const currentCoins = (await getDoc(userRef)).data().coins || 0;
             
-            if(currentCoins < coins) {
-                return window.showToast("Balance mismatch");
-            }
+            if(currentCoins < coins) return window.showToast("Balance mismatch");
             
             await updateDoc(userRef, { coins: currentCoins - coins });
             await addDoc(collection(window.db, "earnx_withdrawals"), { 
-                userId: window.currentUser.uid, 
-                coins: coins, 
-                upiId: upi, 
-                status: "Pending", 
-                createdAt: serverTimestamp() 
+                userId: window.currentUser.uid, coins: coins, upiId: upi, status: "Pending", createdAt: serverTimestamp() 
             });
             
             window.state.user.coins -= coins; 
@@ -1683,10 +1651,7 @@
             window.saveState(); 
             window.loadWithdrawals();
             window.showToast("Withdraw Requested");
-            
-        } catch(e){ 
-            window.showToast("Withdraw failed"); 
-        }
+        } catch(e){ window.showToast("Withdraw failed"); }
     };
 
     window.startTimers = function() {
@@ -1697,43 +1662,43 @@
 
     window.updateTimersUI = function() {
         if(isTimeLocked) return;
-        
         const now = window.getTrueTime();
         window.updateSingleTimer('watch', window.state.tasks.lastWatch, now, COOLDOWN_WATCH);
         window.updateSingleTimer('stay', window.state.tasks.lastStay, now, COOLDOWN_STAY);
         window.updateSingleTimer('tap', window.state.tasks.lastTap, now, COOLDOWN_TAP);
         
+        // Spin Refill Logic
         if(window.state.spin.spinsLeft < 5 && window.state.spin.lastRefill > 0) {
             const passed = now - window.state.spin.lastRefill;
-            if(passed >= SPIN_REFILL_MS) { 
-                window.state.spin.spinsLeft = 5; 
-                window.state.spin.lastRefill = 0; 
+            if(passed >= SPIN_REFILL_MS) { window.state.spin.spinsLeft = 5; window.state.spin.lastRefill = 0; window.saveState(); }
+            else { safeSetText('spin-refill-timer', "Refill in: " + window.formatMS(SPIN_REFILL_MS - passed)); }
+        } else { safeSetText('spin-refill-timer', ""); }
+
+        // Shuffle Refill Logic
+        if(window.state.shuffle.shufflesLeft < 5 && window.state.shuffle.lastRefill > 0) {
+            const passedShuffle = now - window.state.shuffle.lastRefill;
+            if(passedShuffle >= SPIN_REFILL_MS) { 
+                window.state.shuffle.shufflesLeft = 5; 
+                window.state.shuffle.lastRefill = 0; 
                 window.saveState(); 
+                safeSetText('shuffle-timer-display', "Ready");
+            } else { 
+                safeSetText('shuffle-timer-display', window.formatMS(SPIN_REFILL_MS - passedShuffle)); 
             }
-            else { 
-                safeSetText('spin-refill-timer', "Refill in: " + window.formatMS(SPIN_REFILL_MS - passed)); 
-            }
-        } else { 
-            safeSetText('spin-refill-timer', ""); 
-        }
+        } else { safeSetText('shuffle-timer-display', "Ready"); }
     }
 
     window.updateSingleTimer = function(type, lastTime, now, cooldownLimit) {
         const btn = document.getElementById(`btn-${type}`); 
         if(!btn) return;
-        
         const passed = now - lastTime;
         if(passed < cooldownLimit) { 
             safeSetText(`${type}-timer-display`, window.formatMS(cooldownLimit - passed)); 
             btn.disabled = true; 
         } else {
             if(type === 'tap' && window.state.tasks.tapCount >= 20) { 
-                safeSetText(`${type}-timer-display`, "Complete"); 
-                btn.disabled = true; 
-            } else { 
-                safeSetText(`${type}-timer-display`, "Ready"); 
-                btn.disabled = false; 
-            }
+                safeSetText(`${type}-timer-display`, "Complete"); btn.disabled = true; 
+            } else { safeSetText(`${type}-timer-display`, "Ready"); btn.disabled = false; }
         }
     }
 
@@ -1742,19 +1707,126 @@
         return `${Math.floor(totalSec / 60)}:${(totalSec % 60) < 10 ? '0' : ''}${totalSec % 60}`;
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) { 
-            window.Capacitor.Plugins.SplashScreen.hide(); 
+    /* 🔥 EX SHUFFLE TASK LOGIC 🔥 */
+    window.shuffleCardsClickable = false;
+    const shuffleCardTranslations = [
+        { tx: '110%', ty: '60%' },   { tx: '0%', ty: '60%' },     { tx: '-110%', ty: '60%' },
+        { tx: '110%', ty: '-60%' },  { tx: '0%', ty: '-60%' },    { tx: '-110%', ty: '-60%' }
+    ];
+
+    window.renderShuffleCards = function() {
+        const container = document.getElementById('shuffle-card-container');
+        if(!container) return;
+        container.innerHTML = '';
+        for(let i = 0; i < 6; i++) { 
+            container.innerHTML += `
+                <div class="shuffle-card disabled" id="scard-${i}" onclick="window.flipShuffleCard(${i})" style="--tx: ${shuffleCardTranslations[i].tx}; --ty: ${shuffleCardTranslations[i].ty};">
+                    <div class="sc-front" id="sfront-${i}"></div>
+                    <div class="sc-back">
+                        <i class="fa-solid fa-rocket"></i>
+                        <span>EARNX</span>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    window.startShuffleTask = function() {
+        if(isTimeLocked) return window.showToast("Securing Time...");
+        if(window.state.shuffle.shufflesLeft <= 0) return window.showToast("Limit Reached!");
+        if(adTaskLock) return;
+
+        const btn = document.getElementById('shuffle-btn');
+        const grid = document.getElementById('shuffle-card-container');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mixing...';
+        window.shuffleCardsClickable = false;
+
+        document.querySelectorAll('.shuffle-card').forEach(card => card.classList.remove('flipped'));
+
+        setTimeout(() => {
+            grid.classList.add('animating-grid');
+            document.querySelectorAll('.shuffle-card').forEach(card => card.classList.add('animating-card'));
+
+            setTimeout(() => {
+                grid.classList.remove('animating-grid');
+                document.querySelectorAll('.shuffle-card').forEach(card => {
+                    card.classList.remove('animating-card');
+                    card.classList.remove('disabled'); 
+                });
+                btn.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Pick a Card!';
+                window.shuffleCardsClickable = true;
+            }, 1200);
+
+        }, 300);
+    }
+
+    window.flipShuffleCard = function(index) {
+        if(!window.shuffleCardsClickable) return;
+        window.shuffleCardsClickable = false; 
+        
+        document.querySelectorAll('.shuffle-card').forEach(c => c.classList.add('disabled'));
+
+        let wonCoins = Math.floor(Math.random() * (100 - 10 + 1)) + 10;
+        document.getElementById(`sfront-${index}`).innerHTML = `<i class="fa-solid fa-coins"></i><span>+${wonCoins}</span>`;
+        document.getElementById(`scard-${index}`).classList.add('flipped');
+
+        window.state.shuffle.shufflesLeft--;
+        window.state.shuffle.totalShuffles++;
+        
+        if(window.state.shuffle.shufflesLeft === 4) {
+            window.state.shuffle.lastRefill = window.getTrueTime();
         }
         
+        document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft;
+        window.saveState();
+
+        if (window.state.shuffle.totalShuffles % 3 === 0 || window.state.shuffle.totalShuffles === 2 || window.state.shuffle.totalShuffles === 5) {
+            setTimeout(() => {
+                adTaskLock = true;
+                window.showToast("Loading Ad...");
+                window.showAd((success) => {
+                    adTaskLock = false;
+                    if(success) {
+                        window.processShuffleReward(wonCoins);
+                    } else {
+                        window.showToast("Ad closed, reward canceled!");
+                        window.resetShuffleUI();
+                    }
+                });
+            }, 800); 
+        } else {
+            setTimeout(() => {
+                window.processShuffleReward(wonCoins);
+            }, 800);
+        }
+    }
+
+    window.processShuffleReward = function(coins) {
+        window.rewardCoins(coins, "Shuffle Task");
+        window.resetShuffleUI();
+    }
+
+    window.resetShuffleUI = function() {
+        const btn = document.getElementById('shuffle-btn');
+        if(window.state.shuffle.shufflesLeft > 0) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Mix Again';
+        } else {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Limit Reached';
+            btn.style.background = "var(--card-border)";
+            btn.style.color = "var(--text-muted)";
+            btn.style.boxShadow = "none";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) { window.Capacitor.Plugins.SplashScreen.hide(); }
         setTimeout(function() {
             let splash = document.getElementById('custom-splash');
-            if(splash) { 
-                splash.style.opacity = '0'; 
-                setTimeout(() => { 
-                    splash.style.display = 'none'; 
-                }, 600); 
-            }
+            if(splash) { splash.style.opacity = '0'; setTimeout(() => { splash.style.display = 'none'; }, 600); }
         }, 2500); 
     });
 </script>
