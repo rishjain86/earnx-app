@@ -23,13 +23,27 @@
             --warning: #f59e0b;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body { font-family: 'Inter', sans-serif; background: #000; color: var(--text-light); display: flex; justify-content: center; overflow: hidden; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            user-select: none; 
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #000; 
+            color: var(--text-light); 
+            display: flex; 
+            justify-content: center; 
+            overflow: hidden; 
+        }
         
         #app {
             width: 100%;
             max-width: 480px;
-            height: 100vh; height: 100dvh;
+            height: 100vh; 
+            height: 100dvh;
             background: var(--bg-dark);
             position: relative;
             overflow-y: auto;
@@ -38,131 +52,684 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         
-        #app::-webkit-scrollbar { display: none; }
+        #app::-webkit-scrollbar { 
+            display: none; 
+        }
         
-        h1, h2, h3 { font-weight: 700; margin-bottom: 10px; }
-        p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.4; }
+        h1, h2, h3 { 
+            font-weight: 700; 
+            margin-bottom: 10px; 
+        }
+        
+        p { 
+            color: var(--text-muted); 
+            font-size: 0.9rem; 
+            line-height: 1.4; 
+        }
+        
         .text-green { color: var(--primary); }
         .text-danger { color: var(--danger); }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .flex-center { display: flex; justify-content: center; align-items: center; }
-        .mt-1 { margin-top: 10px; } .mt-2 { margin-top: 20px; }
-        .mb-1 { margin-bottom: 10px; } .mb-2 { margin-bottom: 20px; }
         
-        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 15px; }
+        .flex-between { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
         
-        .btn { background: var(--primary-grad); color: white; border: none; padding: 14px 20px; border-radius: 12px; font-size: 1rem; font-weight: 600; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-        .btn:active { transform: scale(0.98); }
-        .btn:disabled { background: var(--card-border); color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
-        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); box-shadow: none; }
-        .btn-google { background: white; color: #333; margin-top: 10px; box-shadow: none; }
-        .btn-google i { color: #db4437; margin-right: 8px; }
+        .flex-center { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
         
-        input { width: 100%; background: var(--bg-darker); border: 1px solid var(--card-border); color: white; padding: 14px; border-radius: 10px; font-size: 1rem; margin-bottom: 15px; outline: none; transition: border 0.3s; }
-        input:focus { border-color: var(--primary); }
-        input:disabled { background: rgba(0,0,0,0.5); color: var(--text-muted); border-color: var(--card-border); cursor: not-allowed; }
-
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: var(--card-bg); border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
-        .nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
-        .nav-item.active { color: var(--primary); }
-
-        .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--card-border); margin-bottom: 20px; }
-        .header-title { font-size: 1.5rem; background: var(--primary-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .mt-1 { margin-top: 10px; } 
+        .mt-2 { margin-top: 20px; }
+        .mb-1 { margin-bottom: 10px; } 
+        .mb-2 { margin-bottom: 20px; }
         
-        .coin-badge { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; color: var(--primary); cursor: pointer; transition: 0.2s; }
-        .coin-badge:active { transform: scale(0.95); background: rgba(16, 185, 129, 0.2); }
-
-        .hero-card { text-align: center; background: linear-gradient(to bottom right, var(--card-bg), var(--bg-darker)); }
-        .balance-title { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-        .balance-amount { font-size: 2.5rem; font-weight: 700; margin: 10px 0; }
-        .rupee-eq { color: var(--primary); font-size: 1rem; font-weight: 600; }
-        .grid-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .action-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; }
-        .action-card i { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
+        .screen { 
+            display: none; 
+            padding: 20px; 
+            animation: fadeIn 0.3s ease; 
+        }
         
-        .wheel-container { position: relative; width: 280px; height: 280px; margin: 30px auto; }
-        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--card-bg); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1); background: conic-gradient( #10b981 0 60deg, #059669 60deg 120deg, #10b981 120deg 180deg, #059669 180deg 240deg, #10b981 240deg 300deg, #059669 300deg 360deg ); }
-        .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid var(--warning); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
-        .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: var(--bg-dark); border-radius: 50%; z-index: 5; border: 2px solid white; }
-        .wheel-label { position: absolute; top: 15%; left: 50%; transform-origin: 50% 100px; transform: translateX(-50%); color: white; font-weight: bold; font-size: 1.2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); z-index: 2; }
+        .screen.active { 
+            display: block; 
+        }
         
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card-border); }
-        .history-item:last-child { border-bottom: none; padding-bottom: 0; }
-        .h-info { display: flex; flex-direction: column; }
-        .h-title { font-size: 0.95rem; font-weight: 600; color: white; }
-        .h-upi { font-size: 0.9rem; font-weight: 600; }
-        .h-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
-        .h-status { font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
-        .status-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-
-        .tc-list { list-style: none; }
-        .tc-list li { position: relative; padding-left: 20px; margin-bottom: 12px; font-size: 0.9rem; color: var(--text-muted); }
-        .tc-list li::before { content: "•"; color: var(--primary); position: absolute; left: 0; font-weight: bold; font-size: 1.2rem; top: -2px; }
-
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--card-bg); border: 1px solid var(--primary); padding: 12px 20px; border-radius: 8px; color: white; z-index: 10000; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5); font-weight: 600; white-space: nowrap;}
-        
-        .timer-display { font-family: monospace; font-size: 1.1rem; color: var(--warning); font-weight: bold; }
-
-        #custom-splash {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: var(--bg-dark); display: flex; justify-content: center; align-items: center;
-            z-index: 999999; transition: opacity 0.5s ease-out;
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
         }
 
-        #custom-splash img { width: 70vw; max-width: 400px; height: auto; object-fit: contain; animation: pulse-splash 1.5s infinite alternate; }
-        @keyframes pulse-splash { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.05); opacity: 1; } }
-        .app-logo { width: 60vw; max-width: 300px; height: auto; margin-bottom: 20px; object-fit: contain; filter: drop-shadow(0px 10px 15px rgba(16, 185, 129, 0.4)); }
+        .card { 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border); 
+            border-radius: 16px; 
+            padding: 20px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
+            margin-bottom: 15px; 
+        }
+        
+        .btn { 
+            background: var(--primary-grad); 
+            color: white; 
+            border: none; 
+            padding: 14px 20px; 
+            border-radius: 12px; 
+            font-size: 1rem; 
+            font-weight: 600; 
+            width: 100%; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); 
+        }
+        
+        .btn:active { 
+            transform: scale(0.98); 
+        }
+        
+        .btn:disabled { 
+            background: var(--card-border); 
+            color: var(--text-muted); 
+            box-shadow: none; 
+            cursor: not-allowed; 
+        }
+        
+        .btn-outline { 
+            background: transparent; 
+            border: 2px solid var(--primary); 
+            color: var(--primary); 
+            box-shadow: none; 
+        }
+        
+        .btn-google { 
+            background: white; 
+            color: #333; 
+            margin-top: 10px; 
+            box-shadow: none; 
+        }
+        
+        .btn-google i { 
+            color: #db4437; 
+            margin-right: 8px; 
+        }
+        
+        input { 
+            width: 100%; 
+            background: var(--bg-darker); 
+            border: 1px solid var(--card-border); 
+            color: white; 
+            padding: 14px; 
+            border-radius: 10px; 
+            font-size: 1rem; 
+            margin-bottom: 15px; 
+            outline: none; 
+            transition: border 0.3s; 
+        }
+        
+        input:focus { 
+            border-color: var(--primary); 
+        }
+        
+        input:disabled { 
+            background: rgba(0,0,0,0.5); 
+            color: var(--text-muted); 
+            border-color: var(--card-border); 
+            cursor: not-allowed; 
+        }
+
+        .bottom-nav { 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            max-width: 480px; 
+            background: var(--card-bg); 
+            border-top: 1px solid var(--card-border); 
+            display: flex; 
+            justify-content: space-around; 
+            padding: 10px 0; 
+            z-index: 100; 
+            padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
+        }
+        
+        .nav-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            color: var(--text-muted); 
+            font-size: 0.75rem; 
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+        
+        .nav-item i { 
+            font-size: 1.2rem; 
+            margin-bottom: 4px; 
+        }
+        
+        .nav-item.active { 
+            color: var(--primary); 
+        }
+
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding-bottom: 20px; 
+            border-bottom: 1px solid var(--card-border); 
+            margin-bottom: 20px; 
+        }
+        
+        .header-title { 
+            font-size: 1.5rem; 
+            background: var(--primary-grad); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+        
+        .coin-badge { 
+            background: rgba(16, 185, 129, 0.1); 
+            border: 1px solid var(--primary); 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            font-weight: 600; 
+            font-size: 0.9rem; 
+            color: var(--primary); 
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+        
+        .coin-badge:active { 
+            transform: scale(0.95); 
+            background: rgba(16, 185, 129, 0.2); 
+        }
+
+        .hero-card { 
+            text-align: center; 
+            background: linear-gradient(to bottom right, var(--card-bg), var(--bg-darker)); 
+        }
+        
+        .balance-title { 
+            font-size: 0.9rem; 
+            color: var(--text-muted); 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
+        
+        .balance-amount { 
+            font-size: 2.5rem; 
+            font-weight: 700; 
+            margin: 10px 0; 
+        }
+        
+        .rupee-eq { 
+            color: var(--primary); 
+            font-size: 1rem; 
+            font-weight: 600; 
+        }
+        
+        .grid-actions { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+        }
+        
+        .action-card { 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border); 
+            border-radius: 12px; 
+            padding: 15px; 
+            text-align: center; 
+            cursor: pointer; 
+        }
+        
+        .action-card i { 
+            font-size: 1.5rem; 
+            color: var(--primary); 
+            margin-bottom: 8px; 
+        }
+        
+        .wheel-container { 
+            position: relative; 
+            width: 280px; 
+            height: 280px; 
+            margin: 30px auto; 
+        }
+        
+        .wheel { 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 50%; 
+            border: 4px solid var(--card-bg); 
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); 
+            position: relative; 
+            overflow: hidden; 
+            transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1); 
+            background: conic-gradient( #10b981 0 60deg, #059669 60deg 120deg, #10b981 120deg 180deg, #059669 180deg 240deg, #10b981 240deg 300deg, #059669 300deg 360deg ); 
+        }
+        
+        .wheel-pointer { 
+            position: absolute; 
+            top: -15px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 0; 
+            height: 0; 
+            border-left: 15px solid transparent; 
+            border-right: 15px solid transparent; 
+            border-top: 25px solid var(--warning); 
+            z-index: 10; 
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); 
+        }
+        
+        .wheel-center { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            width: 40px; 
+            height: 40px; 
+            background: var(--bg-dark); 
+            border-radius: 50%; 
+            z-index: 5; 
+            border: 2px solid white; 
+        }
+        
+        .wheel-label { 
+            position: absolute; 
+            top: 15%; 
+            left: 50%; 
+            transform-origin: 50% 100px; 
+            transform: translateX(-50%); 
+            color: white; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8); 
+            z-index: 2; 
+        }
+        
+        .history-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px 0; 
+            border-bottom: 1px solid var(--card-border); 
+        }
+        
+        .history-item:last-child { 
+            border-bottom: none; 
+            padding-bottom: 0; 
+        }
+        
+        .h-info { 
+            display: flex; 
+            flex-direction: column; 
+        }
+        
+        .h-title { 
+            font-size: 0.95rem; 
+            font-weight: 600; 
+            color: white; 
+        }
+        
+        .h-upi { 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+        }
+        
+        .h-time { 
+            font-size: 0.75rem; 
+            color: var(--text-muted); 
+            margin-top: 4px; 
+        }
+        
+        .h-status { 
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+        }
+        
+        .status-pending { 
+            background: rgba(245, 158, 11, 0.2); 
+            color: var(--warning); 
+        }
+
+        .tc-list { 
+            list-style: none; 
+        }
+        
+        .tc-list li { 
+            position: relative; 
+            padding-left: 20px; 
+            margin-bottom: 12px; 
+            font-size: 0.9rem; 
+            color: var(--text-muted); 
+        }
+        
+        .tc-list li::before { 
+            content: "•"; 
+            color: var(--primary); 
+            position: absolute; 
+            left: 0; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            top: -2px; 
+        }
+
+        #toast { 
+            position: fixed; 
+            top: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: var(--card-bg); 
+            border: 1px solid var(--primary); 
+            padding: 12px 20px; 
+            border-radius: 8px; 
+            color: white; 
+            z-index: 10000; 
+            display: none; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); 
+            font-weight: 600; 
+            white-space: nowrap;
+        }
+        
+        .timer-display { 
+            font-family: monospace; 
+            font-size: 1.1rem; 
+            color: var(--warning); 
+            font-weight: bold; 
+        }
+
+        #custom-splash {
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh;
+            background-color: var(--bg-dark); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            z-index: 999999; 
+            transition: opacity 0.5s ease-out;
+        }
+
+        #custom-splash img { 
+            width: 70vw; 
+            max-width: 400px; 
+            height: auto; 
+            object-fit: contain; 
+            animation: pulse-splash 1.5s infinite alternate; 
+        }
+        
+        @keyframes pulse-splash { 
+            0% { transform: scale(0.95); opacity: 0.8; } 
+            100% { transform: scale(1.05); opacity: 1; } 
+        }
+        
+        .app-logo { 
+            width: 60vw; 
+            max-width: 300px; 
+            height: auto; 
+            margin-bottom: 20px; 
+            object-fit: contain; 
+            filter: drop-shadow(0px 10px 15px rgba(16, 185, 129, 0.4)); 
+        }
 
         /* 🥳 Celebration Modal Styling 🥳 */
-        #celebration-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100002; justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 20px; }
-        .congrats-card { background: var(--card-bg); border: 2px solid var(--primary); border-radius: 24px; padding: 40px 20px; width: 100%; max-width: 350px; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; }
-        @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .win-amount { font-size: 3.5rem; font-weight: 800; color: gold; margin: 15px 0; text-shadow: 0 0 20px rgba(255,215,0,0.5); }
+        #celebration-modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.9); 
+            z-index: 100002; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column; 
+            text-align: center; 
+            padding: 20px; 
+        }
         
-        .confetti-piece { position: absolute; width: 10px; height: 10px; background: #ffd700; top: -20px; opacity: 0; animation: confettiDrop 3s infinite linear; }
-        @keyframes confettiDrop { from { top: -20px; opacity: 1; transform: rotate(0deg); } to { top: 100%; opacity: 0; transform: rotate(360deg); } }
+        .congrats-card { 
+            background: var(--card-bg); 
+            border: 2px solid var(--primary); 
+            border-radius: 24px; 
+            padding: 40px 20px; 
+            width: 100%; 
+            max-width: 350px; 
+            animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            position: relative; 
+            overflow: hidden; 
+        }
+        
+        @keyframes popUp { 
+            from { transform: scale(0.5); opacity: 0; } 
+            to { transform: scale(1); opacity: 1; } 
+        }
+        
+        .win-amount { 
+            font-size: 3.5rem; 
+            font-weight: 800; 
+            color: gold; 
+            margin: 15px 0; 
+            text-shadow: 0 0 20px rgba(255,215,0,0.5); 
+        }
+        
+        .confetti-piece { 
+            position: absolute; 
+            width: 10px; 
+            height: 10px; 
+            background: #ffd700; 
+            top: -20px; 
+            opacity: 0; 
+            animation: confettiDrop 3s infinite linear; 
+        }
+        
+        @keyframes confettiDrop { 
+            from { top: -20px; opacity: 1; transform: rotate(0deg); } 
+            to { top: 100%; opacity: 0; transform: rotate(360deg); } 
+        }
 
         /* 🔥 EX SHUFFLE TASK CSS 🔥 */
-        .cards-container { position: relative; max-width: 360px; margin: 0 auto 15px auto; perspective: 1000px; }
-        .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; transition: transform 0.5s ease; }
-        .shuffle-card { width: 100%; aspect-ratio: 3/4; cursor: pointer; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); }
-        .shuffle-card.flipped { transform: rotateY(180deg); }
-        .shuffle-card.disabled { pointer-events: none; }
-        .sc-front, .sc-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .sc-back { background: linear-gradient(135deg, #065f46, #064e3b); border: 2px solid var(--warning); }
-        .sc-back i { font-size: 2.2rem; color: var(--warning); margin-bottom: 5px; filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5)); }
-        .sc-back span { font-size: 0.9rem; font-weight: 800; letter-spacing: 1px; color: var(--text-light); }
-        .sc-front { background: linear-gradient(135deg, #047857, #065f46); border: 2px solid var(--primary); transform: rotateY(180deg); }
-        .sc-front i { font-size: 2.2rem; color: var(--warning); margin-bottom: 5px; filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8)); }
-        .sc-front span { font-size: 1.3rem; font-weight: 800; color: var(--warning); }
+        .cards-container { 
+            position: relative; 
+            max-width: 360px; 
+            margin: 0 auto 15px auto; 
+            perspective: 1000px; 
+        }
         
-        .ad-banner { width: 100%; max-width: 360px; min-height: 50px; margin: 0 auto 15px auto; display: flex; justify-content: center; align-items: center; }
+        .cards-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 15px; 
+            transition: transform 0.5s ease; 
+        }
         
-        @keyframes mixup-container { 0% { transform: scale(1) rotate(0deg); } 50% { transform: scale(0.8) rotate(360deg); } 100% { transform: scale(1) rotate(720deg); } }
-        @keyframes mixup-cards { 0% { transform: translate(0, 0); opacity: 1; } 50% { transform: translate(var(--tx), var(--ty)) rotate(180deg); opacity: 0.9; } 100% { transform: translate(0, 0) rotate(360deg); opacity: 1; } }
-        .animating-grid { animation: mixup-container 1.2s ease-in-out; }
-        .animating-card { animation: mixup-cards 1.2s ease-in-out; }
+        .shuffle-card { 
+            width: 100%; 
+            aspect-ratio: 3/4; 
+            cursor: pointer; 
+            position: relative; 
+            transform-style: preserve-3d; 
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); 
+        }
+        
+        .shuffle-card.flipped { 
+            transform: rotateY(180deg); 
+        }
+        
+        .shuffle-card.disabled { 
+            pointer-events: none; 
+        }
+        
+        .sc-front, .sc-back { 
+            width: 100%; 
+            height: 100%; 
+            position: absolute; 
+            backface-visibility: hidden; 
+            border-radius: 12px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
+        }
+        
+        .sc-back { 
+            background: linear-gradient(135deg, #065f46, #064e3b); 
+            border: 2px solid var(--warning); 
+        }
+        
+        .sc-back i { 
+            font-size: 2.2rem; 
+            color: var(--warning); 
+            margin-bottom: 5px; 
+            filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5)); 
+        }
+        
+        .sc-back span { 
+            font-size: 0.9rem; 
+            font-weight: 800; 
+            letter-spacing: 1px; 
+            color: var(--text-light); 
+        }
+        
+        .sc-front { 
+            background: linear-gradient(135deg, #047857, #065f46); 
+            border: 2px solid var(--primary); 
+            transform: rotateY(180deg); 
+        }
+        
+        .sc-front i { 
+            font-size: 2.2rem; 
+            color: var(--warning); 
+            margin-bottom: 5px; 
+            filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8)); 
+        }
+        
+        .sc-front span { 
+            font-size: 1.3rem; 
+            font-weight: 800; 
+            color: var(--warning); 
+        }
+        
+        /* 🔥 CLEAN AD BANNER 🔥 */
+        .ad-banner { 
+            width: 100%; 
+            max-width: 360px; 
+            min-height: 50px; 
+            margin: 0 auto 15px auto; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        
+        @keyframes mixup-container { 
+            0% { transform: scale(1) rotate(0deg); } 
+            50% { transform: scale(0.8) rotate(360deg); } 
+            100% { transform: scale(1) rotate(720deg); } 
+        }
+        
+        @keyframes mixup-cards { 
+            0% { transform: translate(0, 0); opacity: 1; } 
+            50% { transform: translate(var(--tx), var(--ty)) rotate(180deg); opacity: 0.9; } 
+            100% { transform: translate(0, 0) rotate(360deg); opacity: 1; } 
+        }
+        
+        .animating-grid { 
+            animation: mixup-container 1.2s ease-in-out; 
+        }
+        
+        .animating-card { 
+            animation: mixup-cards 1.2s ease-in-out; 
+        }
 
         /* 🔥 NEW GAMIFIED TASKS CSS 🔥 */
-        .math-box { font-size: 2.5rem; font-weight: 800; color: var(--primary); letter-spacing: 2px; margin: 15px 0; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; border: 1px dashed var(--primary); text-align: center; }
-        .math-input { width: 100%; background: var(--bg-darker); border: 1px solid var(--card-border); color: white; padding: 14px; border-radius: 10px; font-size: 1.2rem; text-align: center; outline: none; margin-bottom: 15px; }
-        .math-input:focus { border-color: var(--primary); }
+        .math-box { 
+            font-size: 2.5rem; 
+            font-weight: 800; 
+            color: var(--primary); 
+            letter-spacing: 2px; 
+            margin: 15px 0; 
+            background: rgba(0,0,0,0.3); 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 1px dashed var(--primary); 
+            text-align: center; 
+        }
         
-        .scratch-wrap { position: relative; width: 260px; height: 160px; margin: 0 auto 15px auto; border-radius: 12px; overflow: hidden; border: 3px solid var(--warning); background: #0f172a; }
-        .scratch-canvas { position: absolute; top: 0; left: 0; cursor: crosshair; z-index: 10; }
-        .scratch-reward { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 5; }
-        .scratch-reward i { font-size: 2.5rem; color: var(--warning); margin-bottom: 5px; }
-        .scratch-reward span { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
+        .math-input { 
+            width: 100%; 
+            background: var(--bg-darker); 
+            border: 1px solid var(--card-border); 
+            color: white; 
+            padding: 14px; 
+            border-radius: 10px; 
+            font-size: 1.2rem; 
+            text-align: center; 
+            outline: none; 
+            margin-bottom: 15px; 
+        }
+        
+        .math-input:focus { 
+            border-color: var(--primary); 
+        }
+        
+        .scratch-wrap { 
+            position: relative; 
+            width: 260px; 
+            height: 160px; 
+            margin: 0 auto 15px auto; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            border: 3px solid var(--warning); 
+            background: #0f172a; 
+        }
+        
+        .scratch-canvas { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            cursor: crosshair; 
+            z-index: 10; 
+        }
+        
+        .scratch-reward { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 5; 
+        }
+        
+        .scratch-reward i { 
+            font-size: 2.5rem; 
+            color: var(--warning); 
+            margin-bottom: 5px; 
+        }
+        
+        .scratch-reward span { 
+            font-size: 1.8rem; 
+            font-weight: 800; 
+            color: var(--primary); 
+        }
     </style>
 </head>
 <body>
 
-<div id="custom-splash"><img src="assets/splash.png" alt="EarnX Splash Logo"></div>
+<div id="custom-splash">
+    <img src="assets/splash.png" alt="EarnX Splash Logo">
+</div>
 
 <div id="celebration-modal">
     <div class="congrats-card">
@@ -571,8 +1138,13 @@
         if (window.Capacitor) {
             const webSec = document.getElementById('web-login-section');
             const appSec = document.getElementById('app-login-section');
-            if(webSec) webSec.style.display = 'none';
-            if(appSec) appSec.style.display = 'block';
+            
+            if(webSec) {
+                webSec.style.display = 'none';
+            }
+            if(appSec) {
+                appSec.style.display = 'block';
+            }
         }
     }, 200);
 
@@ -583,6 +1155,7 @@
             
             if (noticeSnap.exists()) {
                 const data = noticeSnap.data();
+                
                 if (data.isActive === true && data.message !== "") {
                     const lastSeenNotice = localStorage.getItem("earnx_last_notice_time");
                     
@@ -604,6 +1177,7 @@
 
     window.closeNoticeModal = function() {
         document.getElementById('flash-notice-modal').style.display = 'none';
+        
         if (window.currentNoticeTime) {
             localStorage.setItem("earnx_last_notice_time", window.currentNoticeTime);
         }
@@ -621,12 +1195,33 @@
                 localStorage.setItem("earnx_device_id", deviceId);
             }
 
-            const defaultTasks = { lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 };
-            const defaultSpin = { spinsLeft:5, lastRefill:0, totalSpins:0 };
-            const defaultShuffle = { shufflesLeft:5, lastRefill:0, totalShuffles:0 };
+            const defaultTasks = { 
+                lastTap: 0, 
+                tapCount: 0, 
+                tapNextTime: 0, 
+                checkInTime: 0, 
+                mathAttempts: 0, 
+                mathCooldownEnd: 0, 
+                scratchAttempts: 0, 
+                scratchNextTime: 0, 
+                scratchCooldownEnd: 0 
+            };
+            
+            const defaultSpin = { 
+                spinsLeft: 5, 
+                lastRefill: 0, 
+                totalSpins: 0 
+            };
+            
+            const defaultShuffle = { 
+                shufflesLeft: 5, 
+                lastRefill: 0, 
+                totalShuffles: 0 
+            };
 
             if(!snap.exists()){
                 const newRefCode = user.uid.substring(0,4).toUpperCase() + Math.floor(Math.random()*9000+1000);
+                
                 const data = {
                     coins: 0,
                     refCode: newRefCode,
@@ -637,6 +1232,7 @@
                     shuffle: defaultShuffle,
                     transactions: []
                 };
+                
                 await setDoc(ref, data);
                 
                 window.state.user = { 
@@ -653,6 +1249,7 @@
                 window.state.spin = defaultSpin;
                 window.state.shuffle = defaultShuffle;
                 window.state.transactions = [];
+                
             } else {
                 const data = snap.data();
 
@@ -666,7 +1263,9 @@
                     alert("⚠️ ADMIN WARNING ⚠️\n\n" + data.personalAlert);
                     try {
                         await updateDoc(ref, { personalAlert: "" });
-                    } catch(e) { console.log("Failed to clear alert"); }
+                    } catch(e) {
+                        console.log("Failed to clear alert"); 
+                    }
                 }
 
                 window.state.user = {
@@ -694,6 +1293,7 @@
             window.checkReferralUnlock(); 
             window.checkForGlobalNotice(); 
             window.showToast("Login Successful");
+            
         } catch (error) {
             console.error("Firebase Auth Error:", error);
             window.showToast("Connection error, please try again.");
@@ -708,9 +1308,27 @@
             if(!window.state){
                 window.state = {
                     user: null,
-                    tasks: { lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 },
-                    spin: { spinsLeft:5,lastRefill:0,totalSpins:0 },
-                    shuffle: { shufflesLeft:5,lastRefill:0,totalShuffles:0 },
+                    tasks: { 
+                        lastTap: 0, 
+                        tapCount: 0, 
+                        tapNextTime: 0, 
+                        checkInTime: 0, 
+                        mathAttempts: 0, 
+                        mathCooldownEnd: 0, 
+                        scratchAttempts: 0, 
+                        scratchNextTime: 0, 
+                        scratchCooldownEnd: 0 
+                    },
+                    spin: { 
+                        spinsLeft: 5,
+                        lastRefill: 0,
+                        totalSpins: 0 
+                    },
+                    shuffle: { 
+                        shufflesLeft: 5,
+                        lastRefill: 0,
+                        totalShuffles: 0 
+                    },
                     withdrawals: [],
                     transactions: []
                 };
@@ -739,12 +1357,14 @@
 
     window.loginWithEmail = async function() {
         if(loginLoading) return;
+        
         const email = document.getElementById('email-input').value.trim();
         const password = document.getElementById('password-input').value.trim();
         
         if(!email || !password) {
             return window.showToast("Enter Email and Password");
         }
+        
         if(password.length < 6) {
             return window.showToast("Password must be at least 6 characters");
         }
@@ -812,9 +1432,10 @@
     let lastCoinRewardTime = 0;
 
     let serverTimeOffset = 0;
-    // Yaha se isTimeLocked hata diya hai taaki UI freeze na ho
+    let isTimeLocked = true; 
 
     window.hasClickedSocial = false;
+    
     window.openSocial = function(url) {
         window.hasClickedSocial = true;
         window.location.href = url;
@@ -849,6 +1470,7 @@
             
             const data = await response.json();
             serverTimeOffset = new Date(data.datetime).getTime() - Date.now();
+            isTimeLocked = false;
         } catch (error) {
             try {
                 const response2 = await fetch("https://timeapi.io/api/Time/current/zone?timeZone=UTC");
@@ -856,9 +1478,9 @@
                 
                 const data2 = await response2.json();
                 serverTimeOffset = new Date(data2.dateTime).getTime() - Date.now();
+                isTimeLocked = false;
             } catch(e) {
-                // Agar dono fail ho jaye, toh local time use hoga. App rukega nahi!
-                serverTimeOffset = 0; 
+                isTimeLocked = true;
             }
         }
         window.updateTimersUI(); 
@@ -870,6 +1492,7 @@
 
     document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
+            isTimeLocked = true;
             window.updateTimersUI();
         } else {
             syncSecureTime();
@@ -902,12 +1525,30 @@
         
         if(!window.state){
             window.state = {
-                user:null,
-                tasks:{ lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 },
-                spin:{ spinsLeft:5,lastRefill:0,totalSpins:0 },
-                shuffle:{ shufflesLeft:5,lastRefill:0,totalShuffles:0 },
-                withdrawals:[],
-                transactions:[]
+                user: null,
+                tasks: { 
+                    lastTap: 0, 
+                    tapCount: 0, 
+                    tapNextTime: 0, 
+                    checkInTime: 0, 
+                    mathAttempts: 0, 
+                    mathCooldownEnd: 0, 
+                    scratchAttempts: 0, 
+                    scratchNextTime: 0, 
+                    scratchCooldownEnd: 0 
+                },
+                spin: { 
+                    spinsLeft: 5,
+                    lastRefill: 0,
+                    totalSpins: 0 
+                },
+                shuffle: { 
+                    shufflesLeft: 5,
+                    lastRefill: 0,
+                    totalShuffles: 0 
+                },
+                withdrawals: [],
+                transactions: []
             };
         }
         
@@ -916,13 +1557,16 @@
         }
         
         if(!window.state.shuffle) {
-            window.state.shuffle = { shufflesLeft:5,lastRefill:0,totalShuffles:0 };
+            window.state.shuffle = { shufflesLeft: 5, lastRefill: 0, totalShuffles: 0 };
         }
 
-        // Merge defaults carefully
-        const defaultTasks = { lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 };
-        window.state.tasks = { ...defaultTasks, ...(window.state.tasks || {}) };
-
+        if(window.state.tasks && window.state.tasks.lastWatch !== undefined) {
+            delete window.state.tasks.lastWatch;
+        }
+        if(window.state.tasks && window.state.tasks.lastStay !== undefined) {
+            delete window.state.tasks.lastStay;
+        }
+        
         if(!window.state.spin.lastRefill && window.state.spin.spinsLeft < 5){
             window.state.spin.lastRefill = window.getTrueTime();
         }
@@ -948,6 +1592,7 @@
     window.launchCelebration = function() {
         const modal = document.getElementById('celebration-modal');
         modal.style.display = 'flex';
+        
         for(let i=0; i<50; i++) {
             const piece = document.createElement('div');
             piece.className = 'confetti-piece';
@@ -955,18 +1600,28 @@
             piece.style.backgroundColor = ['#ffd700','#10b981','#ffffff','#f59e0b'][Math.floor(Math.random()*4)];
             piece.style.animationDelay = Math.random() * 2 + 's';
             modal.appendChild(piece);
+            
             setTimeout(() => piece.remove(), 3000);
         }
     }
 
     window.doMegaTask = async function() {
+        if(isTimeLocked) {
+            return window.showToast("Securing Time... Please wait.");
+        }
+
+        if(!window.hasClickedSocial) {
+            return window.showToast("Please click FB/Insta Follow button to find the code first!");
+        }
+        
         const btn = document.getElementById('btn-mega-task');
         const codeInput = document.getElementById('mega-promo-code').value.trim().toUpperCase();
         const fbId = document.getElementById('mega-fb-id').value.trim();
         const instaId = document.getElementById('mega-insta-id').value.trim();
 
-        if(!codeInput || !fbId || !instaId) return window.showToast("Fill Promo Code, FB and Insta details!");
-        if(!window.hasClickedSocial) return window.showToast("Please click FB/Insta Follow button to find the code first!");
+        if(!codeInput || !fbId || !instaId) {
+            return window.showToast("Fill Promo Code, FB and Insta details!");
+        }
         
         btn.disabled = true;
         btn.innerText = "Verifying...";
@@ -976,8 +1631,10 @@
             
             const accountAgeMs = now - getSafeMs(window.state.user.createdAt);
             const daysOld = accountAgeMs / (1000 * 60 * 60 * 24);
+            
             if(daysOld < 2) {
-                btn.disabled = false; btn.innerText = "Claim Reward";
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
                 return window.showToast("Account must be 2 days old!");
             }
 
@@ -987,7 +1644,8 @@
                 .reduce((sum, t) => sum + Number(t.amount), 0);
 
             if(activeEarnings < 500) {
-                btn.disabled = false; btn.innerText = "Claim Reward";
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
                 return window.showToast("Earn 500 coins in last 3 days first!");
             }
 
@@ -995,24 +1653,34 @@
             const promoSnap = await getDoc(doc(window.db, "earnx_settings", "active_promo"));
             
             if(!promoSnap.exists() || codeInput !== promoSnap.data().code.toUpperCase()) {
-                btn.disabled = false; btn.innerText = "Claim Reward";
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
                 return window.showToast("Invalid Promo Code!");
             }
 
             if(window.state.tasks.claimedPromos && window.state.tasks.claimedPromos.includes(codeInput)) {
-                btn.disabled = false; btn.innerText = "Claim Reward";
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
                 return window.showToast("Already claimed this code!");
             }
 
             const rand = Math.random() * 100;
             let win = 0;
-            if(rand < 50) win = 500;
-            else if(rand < 90) win = Math.floor(Math.random() * (400 - 100 + 1)) + 100;
-            else win = 1000;
+            if(rand < 50) {
+                win = 500; 
+            } else if(rand < 90) {
+                win = Math.floor(Math.random() * (400 - 100 + 1)) + 100; 
+            } else {
+                win = 1000; 
+            }
 
             window.state.user.coins += win;
-            if(!window.state.tasks.claimedPromos) window.state.tasks.claimedPromos = [];
+            
+            if(!window.state.tasks.claimedPromos) {
+                window.state.tasks.claimedPromos = [];
+            }
             window.state.tasks.claimedPromos.push(codeInput);
+            
             window.state.tasks.lastFbId = fbId;
             window.state.tasks.lastInstaId = instaId;
             
@@ -1022,14 +1690,16 @@
             document.getElementById('win-display').innerText = win;
             window.launchCelebration();
             
-            btn.disabled = false; btn.innerText = "Claim Reward";
+            btn.disabled = false;
+            btn.innerText = "Claim Reward";
             document.getElementById('mega-promo-code').value = "";
             document.getElementById('mega-fb-id').value = "";
             document.getElementById('mega-insta-id').value = "";
 
         } catch(e) {
             console.error(e);
-            btn.disabled = false; btn.innerText = "Claim Reward";
+            btn.disabled = false;
+            btn.innerText = "Claim Reward";
             window.showToast("Task Error. Check internet connection.");
         }
     }
@@ -1105,6 +1775,7 @@
 
     window.nav = function(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        
         const target = document.getElementById(`screen-${screenId}`);
         if(target) target.classList.add('active');
         
@@ -1118,10 +1789,10 @@
         }
         
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        
         const activeItem = document.querySelector(`.nav-item[data-target="${screenId}"]`);
         if(activeItem) activeItem.classList.add('active');
 
-        // Gamified Tasks Init Hooks
         if(screenId === 'math') {
             window.generateMathProblem();
         }
@@ -1193,6 +1864,7 @@
         
         btn.disabled = true;
         btn.innerText = "Saving...";
+        
         try {
             const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             await updateDoc(doc(window.db, "earnx_users", window.state.user.id), { 
@@ -1200,7 +1872,9 @@
                 "profile.phone": phoneVal 
             });
             
-            if(!window.state.user.profile) window.state.user.profile = {};
+            if(!window.state.user.profile) {
+                window.state.user.profile = {};
+            }
             window.state.user.profile.name = nameVal;
             window.state.user.profile.phone = phoneVal;
             window.saveState();
@@ -1302,6 +1976,7 @@
             const dateStr = new Date(w.date).toLocaleDateString();
             const maskedUpi = window.maskUPI(w.upi);
             let statusClass = 'status-pending';
+            
             if(w.status === 'Approved') statusClass = 'text-green';
             if(w.status === 'Rejected') statusClass = 'text-danger';
             
@@ -1421,7 +2096,9 @@
                 window.saveState();
                 window.showToast("Referral Bonus Unlocked! +100 Coins");
                 
-            } catch(e) { console.error("Error unlocking referral", e); }
+            } catch(e) { 
+                console.error("Error unlocking referral", e); 
+            }
         }
     }
 
@@ -1460,6 +2137,11 @@
 
     /* 🔥 AdMob showAd Logic FIXED (Failed Ads + Compensation) 🔥 */
     window.showAd = async function(callback) {
+        if(isTimeLocked) { 
+            window.showToast("Please ensure correct phone time."); 
+            return callback('cooldown'); 
+        }
+        
         if(window.getTrueTime() - lastAdTime < 60000){ 
             window.showToast("Wait 1 min before next ad"); 
             return callback('cooldown'); 
@@ -1511,7 +2193,9 @@
     }
 
     window.dailyCheckIn = function() {
+        if(isTimeLocked) return window.showToast("Securing Time...");
         const last = window.state.tasks.checkInTime || 0;
+        
         if(window.getTrueTime() - last < 86400000) {
             return window.showToast("Already claimed today");
         }
@@ -1578,7 +2262,9 @@
         btn.disabled = true;
 
         if (parseInt(userInput) === window.mathAnswer) {
-            if(!window.state.tasks.mathAttempts) window.state.tasks.mathAttempts = 0;
+            if(!window.state.tasks.mathAttempts) {
+                window.state.tasks.mathAttempts = 0;
+            }
             window.state.tasks.mathAttempts++;
             
             let attempts = window.state.tasks.mathAttempts;
@@ -1597,7 +2283,6 @@
                         window.showToast("Ad unavailable. 25% Compensation given!"); 
                         window.processMathSuccess(Math.floor(reward * 0.25), attempts); 
                     } else { 
-                        // Closed early
                         if(status === 'closed') {
                             window.showToast("Ad closed early! Reward canceled.");
                         }
@@ -1681,6 +2366,7 @@
         function scratch(e) {
             if (window.isScratchFinished) return;
             e.preventDefault(); 
+            
             const rect = canvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -1688,12 +2374,14 @@
             ctx.beginPath();
             ctx.arc(clientX - rect.left, clientY - rect.top, 25, 0, Math.PI * 2);
             ctx.fill();
+            
             checkPercent();
         }
 
         function checkPercent() {
             const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
             let transparentPixels = 0;
+            
             for (let i = 0; i < pixels.length; i += 16) {
                 if (pixels[i + 3] === 0) transparentPixels++;
             }
@@ -1703,8 +2391,11 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 document.getElementById('scratch-status').innerText = "Verifying...";
                 
-                if(!window.state.tasks.scratchAttempts) window.state.tasks.scratchAttempts = 0;
+                if(!window.state.tasks.scratchAttempts) {
+                    window.state.tasks.scratchAttempts = 0;
+                }
                 window.state.tasks.scratchAttempts++;
+                
                 let attempts = window.state.tasks.scratchAttempts;
 
                 if(attempts === 2 || attempts === 5) {
@@ -1713,6 +2404,7 @@
                     
                     window.showAd((status) => {
                         adTaskLock = false;
+                        
                         if(status === 'success') {
                             window.processScratchSuccess(attempts, window.currentScratchCoins);
                         } else if (status === 'error' || status === 'cooldown') { 
@@ -1763,26 +2455,41 @@
 
     /* 🔥 TAP TASK LOGIC 🔥 */
     window.doTapTask = function() {
+        if(isTimeLocked) {
+            return window.showToast("Securing Time...");
+        }
+        
         if(!window.state || !window.state.tasks) return;
+        
         if(window.state.tasks.tapCount >= 20) return;
-        if(window.getTrueTime() < (window.state.tasks.lastTap || 0) + COOLDOWN_TAP) return window.showToast("Wait for timer!");
+        
+        if(window.getTrueTime() < (window.state.tasks.lastTap || 0) + COOLDOWN_TAP) {
+            return window.showToast("Wait for timer!");
+        }
         
         if(window.getTrueTime() < (window.state.tasks.tapNextTime || 0)) {
             return window.showToast("Wait 2 seconds between taps!");
         }
+        
         if(adTaskLock) return;
 
         if((window.state.tasks.tapCount + 1) === 10){
             adTaskLock = true;
             window.showToast("Loading Ad..."); 
+            
             window.showAd((status) => { 
                 adTaskLock = false; 
                 if(status === 'error' || status === 'cooldown') {
                     window.showToast("Ad unavailable right now.");
                 }
+                window.executeTap();
             });
+        } else {
+            window.executeTap();
         }
-        
+    }
+    
+    window.executeTap = function() {
         window.state.tasks.tapCount++;
         window.state.tasks.tapNextTime = window.getTrueTime() + 2000; // 2 seconds lock
         
@@ -1790,12 +2497,12 @@
             window.state.tasks.tapCount = 0; 
             window.state.tasks.lastTap = window.getTrueTime(); 
             window.rewardCoins(150, "Tap Task"); 
-            window.saveState();
-            window.updateTimersUI();
-        } else {
-            window.saveState();
+            window.showToast("Tap Task Complete! Cooling down.");
         }
+        
         document.getElementById('tap-count').innerText = window.state.tasks.tapCount;
+        window.saveState();
+        window.updateTimersUI();
     }
 
 
@@ -1809,7 +2516,9 @@
     window.renderShuffleCards = function() {
         const container = document.getElementById('shuffle-card-container');
         if(!container) return;
+        
         container.innerHTML = '';
+        
         for(let i = 0; i < 6; i++) { 
             container.innerHTML += `
                 <div class="shuffle-card disabled" id="scard-${i}" onclick="window.flipShuffleCard(${i})" style="--tx: ${shuffleCardTranslations[i].tx}; --ty: ${shuffleCardTranslations[i].ty};">
@@ -1824,7 +2533,14 @@
     }
 
     window.startShuffleTask = function() {
-        if(window.state.shuffle.shufflesLeft <= 0) return window.showToast("Limit Reached!");
+        if(isTimeLocked) {
+            return window.showToast("Securing Time...");
+        }
+        
+        if(window.state.shuffle.shufflesLeft <= 0) {
+            return window.showToast("Limit Reached!");
+        }
+        
         if(adTaskLock) return;
 
         const btn = document.getElementById('shuffle-btn');
@@ -1846,6 +2562,7 @@
                     card.classList.remove('animating-card');
                     card.classList.remove('disabled'); 
                 });
+                
                 btn.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Pick a Card!';
                 window.shuffleCardsClickable = true;
             }, 1200);
@@ -1877,8 +2594,10 @@
             setTimeout(() => {
                 adTaskLock = true;
                 window.showToast("Loading Ad...");
+                
                 window.showAd((status) => {
                     adTaskLock = false;
+                    
                     if(status === 'success') {
                         window.processShuffleReward(wonCoins);
                     } else if (status === 'error' || status === 'cooldown') { 
@@ -1920,16 +2639,20 @@
     }
 
     const prizeMap = [100, 75, 50, 20, 10, 5]; 
+    
     window.spinWheel = function() {
-        const btn = document.getElementById('btn-spin');
+        if(isTimeLocked) return window.showToast("Securing Time...");
         
+        const btn = document.getElementById('btn-spin');
         if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0 || adTaskLock) return;
         
         btn.disabled = true;
         window.state.spin.spinsLeft--; 
         window.state.spin.totalSpins++;
         
-        if(window.state.spin.spinsLeft === 4) window.state.spin.lastRefill = window.getTrueTime();
+        if(window.state.spin.spinsLeft === 4) {
+            window.state.spin.lastRefill = window.getTrueTime();
+        }
         window.saveState();
         
         const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6);
@@ -1946,6 +2669,7 @@
         
         setTimeout(() => {
             window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
+            
             if(window.state.spin.totalSpins % 3 === 0) { 
                 adTaskLock = true; 
                 setTimeout(() => window.showAd((status)=>{ 
@@ -1963,6 +2687,7 @@
     window.applyReferralFirebase = async function(){
         if(referralLock || !navigator.onLine || !window.state.user) return;
         referralLock = true;
+        
         try {
             const el = document.getElementById('ref-input'); 
             const code = el.value.trim().toUpperCase();
@@ -1974,7 +2699,9 @@
             const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const snapshot = await getDocs(query(collection(window.db, "earnx_users"), where("refCode", "==", code)));
             
-            if(snapshot.empty) return window.showToast("Invalid code");
+            if(snapshot.empty) {
+                return window.showToast("Invalid code");
+            }
             
             const refDoc = snapshot.docs[0];
             if(refDoc.data().deviceId === localStorage.getItem("earnx_device_id")) {
@@ -1986,6 +2713,7 @@
             window.saveState(); 
             window.showToast("Code Applied!"); 
             el.value = "";
+            
         } catch(e) {
             window.showToast("Error applying referral");
         } finally {
@@ -2000,16 +2728,22 @@
         
         try {
             const coins = Math.floor(window.state.user.coins / 10000) * 10000;
-            if(coins < 10000) return window.showToast("Min 10k coins");
+            if(coins < 10000) {
+                return window.showToast("Min 10k coins");
+            }
             
             const upi = document.getElementById('upi-input').value.trim();
-            if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)) return window.showToast("Invalid UPI");
+            if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)) {
+                return window.showToast("Invalid UPI");
+            }
             
             const { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const userRef = doc(window.db, "earnx_users", window.currentUser.uid);
             const currentCoins = (await getDoc(userRef)).data().coins || 0;
             
-            if(currentCoins < coins) return window.showToast("Balance mismatch");
+            if(currentCoins < coins) {
+                return window.showToast("Balance mismatch");
+            }
             
             await updateDoc(userRef, { coins: currentCoins - coins });
             await addDoc(collection(window.db, "earnx_withdrawals"), { 
@@ -2025,6 +2759,7 @@
             window.saveState(); 
             window.loadWithdrawals();
             window.showToast("Withdraw Requested");
+            
         } catch(e){
             window.showToast("Withdraw failed");
         }
@@ -2036,88 +2771,77 @@
         window.updateTimersUI();
     }
 
-    /* 🔥 UI TIMERS FIXED FOR TASKS SCREEN (With Strong Error Bounds & Type Checks) 🔥 */
+    /* 🔥 UI TIMERS FIXED FOR TASKS SCREEN 🔥 */
     window.updateTimersUI = function() {
-        try {
-            // Humne `if(isTimeLocked) return;` ko hata diya hai. Agar time API fail bhi hota hai,
-            // toh phone ke local time se UI ekdum smoothly chalti rahegi, rukegi nahi!
-            const now = window.getTrueTime();
-            
-            // 1. Tap Timer
-            const tapLast = Number(window.state.tasks.lastTap) || 0;
-            window.updateSingleTimer('tap', tapLast, now, COOLDOWN_TAP);
+        if(isTimeLocked) return;
+        const now = window.getTrueTime();
+        
+        // Tap Timer
+        window.updateSingleTimer('tap', window.state.tasks.lastTap || 0, now, COOLDOWN_TAP);
 
-            // 2. Math Timer
-            const mathEnd = Number(window.state.tasks.mathCooldownEnd) || 0;
-            if (mathEnd > now) {
-                safeSetText('math-timer-display', window.formatMS(mathEnd - now));
-                const btnMath = document.getElementById('btn-math');
-                if(btnMath) btnMath.disabled = true;
-            } else {
-                safeSetText('math-timer-display', "Ready");
-                const btnMath = document.getElementById('btn-math');
-                if(btnMath) btnMath.disabled = false;
-            }
+        // Math Timer
+        const mathEnd = window.state.tasks.mathCooldownEnd || 0;
+        if (mathEnd > now) {
+            safeSetText('math-timer-display', window.formatMS(mathEnd - now));
+            const btnMath = document.getElementById('btn-math');
+            if(btnMath) btnMath.disabled = true;
+        } else {
+            safeSetText('math-timer-display', "Ready");
+            const btnMath = document.getElementById('btn-math');
+            if(btnMath) btnMath.disabled = false;
+        }
 
-            // 3. Scratch Timer
-            const scratchEnd = Number(window.state.tasks.scratchCooldownEnd) || 0;
-            const scratchNext = Number(window.state.tasks.scratchNextTime) || 0;
-            const scratchTarget = Math.max(scratchEnd, scratchNext);
-            
-            if (scratchTarget > now) {
-                safeSetText('scratch-timer-display', window.formatMS(scratchTarget - now));
-                const btnScratch = document.getElementById('btn-scratch');
-                if(btnScratch) btnScratch.disabled = true;
-            } else {
-                safeSetText('scratch-timer-display', "Ready");
-                const btnScratch = document.getElementById('btn-scratch');
-                if(btnScratch) btnScratch.disabled = false;
-            }
-            
-            // 4. Spin Refill
-            const spinRefill = Number(window.state.spin.lastRefill) || 0;
-            if(window.state.spin.spinsLeft < 5 && spinRefill > 0) {
-                const passed = now - spinRefill;
-                if(passed >= SPIN_REFILL_MS) { 
-                    window.state.spin.spinsLeft = 5; 
-                    window.state.spin.lastRefill = 0; 
-                    window.saveState(); 
-                } else { 
-                    safeSetText('spin-refill-timer', "Refill in: " + window.formatMS(SPIN_REFILL_MS - passed)); 
-                }
+        // Scratch Timer
+        const scratchTarget = Math.max((window.state.tasks.scratchCooldownEnd || 0), (window.state.tasks.scratchNextTime || 0));
+        if (scratchTarget > now) {
+            safeSetText('scratch-timer-display', window.formatMS(scratchTarget - now));
+            const btnScratch = document.getElementById('btn-scratch');
+            if(btnScratch) btnScratch.disabled = true;
+        } else {
+            safeSetText('scratch-timer-display', "Ready");
+            const btnScratch = document.getElementById('btn-scratch');
+            if(btnScratch) btnScratch.disabled = false;
+        }
+        
+        // Spin Refill
+        if(window.state.spin.spinsLeft < 5 && window.state.spin.lastRefill > 0) {
+            const passed = now - window.state.spin.lastRefill;
+            if(passed >= SPIN_REFILL_MS) { 
+                window.state.spin.spinsLeft = 5; 
+                window.state.spin.lastRefill = 0; 
+                window.saveState(); 
             } else { 
-                safeSetText('spin-refill-timer', ""); 
+                safeSetText('spin-refill-timer', "Refill in: " + window.formatMS(SPIN_REFILL_MS - passed)); 
             }
+        } else { 
+            safeSetText('spin-refill-timer', ""); 
+        }
 
-            // 5. Shuffle Refill Fix
-            const shuffleRefill = Number(window.state.shuffle.lastRefill) || 0;
-            if(window.state.shuffle.shufflesLeft < 5 && shuffleRefill > 0) {
-                const passedShuffle = now - shuffleRefill;
-                if(passedShuffle >= SPIN_REFILL_MS) { 
-                    window.state.shuffle.shufflesLeft = 5; 
-                    window.state.shuffle.lastRefill = 0; 
-                    window.saveState(); 
-                    safeSetText('shuffle-timer-display', "Ready");
-                    const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
-                    if(btnGotoShuffle) btnGotoShuffle.disabled = false;
-                } else { 
-                    if(window.state.shuffle.shufflesLeft <= 0) {
-                        safeSetText('shuffle-timer-display', window.formatMS(SPIN_REFILL_MS - passedShuffle));
-                        const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
-                        if(btnGotoShuffle) btnGotoShuffle.disabled = true;
-                    } else {
-                        safeSetText('shuffle-timer-display', "Ready");
-                        const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
-                        if(btnGotoShuffle) btnGotoShuffle.disabled = false;
-                    }
-                }
-            } else { 
+        // Shuffle Refill Fix (Fix for Tasks Screen UI)
+        if(window.state.shuffle.shufflesLeft < 5 && window.state.shuffle.lastRefill > 0) {
+            const passedShuffle = now - window.state.shuffle.lastRefill;
+            if(passedShuffle >= SPIN_REFILL_MS) { 
+                window.state.shuffle.shufflesLeft = 5; 
+                window.state.shuffle.lastRefill = 0; 
+                window.saveState(); 
                 safeSetText('shuffle-timer-display', "Ready");
                 const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
                 if(btnGotoShuffle) btnGotoShuffle.disabled = false;
+            } else { 
+                if(window.state.shuffle.shufflesLeft <= 0) {
+                    safeSetText('shuffle-timer-display', window.formatMS(SPIN_REFILL_MS - passedShuffle));
+                    const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
+                    if(btnGotoShuffle) btnGotoShuffle.disabled = true;
+                } else {
+                    safeSetText('shuffle-timer-display', "Ready");
+                    const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
+                    if(btnGotoShuffle) btnGotoShuffle.disabled = false;
+                }
             }
-        } catch(e) {
-            console.error("Timer Update Error:", e);
+        } else { 
+            safeSetText('shuffle-timer-display', "Ready");
+            const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
+            if(btnGotoShuffle) btnGotoShuffle.disabled = false;
         }
     }
 
