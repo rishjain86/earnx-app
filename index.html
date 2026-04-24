@@ -1560,6 +1560,7 @@
             window.state.shuffle = { shufflesLeft: 5, lastRefill: 0, totalShuffles: 0 };
         }
 
+        // Clean up legacy tasks properties safely if they exist
         if(window.state.tasks && window.state.tasks.lastWatch !== undefined) {
             delete window.state.tasks.lastWatch;
         }
@@ -1793,6 +1794,7 @@
         const activeItem = document.querySelector(`.nav-item[data-target="${screenId}"]`);
         if(activeItem) activeItem.classList.add('active');
 
+        // Gamified Tasks Init Hooks
         if(screenId === 'math') {
             window.generateMathProblem();
         }
@@ -2850,7 +2852,7 @@
         if(!btn) return;
         
         const passed = now - lastTime;
-        if(passed < cooldownLimit) {
+        if(passed < cooldownLimit && lastTime > 0) {
             safeSetText(`${type}-timer-display`, window.formatMS(cooldownLimit - passed));
             btn.disabled = true;
         } else {
@@ -2862,6 +2864,14 @@
                 btn.disabled = false;
             }
         }
+    }
+    
+    window.formatMS = function(ms) {
+        if (ms <= 0) return "00:00";
+        const totalSec = Math.floor(ms / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
     }
 
     document.addEventListener("DOMContentLoaded", function() {
