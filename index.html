@@ -23,13 +23,27 @@
             --warning: #f59e0b;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-        body { font-family: 'Inter', sans-serif; background: #000; color: var(--text-light); display: flex; justify-content: center; overflow: hidden; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            user-select: none; 
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: #000; 
+            color: var(--text-light); 
+            display: flex; 
+            justify-content: center; 
+            overflow: hidden; 
+        }
         
         #app {
             width: 100%;
             max-width: 480px;
-            height: 100vh; height: 100dvh;
+            height: 100vh; 
+            height: 100dvh;
             background: var(--bg-dark);
             position: relative;
             overflow-y: auto;
@@ -38,131 +52,684 @@
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         
-        #app::-webkit-scrollbar { display: none; }
+        #app::-webkit-scrollbar { 
+            display: none; 
+        }
         
-        h1, h2, h3 { font-weight: 700; margin-bottom: 10px; }
-        p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.4; }
+        h1, h2, h3 { 
+            font-weight: 700; 
+            margin-bottom: 10px; 
+        }
+        
+        p { 
+            color: var(--text-muted); 
+            font-size: 0.9rem; 
+            line-height: 1.4; 
+        }
+        
         .text-green { color: var(--primary); }
         .text-danger { color: var(--danger); }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
-        .flex-center { display: flex; justify-content: center; align-items: center; }
-        .mt-1 { margin-top: 10px; } .mt-2 { margin-top: 20px; }
-        .mb-1 { margin-bottom: 10px; } .mb-2 { margin-bottom: 20px; }
         
-        .screen { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
-        .screen.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 15px; }
+        .flex-between { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
         
-        .btn { background: var(--primary-grad); color: white; border: none; padding: 14px 20px; border-radius: 12px; font-size: 1rem; font-weight: 600; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-        .btn:active { transform: scale(0.98); }
-        .btn:disabled { background: var(--card-border); color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
-        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); box-shadow: none; }
-        .btn-google { background: white; color: #333; margin-top: 10px; box-shadow: none; }
-        .btn-google i { color: #db4437; margin-right: 8px; }
+        .flex-center { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
         
-        input { width: 100%; background: var(--bg-darker); border: 1px solid var(--card-border); color: white; padding: 14px; border-radius: 10px; font-size: 1rem; margin-bottom: 15px; outline: none; transition: border 0.3s; }
-        input:focus { border-color: var(--primary); }
-        input:disabled { background: rgba(0,0,0,0.5); color: var(--text-muted); border-color: var(--card-border); cursor: not-allowed; }
-
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: var(--card-bg); border-top: 1px solid var(--card-border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; transition: 0.2s; }
-        .nav-item i { font-size: 1.2rem; margin-bottom: 4px; }
-        .nav-item.active { color: var(--primary); }
-
-        .header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--card-border); margin-bottom: 20px; }
-        .header-title { font-size: 1.5rem; background: var(--primary-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .mt-1 { margin-top: 10px; } 
+        .mt-2 { margin-top: 20px; }
+        .mb-1 { margin-bottom: 10px; } 
+        .mb-2 { margin-bottom: 20px; }
         
-        .coin-badge { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; color: var(--primary); cursor: pointer; transition: 0.2s; }
-        .coin-badge:active { transform: scale(0.95); background: rgba(16, 185, 129, 0.2); }
-
-        .hero-card { text-align: center; background: linear-gradient(to bottom right, var(--card-bg), var(--bg-darker)); }
-        .balance-title { font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
-        .balance-amount { font-size: 2.5rem; font-weight: 700; margin: 10px 0; }
-        .rupee-eq { color: var(--primary); font-size: 1rem; font-weight: 600; }
-        .grid-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .action-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; }
-        .action-card i { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
+        .screen { 
+            display: none; 
+            padding: 20px; 
+            animation: fadeIn 0.3s ease; 
+        }
         
-        .wheel-container { position: relative; width: 280px; height: 280px; margin: 30px auto; }
-        .wheel { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--card-bg); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); position: relative; overflow: hidden; transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1); background: conic-gradient( #10b981 0 60deg, #059669 60deg 120deg, #10b981 120deg 180deg, #059669 180deg 240deg, #10b981 240deg 300deg, #059669 300deg 360deg ); }
-        .wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid var(--warning); z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); }
-        .wheel-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: var(--bg-dark); border-radius: 50%; z-index: 5; border: 2px solid white; }
-        .wheel-label { position: absolute; top: 15%; left: 50%; transform-origin: 50% 100px; transform: translateX(-50%); color: white; font-weight: bold; font-size: 1.2rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); z-index: 2; }
+        .screen.active { 
+            display: block; 
+        }
         
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--card-border); }
-        .history-item:last-child { border-bottom: none; padding-bottom: 0; }
-        .h-info { display: flex; flex-direction: column; }
-        .h-title { font-size: 0.95rem; font-weight: 600; color: white; }
-        .h-upi { font-size: 0.9rem; font-weight: 600; }
-        .h-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
-        .h-status { font-size: 0.8rem; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
-        .status-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-
-        .tc-list { list-style: none; }
-        .tc-list li { position: relative; padding-left: 20px; margin-bottom: 12px; font-size: 0.9rem; color: var(--text-muted); }
-        .tc-list li::before { content: "•"; color: var(--primary); position: absolute; left: 0; font-weight: bold; font-size: 1.2rem; top: -2px; }
-
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--card-bg); border: 1px solid var(--primary); padding: 12px 20px; border-radius: 8px; color: white; z-index: 10000; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.5); font-weight: 600; white-space: nowrap;}
-        
-        .timer-display { font-family: monospace; font-size: 1.1rem; color: var(--warning); font-weight: bold; }
-
-        #custom-splash {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: var(--bg-dark); display: flex; justify-content: center; align-items: center;
-            z-index: 999999; transition: opacity 0.5s ease-out;
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
         }
 
-        #custom-splash img { width: 70vw; max-width: 400px; height: auto; object-fit: contain; animation: pulse-splash 1.5s infinite alternate; }
-        @keyframes pulse-splash { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.05); opacity: 1; } }
-        .app-logo { width: 60vw; max-width: 300px; height: auto; margin-bottom: 20px; object-fit: contain; filter: drop-shadow(0px 10px 15px rgba(16, 185, 129, 0.4)); }
+        .card { 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border); 
+            border-radius: 16px; 
+            padding: 20px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); 
+            margin-bottom: 15px; 
+        }
+        
+        .btn { 
+            background: var(--primary-grad); 
+            color: white; 
+            border: none; 
+            padding: 14px 20px; 
+            border-radius: 12px; 
+            font-size: 1rem; 
+            font-weight: 600; 
+            width: 100%; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); 
+        }
+        
+        .btn:active { 
+            transform: scale(0.98); 
+        }
+        
+        .btn:disabled { 
+            background: var(--card-border); 
+            color: var(--text-muted); 
+            box-shadow: none; 
+            cursor: not-allowed; 
+        }
+        
+        .btn-outline { 
+            background: transparent; 
+            border: 2px solid var(--primary); 
+            color: var(--primary); 
+            box-shadow: none; 
+        }
+        
+        .btn-google { 
+            background: white; 
+            color: #333; 
+            margin-top: 10px; 
+            box-shadow: none; 
+        }
+        
+        .btn-google i { 
+            color: #db4437; 
+            margin-right: 8px; 
+        }
+        
+        input { 
+            width: 100%; 
+            background: var(--bg-darker); 
+            border: 1px solid var(--card-border); 
+            color: white; 
+            padding: 14px; 
+            border-radius: 10px; 
+            font-size: 1rem; 
+            margin-bottom: 15px; 
+            outline: none; 
+            transition: border 0.3s; 
+        }
+        
+        input:focus { 
+            border-color: var(--primary); 
+        }
+        
+        input:disabled { 
+            background: rgba(0,0,0,0.5); 
+            color: var(--text-muted); 
+            border-color: var(--card-border); 
+            cursor: not-allowed; 
+        }
+
+        .bottom-nav { 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            max-width: 480px; 
+            background: var(--card-bg); 
+            border-top: 1px solid var(--card-border); 
+            display: flex; 
+            justify-content: space-around; 
+            padding: 10px 0; 
+            z-index: 100; 
+            padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
+        }
+        
+        .nav-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            color: var(--text-muted); 
+            font-size: 0.75rem; 
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+        
+        .nav-item i { 
+            font-size: 1.2rem; 
+            margin-bottom: 4px; 
+        }
+        
+        .nav-item.active { 
+            color: var(--primary); 
+        }
+
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding-bottom: 20px; 
+            border-bottom: 1px solid var(--card-border); 
+            margin-bottom: 20px; 
+        }
+        
+        .header-title { 
+            font-size: 1.5rem; 
+            background: var(--primary-grad); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+        
+        .coin-badge { 
+            background: rgba(16, 185, 129, 0.1); 
+            border: 1px solid var(--primary); 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            font-weight: 600; 
+            font-size: 0.9rem; 
+            color: var(--primary); 
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+        
+        .coin-badge:active { 
+            transform: scale(0.95); 
+            background: rgba(16, 185, 129, 0.2); 
+        }
+
+        .hero-card { 
+            text-align: center; 
+            background: linear-gradient(to bottom right, var(--card-bg), var(--bg-darker)); 
+        }
+        
+        .balance-title { 
+            font-size: 0.9rem; 
+            color: var(--text-muted); 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+        }
+        
+        .balance-amount { 
+            font-size: 2.5rem; 
+            font-weight: 700; 
+            margin: 10px 0; 
+        }
+        
+        .rupee-eq { 
+            color: var(--primary); 
+            font-size: 1rem; 
+            font-weight: 600; 
+        }
+        
+        .grid-actions { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+        }
+        
+        .action-card { 
+            background: var(--card-bg); 
+            border: 1px solid var(--card-border); 
+            border-radius: 12px; 
+            padding: 15px; 
+            text-align: center; 
+            cursor: pointer; 
+        }
+        
+        .action-card i { 
+            font-size: 1.5rem; 
+            color: var(--primary); 
+            margin-bottom: 8px; 
+        }
+        
+        .wheel-container { 
+            position: relative; 
+            width: 280px; 
+            height: 280px; 
+            margin: 30px auto; 
+        }
+        
+        .wheel { 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 50%; 
+            border: 4px solid var(--card-bg); 
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); 
+            position: relative; 
+            overflow: hidden; 
+            transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1); 
+            background: conic-gradient( #10b981 0 60deg, #059669 60deg 120deg, #10b981 120deg 180deg, #059669 180deg 240deg, #10b981 240deg 300deg, #059669 300deg 360deg ); 
+        }
+        
+        .wheel-pointer { 
+            position: absolute; 
+            top: -15px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 0; 
+            height: 0; 
+            border-left: 15px solid transparent; 
+            border-right: 15px solid transparent; 
+            border-top: 25px solid var(--warning); 
+            z-index: 10; 
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); 
+        }
+        
+        .wheel-center { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            width: 40px; 
+            height: 40px; 
+            background: var(--bg-dark); 
+            border-radius: 50%; 
+            z-index: 5; 
+            border: 2px solid white; 
+        }
+        
+        .wheel-label { 
+            position: absolute; 
+            top: 15%; 
+            left: 50%; 
+            transform-origin: 50% 100px; 
+            transform: translateX(-50%); 
+            color: white; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8); 
+            z-index: 2; 
+        }
+        
+        .history-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px 0; 
+            border-bottom: 1px solid var(--card-border); 
+        }
+        
+        .history-item:last-child { 
+            border-bottom: none; 
+            padding-bottom: 0; 
+        }
+        
+        .h-info { 
+            display: flex; 
+            flex-direction: column; 
+        }
+        
+        .h-title { 
+            font-size: 0.95rem; 
+            font-weight: 600; 
+            color: white; 
+        }
+        
+        .h-upi { 
+            font-size: 0.9rem; 
+            font-weight: 600; 
+        }
+        
+        .h-time { 
+            font-size: 0.75rem; 
+            color: var(--text-muted); 
+            margin-top: 4px; 
+        }
+        
+        .h-status { 
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+        }
+        
+        .status-pending { 
+            background: rgba(245, 158, 11, 0.2); 
+            color: var(--warning); 
+        }
+
+        .tc-list { 
+            list-style: none; 
+        }
+        
+        .tc-list li { 
+            position: relative; 
+            padding-left: 20px; 
+            margin-bottom: 12px; 
+            font-size: 0.9rem; 
+            color: var(--text-muted); 
+        }
+        
+        .tc-list li::before { 
+            content: "•"; 
+            color: var(--primary); 
+            position: absolute; 
+            left: 0; 
+            font-weight: bold; 
+            font-size: 1.2rem; 
+            top: -2px; 
+        }
+
+        #toast { 
+            position: fixed; 
+            top: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: var(--card-bg); 
+            border: 1px solid var(--primary); 
+            padding: 12px 20px; 
+            border-radius: 8px; 
+            color: white; 
+            z-index: 10000; 
+            display: none; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); 
+            font-weight: 600; 
+            white-space: nowrap;
+        }
+        
+        .timer-display { 
+            font-family: monospace; 
+            font-size: 1.1rem; 
+            color: var(--warning); 
+            font-weight: bold; 
+        }
+
+        #custom-splash {
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh;
+            background-color: var(--bg-dark); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            z-index: 999999; 
+            transition: opacity 0.5s ease-out;
+        }
+
+        #custom-splash img { 
+            width: 70vw; 
+            max-width: 400px; 
+            height: auto; 
+            object-fit: contain; 
+            animation: pulse-splash 1.5s infinite alternate; 
+        }
+        
+        @keyframes pulse-splash { 
+            0% { transform: scale(0.95); opacity: 0.8; } 
+            100% { transform: scale(1.05); opacity: 1; } 
+        }
+        
+        .app-logo { 
+            width: 60vw; 
+            max-width: 300px; 
+            height: auto; 
+            margin-bottom: 20px; 
+            object-fit: contain; 
+            filter: drop-shadow(0px 10px 15px rgba(16, 185, 129, 0.4)); 
+        }
 
         /* 🥳 Celebration Modal Styling 🥳 */
-        #celebration-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100002; justify-content: center; align-items: center; flex-direction: column; text-align: center; padding: 20px; }
-        .congrats-card { background: var(--card-bg); border: 2px solid var(--primary); border-radius: 24px; padding: 40px 20px; width: 100%; max-width: 350px; animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; }
-        @keyframes popUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .win-amount { font-size: 3.5rem; font-weight: 800; color: gold; margin: 15px 0; text-shadow: 0 0 20px rgba(255,215,0,0.5); }
+        #celebration-modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.9); 
+            z-index: 100002; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column; 
+            text-align: center; 
+            padding: 20px; 
+        }
         
-        .confetti-piece { position: absolute; width: 10px; height: 10px; background: #ffd700; top: -20px; opacity: 0; animation: confettiDrop 3s infinite linear; }
-        @keyframes confettiDrop { from { top: -20px; opacity: 1; transform: rotate(0deg); } to { top: 100%; opacity: 0; transform: rotate(360deg); } }
+        .congrats-card { 
+            background: var(--card-bg); 
+            border: 2px solid var(--primary); 
+            border-radius: 24px; 
+            padding: 40px 20px; 
+            width: 100%; 
+            max-width: 350px; 
+            animation: popUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            position: relative; 
+            overflow: hidden; 
+        }
+        
+        @keyframes popUp { 
+            from { transform: scale(0.5); opacity: 0; } 
+            to { transform: scale(1); opacity: 1; } 
+        }
+        
+        .win-amount { 
+            font-size: 3.5rem; 
+            font-weight: 800; 
+            color: gold; 
+            margin: 15px 0; 
+            text-shadow: 0 0 20px rgba(255,215,0,0.5); 
+        }
+        
+        .confetti-piece { 
+            position: absolute; 
+            width: 10px; 
+            height: 10px; 
+            background: #ffd700; 
+            top: -20px; 
+            opacity: 0; 
+            animation: confettiDrop 3s infinite linear; 
+        }
+        
+        @keyframes confettiDrop { 
+            from { top: -20px; opacity: 1; transform: rotate(0deg); } 
+            to { top: 100%; opacity: 0; transform: rotate(360deg); } 
+        }
 
         /* 🔥 EX SHUFFLE TASK CSS 🔥 */
-        .cards-container { position: relative; max-width: 360px; margin: 0 auto 15px auto; perspective: 1000px; }
-        .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; transition: transform 0.5s ease; }
-        .shuffle-card { width: 100%; aspect-ratio: 3/4; cursor: pointer; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); }
-        .shuffle-card.flipped { transform: rotateY(180deg); }
-        .shuffle-card.disabled { pointer-events: none; }
-        .sc-front, .sc-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .sc-back { background: linear-gradient(135deg, #065f46, #064e3b); border: 2px solid var(--warning); }
-        .sc-back i { font-size: 2.2rem; color: var(--warning); margin-bottom: 5px; filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5)); }
-        .sc-back span { font-size: 0.9rem; font-weight: 800; letter-spacing: 1px; color: var(--text-light); }
-        .sc-front { background: linear-gradient(135deg, #047857, #065f46); border: 2px solid var(--primary); transform: rotateY(180deg); }
-        .sc-front i { font-size: 2.2rem; color: var(--warning); margin-bottom: 5px; filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8)); }
-        .sc-front span { font-size: 1.3rem; font-weight: 800; color: var(--warning); }
+        .cards-container { 
+            position: relative; 
+            max-width: 360px; 
+            margin: 0 auto 15px auto; 
+            perspective: 1000px; 
+        }
         
-        .ad-banner { width: 100%; max-width: 360px; min-height: 50px; margin: 0 auto 15px auto; display: flex; justify-content: center; align-items: center; }
+        .cards-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 15px; 
+            transition: transform 0.5s ease; 
+        }
         
-        @keyframes mixup-container { 0% { transform: scale(1) rotate(0deg); } 50% { transform: scale(0.8) rotate(360deg); } 100% { transform: scale(1) rotate(720deg); } }
-        @keyframes mixup-cards { 0% { transform: translate(0, 0); opacity: 1; } 50% { transform: translate(var(--tx), var(--ty)) rotate(180deg); opacity: 0.9; } 100% { transform: translate(0, 0) rotate(360deg); opacity: 1; } }
-        .animating-grid { animation: mixup-container 1.2s ease-in-out; }
-        .animating-card { animation: mixup-cards 1.2s ease-in-out; }
+        .shuffle-card { 
+            width: 100%; 
+            aspect-ratio: 3/4; 
+            cursor: pointer; 
+            position: relative; 
+            transform-style: preserve-3d; 
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); 
+        }
+        
+        .shuffle-card.flipped { 
+            transform: rotateY(180deg); 
+        }
+        
+        .shuffle-card.disabled { 
+            pointer-events: none; 
+        }
+        
+        .sc-front, .sc-back { 
+            width: 100%; 
+            height: 100%; 
+            position: absolute; 
+            backface-visibility: hidden; 
+            border-radius: 12px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
+        }
+        
+        .sc-back { 
+            background: linear-gradient(135deg, #065f46, #064e3b); 
+            border: 2px solid var(--warning); 
+        }
+        
+        .sc-back i { 
+            font-size: 2.2rem; 
+            color: var(--warning); 
+            margin-bottom: 5px; 
+            filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.5)); 
+        }
+        
+        .sc-back span { 
+            font-size: 0.9rem; 
+            font-weight: 800; 
+            letter-spacing: 1px; 
+            color: var(--text-light); 
+        }
+        
+        .sc-front { 
+            background: linear-gradient(135deg, #047857, #065f46); 
+            border: 2px solid var(--primary); 
+            transform: rotateY(180deg); 
+        }
+        
+        .sc-front i { 
+            font-size: 2.2rem; 
+            color: var(--warning); 
+            margin-bottom: 5px; 
+            filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.8)); 
+        }
+        
+        .sc-front span { 
+            font-size: 1.3rem; 
+            font-weight: 800; 
+            color: var(--warning); 
+        }
+        
+        /* 🔥 CLEAN AD BANNER 🔥 */
+        .ad-banner { 
+            width: 100%; 
+            max-width: 360px; 
+            min-height: 50px; 
+            margin: 0 auto 15px auto; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        
+        @keyframes mixup-container { 
+            0% { transform: scale(1) rotate(0deg); } 
+            50% { transform: scale(0.8) rotate(360deg); } 
+            100% { transform: scale(1) rotate(720deg); } 
+        }
+        
+        @keyframes mixup-cards { 
+            0% { transform: translate(0, 0); opacity: 1; } 
+            50% { transform: translate(var(--tx), var(--ty)) rotate(180deg); opacity: 0.9; } 
+            100% { transform: translate(0, 0) rotate(360deg); opacity: 1; } 
+        }
+        
+        .animating-grid { 
+            animation: mixup-container 1.2s ease-in-out; 
+        }
+        
+        .animating-card { 
+            animation: mixup-cards 1.2s ease-in-out; 
+        }
 
         /* 🔥 NEW GAMIFIED TASKS CSS 🔥 */
-        .math-box { font-size: 2.5rem; font-weight: 800; color: var(--primary); letter-spacing: 2px; margin: 15px 0; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; border: 1px dashed var(--primary); text-align: center; }
-        .math-input { width: 100%; background: var(--bg-darker); border: 1px solid var(--card-border); color: white; padding: 14px; border-radius: 10px; font-size: 1.2rem; text-align: center; outline: none; margin-bottom: 15px; }
-        .math-input:focus { border-color: var(--primary); }
+        .math-box { 
+            font-size: 2.5rem; 
+            font-weight: 800; 
+            color: var(--primary); 
+            letter-spacing: 2px; 
+            margin: 15px 0; 
+            background: rgba(0,0,0,0.3); 
+            padding: 15px; 
+            border-radius: 12px; 
+            border: 1px dashed var(--primary); 
+            text-align: center; 
+        }
         
-        .scratch-wrap { position: relative; width: 260px; height: 160px; margin: 0 auto 15px auto; border-radius: 12px; overflow: hidden; border: 3px solid var(--warning); background: #0f172a; }
-        .scratch-canvas { position: absolute; top: 0; left: 0; cursor: crosshair; z-index: 10; }
-        .scratch-reward { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 5; }
-        .scratch-reward i { font-size: 2.5rem; color: var(--warning); margin-bottom: 5px; }
-        .scratch-reward span { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
+        .math-input { 
+            width: 100%; 
+            background: var(--bg-darker); 
+            border: 1px solid var(--card-border); 
+            color: white; 
+            padding: 14px; 
+            border-radius: 10px; 
+            font-size: 1.2rem; 
+            text-align: center; 
+            outline: none; 
+            margin-bottom: 15px; 
+        }
+        
+        .math-input:focus { 
+            border-color: var(--primary); 
+        }
+        
+        .scratch-wrap { 
+            position: relative; 
+            width: 260px; 
+            height: 160px; 
+            margin: 0 auto 15px auto; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            border: 3px solid var(--warning); 
+            background: #0f172a; 
+        }
+        
+        .scratch-canvas { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            cursor: crosshair; 
+            z-index: 10; 
+        }
+        
+        .scratch-reward { 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 5; 
+        }
+        
+        .scratch-reward i { 
+            font-size: 2.5rem; 
+            color: var(--warning); 
+            margin-bottom: 5px; 
+        }
+        
+        .scratch-reward span { 
+            font-size: 1.8rem; 
+            font-weight: 800; 
+            color: var(--primary); 
+        }
     </style>
 </head>
 <body>
 
-<div id="custom-splash"><img src="assets/splash.png" alt="EarnX Splash Logo"></div>
+<div id="custom-splash">
+    <img src="assets/splash.png" alt="EarnX Splash Logo">
+</div>
 
 <div id="celebration-modal">
     <div class="congrats-card">
@@ -571,8 +1138,13 @@
         if (window.Capacitor) {
             const webSec = document.getElementById('web-login-section');
             const appSec = document.getElementById('app-login-section');
-            if(webSec) webSec.style.display = 'none';
-            if(appSec) appSec.style.display = 'block';
+            
+            if(webSec) {
+                webSec.style.display = 'none';
+            }
+            if(appSec) {
+                appSec.style.display = 'block';
+            }
         }
     }, 200);
 
@@ -583,6 +1155,7 @@
             
             if (noticeSnap.exists()) {
                 const data = noticeSnap.data();
+                
                 if (data.isActive === true && data.message !== "") {
                     const lastSeenNotice = localStorage.getItem("earnx_last_notice_time");
                     
@@ -604,6 +1177,7 @@
 
     window.closeNoticeModal = function() {
         document.getElementById('flash-notice-modal').style.display = 'none';
+        
         if (window.currentNoticeTime) {
             localStorage.setItem("earnx_last_notice_time", window.currentNoticeTime);
         }
@@ -621,12 +1195,33 @@
                 localStorage.setItem("earnx_device_id", deviceId);
             }
 
-            const defaultTasks = { lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 };
-            const defaultSpin = { spinsLeft:5, lastRefill:0, totalSpins:0 };
-            const defaultShuffle = { shufflesLeft:5, lastRefill:0, totalShuffles:0 };
+            const defaultTasks = { 
+                lastTap: 0, 
+                tapCount: 0, 
+                tapNextTime: 0, 
+                checkInTime: 0, 
+                mathAttempts: 0, 
+                mathCooldownEnd: 0, 
+                scratchAttempts: 0, 
+                scratchNextTime: 0, 
+                scratchCooldownEnd: 0 
+            };
+            
+            const defaultSpin = { 
+                spinsLeft: 5, 
+                lastRefill: 0, 
+                totalSpins: 0 
+            };
+            
+            const defaultShuffle = { 
+                shufflesLeft: 5, 
+                lastRefill: 0, 
+                totalShuffles: 0 
+            };
 
             if(!snap.exists()){
                 const newRefCode = user.uid.substring(0,4).toUpperCase() + Math.floor(Math.random()*9000+1000);
+                
                 const data = {
                     coins: 0,
                     refCode: newRefCode,
@@ -637,6 +1232,7 @@
                     shuffle: defaultShuffle,
                     transactions: []
                 };
+                
                 await setDoc(ref, data);
                 
                 window.state.user = { 
@@ -653,6 +1249,7 @@
                 window.state.spin = defaultSpin;
                 window.state.shuffle = defaultShuffle;
                 window.state.transactions = [];
+                
             } else {
                 const data = snap.data();
 
@@ -666,7 +1263,9 @@
                     alert("⚠️ ADMIN WARNING ⚠️\n\n" + data.personalAlert);
                     try {
                         await updateDoc(ref, { personalAlert: "" });
-                    } catch(e) { console.log("Failed to clear alert"); }
+                    } catch(e) {
+                        console.log("Failed to clear alert"); 
+                    }
                 }
 
                 window.state.user = {
@@ -680,6 +1279,7 @@
                     createdAt: data.createdAt || window.getTrueTime(),
                     profile: data.profile || {name: "", phone: ""}
                 };
+                
                 window.state.tasks = { ...defaultTasks, ...(data.tasks || {}) };
                 window.state.spin = data.spin || defaultSpin;
                 window.state.shuffle = data.shuffle || defaultShuffle;
@@ -693,6 +1293,7 @@
             window.checkReferralUnlock(); 
             window.checkForGlobalNotice(); 
             window.showToast("Login Successful");
+            
         } catch (error) {
             console.error("Firebase Auth Error:", error);
             window.showToast("Connection error, please try again.");
@@ -707,9 +1308,27 @@
             if(!window.state){
                 window.state = {
                     user: null,
-                    tasks: { lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 },
-                    spin: { spinsLeft:5,lastRefill:0,totalSpins:0 },
-                    shuffle: { shufflesLeft:5,lastRefill:0,totalShuffles:0 },
+                    tasks: { 
+                        lastTap: 0, 
+                        tapCount: 0, 
+                        tapNextTime: 0, 
+                        checkInTime: 0, 
+                        mathAttempts: 0, 
+                        mathCooldownEnd: 0, 
+                        scratchAttempts: 0, 
+                        scratchNextTime: 0, 
+                        scratchCooldownEnd: 0 
+                    },
+                    spin: { 
+                        spinsLeft: 5,
+                        lastRefill: 0,
+                        totalSpins: 0 
+                    },
+                    shuffle: { 
+                        shufflesLeft: 5,
+                        lastRefill: 0,
+                        totalShuffles: 0 
+                    },
                     withdrawals: [],
                     transactions: []
                 };
@@ -738,12 +1357,14 @@
 
     window.loginWithEmail = async function() {
         if(loginLoading) return;
+        
         const email = document.getElementById('email-input').value.trim();
         const password = document.getElementById('password-input').value.trim();
         
         if(!email || !password) {
             return window.showToast("Enter Email and Password");
         }
+        
         if(password.length < 6) {
             return window.showToast("Password must be at least 6 characters");
         }
@@ -814,6 +1435,7 @@
     let isTimeLocked = true; 
 
     window.hasClickedSocial = false;
+    
     window.openSocial = function(url) {
         window.hasClickedSocial = true;
         window.location.href = url;
@@ -903,12 +1525,30 @@
         
         if(!window.state){
             window.state = {
-                user:null,
-                tasks:{ lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 },
-                spin:{ spinsLeft:5,lastRefill:0,totalSpins:0 },
-                shuffle:{ shufflesLeft:5,lastRefill:0,totalShuffles:0 },
-                withdrawals:[],
-                transactions:[]
+                user: null,
+                tasks: { 
+                    lastTap: 0, 
+                    tapCount: 0, 
+                    tapNextTime: 0, 
+                    checkInTime: 0, 
+                    mathAttempts: 0, 
+                    mathCooldownEnd: 0, 
+                    scratchAttempts: 0, 
+                    scratchNextTime: 0, 
+                    scratchCooldownEnd: 0 
+                },
+                spin: { 
+                    spinsLeft: 5,
+                    lastRefill: 0,
+                    totalSpins: 0 
+                },
+                shuffle: { 
+                    shufflesLeft: 5,
+                    lastRefill: 0,
+                    totalShuffles: 0 
+                },
+                withdrawals: [],
+                transactions: []
             };
         }
         
@@ -917,13 +1557,17 @@
         }
         
         if(!window.state.shuffle) {
-            window.state.shuffle = { shufflesLeft:5,lastRefill:0,totalShuffles:0 };
+            window.state.shuffle = { shufflesLeft: 5, lastRefill: 0, totalShuffles: 0 };
         }
 
-        // Merge defaults carefully
-        const defaultTasks = { lastTap:0, tapCount:0, tapNextTime:0, checkInTime:0, mathAttempts:0, mathCooldownEnd:0, scratchAttempts:0, scratchNextTime:0, scratchCooldownEnd:0 };
-        window.state.tasks = { ...defaultTasks, ...(window.state.tasks || {}) };
-
+        // Clean up legacy tasks properties safely if they exist
+        if(window.state.tasks && window.state.tasks.lastWatch !== undefined) {
+            delete window.state.tasks.lastWatch;
+        }
+        if(window.state.tasks && window.state.tasks.lastStay !== undefined) {
+            delete window.state.tasks.lastStay;
+        }
+        
         if(!window.state.spin.lastRefill && window.state.spin.spinsLeft < 5){
             window.state.spin.lastRefill = window.getTrueTime();
         }
@@ -943,12 +1587,13 @@
                 window.Capacitor.Plugins.AdMob.initialize().catch(e => console.log("AdMob Init Error"));
             }
         }, 1000);
-        window.renderShuffleCards();
+        window.renderShuffleCards(); // Init Shuffle Cards HTML
     });
 
     window.launchCelebration = function() {
         const modal = document.getElementById('celebration-modal');
         modal.style.display = 'flex';
+        
         for(let i=0; i<50; i++) {
             const piece = document.createElement('div');
             piece.className = 'confetti-piece';
@@ -956,18 +1601,28 @@
             piece.style.backgroundColor = ['#ffd700','#10b981','#ffffff','#f59e0b'][Math.floor(Math.random()*4)];
             piece.style.animationDelay = Math.random() * 2 + 's';
             modal.appendChild(piece);
+            
             setTimeout(() => piece.remove(), 3000);
         }
     }
 
     window.doMegaTask = async function() {
+        if(isTimeLocked) {
+            return window.showToast("Securing Time... Please wait.");
+        }
+
+        if(!window.hasClickedSocial) {
+            return window.showToast("Please click FB/Insta Follow button to find the code first!");
+        }
+        
         const btn = document.getElementById('btn-mega-task');
         const codeInput = document.getElementById('mega-promo-code').value.trim().toUpperCase();
         const fbId = document.getElementById('mega-fb-id').value.trim();
         const instaId = document.getElementById('mega-insta-id').value.trim();
 
-        if(!codeInput || !fbId || !instaId) return window.showToast("Fill Promo Code, FB and Insta details!");
-        if(!window.hasClickedSocial) return window.showToast("Please click FB/Insta Follow button to find the code first!");
+        if(!codeInput || !fbId || !instaId) {
+            return window.showToast("Fill Promo Code, FB and Insta details!");
+        }
         
         btn.disabled = true;
         btn.innerText = "Verifying...";
@@ -977,8 +1632,10 @@
             
             const accountAgeMs = now - getSafeMs(window.state.user.createdAt);
             const daysOld = accountAgeMs / (1000 * 60 * 60 * 24);
+            
             if(daysOld < 2) {
-                btn.disabled = false; btn.innerText = "Claim Reward";
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
                 return window.showToast("Account must be 2 days old!");
             }
 
@@ -988,7 +1645,8 @@
                 .reduce((sum, t) => sum + Number(t.amount), 0);
 
             if(activeEarnings < 500) {
-                btn.disabled = false; btn.innerText = "Claim Reward";
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
                 return window.showToast("Earn 500 coins in last 3 days first!");
             }
 
@@ -996,24 +1654,34 @@
             const promoSnap = await getDoc(doc(window.db, "earnx_settings", "active_promo"));
             
             if(!promoSnap.exists() || codeInput !== promoSnap.data().code.toUpperCase()) {
-                btn.disabled = false; btn.innerText = "Claim Reward";
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
                 return window.showToast("Invalid Promo Code!");
             }
 
             if(window.state.tasks.claimedPromos && window.state.tasks.claimedPromos.includes(codeInput)) {
-                btn.disabled = false; btn.innerText = "Claim Reward";
+                btn.disabled = false;
+                btn.innerText = "Claim Reward";
                 return window.showToast("Already claimed this code!");
             }
 
             const rand = Math.random() * 100;
             let win = 0;
-            if(rand < 50) win = 500;
-            else if(rand < 90) win = Math.floor(Math.random() * (400 - 100 + 1)) + 100;
-            else win = 1000;
+            if(rand < 50) {
+                win = 500; 
+            } else if(rand < 90) {
+                win = Math.floor(Math.random() * (400 - 100 + 1)) + 100; 
+            } else {
+                win = 1000; 
+            }
 
             window.state.user.coins += win;
-            if(!window.state.tasks.claimedPromos) window.state.tasks.claimedPromos = [];
+            
+            if(!window.state.tasks.claimedPromos) {
+                window.state.tasks.claimedPromos = [];
+            }
             window.state.tasks.claimedPromos.push(codeInput);
+            
             window.state.tasks.lastFbId = fbId;
             window.state.tasks.lastInstaId = instaId;
             
@@ -1023,22 +1691,38 @@
             document.getElementById('win-display').innerText = win;
             window.launchCelebration();
             
-            btn.disabled = false; btn.innerText = "Claim Reward";
+            btn.disabled = false;
+            btn.innerText = "Claim Reward";
             document.getElementById('mega-promo-code').value = "";
             document.getElementById('mega-fb-id').value = "";
             document.getElementById('mega-insta-id').value = "";
 
         } catch(e) {
-            btn.disabled = false; btn.innerText = "Claim Reward";
+            console.error(e);
+            btn.disabled = false;
+            btn.innerText = "Claim Reward";
             window.showToast("Task Error. Check internet connection.");
         }
     }
 
     window.logTransaction = function(title, amount, type="earn") {
-        if(!window.state.transactions || !Array.isArray(window.state.transactions)) window.state.transactions = [];
-        const newLog = { title: title, amount: amount, type: type, date: window.getTrueTime() };
+        if(!window.state.transactions || !Array.isArray(window.state.transactions)) {
+            window.state.transactions = [];
+        }
+        
+        const newLog = { 
+            title: title, 
+            amount: amount, 
+            type: type, 
+            date: window.getTrueTime() 
+        };
+        
         window.state.transactions.unshift(newLog);
-        if(window.state.transactions.length > 50) window.state.transactions.pop(); 
+        
+        if(window.state.transactions.length > 50) { 
+            window.state.transactions.pop(); 
+        }
+        
         window.renderTransactionHistory();
     }
 
@@ -1051,11 +1735,13 @@
 
     window.saveCoinsToFirebase = async function(){
         if(!navigator.onLine || !window.state.user || !window.state.user.id || saving) return;
+        
         saving = true;
         try {
             const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const ref = doc(window.db, "earnx_users", window.state.user.id);
-            const safePayload = JSON.parse(JSON.stringify({ 
+            
+            const rawPayload = { 
                 coins: Number(window.state.user.coins) || 0, 
                 tasks: window.state.tasks || {}, 
                 spin: window.state.spin || {},
@@ -1063,15 +1749,22 @@
                 pendingReferrer: window.state.user.pendingReferrer || null,
                 profile: window.state.user.profile || {name: "", phone: ""},
                 transactions: window.state.transactions || []
-            }));
+            };
+            
+            const safePayload = JSON.parse(JSON.stringify(rawPayload));
             await updateDoc(ref, safePayload);
-        } catch(e) {}
+            
+        } catch(e) {
+            console.error("Firebase Sync Error:", e);
+        }
         saving = false;
     }
 
     window.saveCoinsToFirebaseDebounced = function(){
         clearTimeout(coinSaveTimeout); 
-        coinSaveTimeout = setTimeout(()=>{ window.saveCoinsToFirebase(); }, 2000);
+        coinSaveTimeout = setTimeout(()=>{ 
+            window.saveCoinsToFirebase(); 
+        }, 2000);
     }
 
     window.saveState = function() {
@@ -1083,32 +1776,48 @@
 
     window.nav = function(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        
         const target = document.getElementById(`screen-${screenId}`);
         if(target) target.classList.add('active');
         
         const bNav = document.getElementById('bottom-nav');
         if (bNav) {
-            if (['login', 'history', 'terms', 'math', 'scratch', 'shuffle'].includes(screenId)) bNav.style.display = 'none';
-            else bNav.style.display = 'flex';
+            if (['login', 'history', 'terms', 'math', 'scratch', 'shuffle'].includes(screenId)) {
+                bNav.style.display = 'none';
+            } else {
+                bNav.style.display = 'flex';
+            }
         }
         
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        
         const activeItem = document.querySelector(`.nav-item[data-target="${screenId}"]`);
         if(activeItem) activeItem.classList.add('active');
 
-        if(screenId === 'math') window.generateMathProblem();
-        if(screenId === 'scratch') setTimeout(() => { window.initScratchCard(); }, 50);
+        // Gamified Tasks Init Hooks
+        if(screenId === 'math') {
+            window.generateMathProblem();
+        }
+        if(screenId === 'scratch') {
+            setTimeout(() => { window.initScratchCard(); }, 50);
+        }
     }
 
     window.logout = function() {
         import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js").then(({ getAuth, signOut }) => {
-            signOut(getAuth()); window.currentUser = null; localStorage.clear(); location.reload();
+            signOut(getAuth()); 
+            window.currentUser = null; 
+            localStorage.clear(); 
+            location.reload();
         });
     }
 
     function debounce(fn, delay=300){
         let t; 
-        return (...args)=>{ clearTimeout(t); t = setTimeout(()=>fn(...args), delay); }
+        return (...args)=>{ 
+            clearTimeout(t); 
+            t = setTimeout(()=>fn(...args), delay); 
+        }
     }
 
     window.loadWithdrawals = debounce(async function(){
@@ -1117,13 +1826,21 @@
             const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
             const q = query(collection(window.db, "earnx_withdrawals"), where("userId", "==", window.currentUser.uid));
             const snap = await getDocs(q);
+            
             window.state.withdrawals = [];
             snap.forEach(doc=>{
                 const d = doc.data();
-                window.state.withdrawals.push({ amount: (d.coins / 10000) * 100, upi: d.upiId, date: d.createdAt ? (d.createdAt.seconds * 1000) : window.getTrueTime(), status: d.status });
+                window.state.withdrawals.push({ 
+                    amount: (d.coins / 10000) * 100, 
+                    upi: d.upiId, 
+                    date: d.createdAt ? (d.createdAt.seconds * 1000) : window.getTrueTime(), 
+                    status: d.status 
+                });
             });
             window.saveState();
-        } catch(e) {}
+        } catch(e) {
+            console.error("Load withdrawals error", e);
+        }
     }, 300);
 
     function safeSetText(id, value){ 
@@ -1135,30 +1852,54 @@
         const hasName = window.state.user.profile && window.state.user.profile.name && window.state.user.profile.name.trim() !== "";
         const hasPhone = window.state.user.profile && window.state.user.profile.phone && window.state.user.profile.phone.trim() !== "";
         
-        if (hasName && hasPhone) return window.showToast("Profile is locked and cannot be changed.");
+        if (hasName && hasPhone) {
+            return window.showToast("Profile is locked and cannot be changed.");
+        }
 
         const nameVal = document.getElementById('profile-name-input').value.trim();
         const phoneVal = document.getElementById('profile-phone-input').value.trim();
         const btn = document.getElementById('btn-save-profile');
         
-        if(!nameVal || !phoneVal) return window.showToast("Please fill both details");
+        if(!nameVal || !phoneVal) {
+            return window.showToast("Please fill both details");
+        }
         
-        btn.disabled = true; btn.innerText = "Saving...";
+        btn.disabled = true;
+        btn.innerText = "Saving...";
+        
         try {
             const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-            await updateDoc(doc(window.db, "earnx_users", window.state.user.id), { "profile.name": nameVal, "profile.phone": phoneVal });
-            if(!window.state.user.profile) window.state.user.profile = {};
-            window.state.user.profile.name = nameVal; window.state.user.profile.phone = phoneVal;
+            await updateDoc(doc(window.db, "earnx_users", window.state.user.id), { 
+                "profile.name": nameVal, 
+                "profile.phone": phoneVal 
+            });
+            
+            if(!window.state.user.profile) {
+                window.state.user.profile = {};
+            }
+            window.state.user.profile.name = nameVal;
+            window.state.user.profile.phone = phoneVal;
             window.saveState();
-            btn.innerText = "Profile Locked 🔒"; window.showToast("Profile Saved & Locked!"); window.updateUICore(); 
-        } catch(e) { btn.innerText = "Save Details"; btn.disabled = false; window.showToast("Error saving profile"); }
+            
+            btn.innerText = "Profile Locked 🔒";
+            window.showToast("Profile Saved & Locked!");
+            
+            window.updateUICore(); 
+        } catch(e) {
+            btn.innerText = "Save Details";
+            btn.disabled = false;
+            window.showToast("Error saving profile");
+        }
     };
 
     window.updateUICore = function() {
         if(!window.state || !window.state.user) return;
         window.sanitizeCoins();
         
-        document.querySelectorAll('.global-coin-display').forEach(el => { el.innerText = window.state.user.coins.toLocaleString(); });
+        document.querySelectorAll('.global-coin-display').forEach(el => { 
+            el.innerText = window.state.user.coins.toLocaleString(); 
+        });
+        
         safeSetText('rupee-display', (window.state.user.coins / (10000 / COIN_RATE)).toFixed(2));
         safeSetText('profile-phone', window.state.user.phone);
         safeSetText('profile-uid', window.state.user.id);
@@ -1175,26 +1916,45 @@
         if(nameInput && phoneInput && btnSaveProfile) {
             const hasName = window.state.user.profile && window.state.user.profile.name && window.state.user.profile.name.trim() !== "";
             const hasPhone = window.state.user.profile && window.state.user.profile.phone && window.state.user.profile.phone.trim() !== "";
+            
             if(hasName && hasPhone) {
-                nameInput.value = window.state.user.profile.name; phoneInput.value = window.state.user.profile.phone;
-                nameInput.disabled = true; phoneInput.disabled = true; btnSaveProfile.disabled = true; btnSaveProfile.innerText = "Profile Locked 🔒";
+                nameInput.value = window.state.user.profile.name;
+                phoneInput.value = window.state.user.profile.phone;
+                nameInput.disabled = true;
+                phoneInput.disabled = true;
+                btnSaveProfile.disabled = true;
+                btnSaveProfile.innerText = "Profile Locked 🔒";
                 if(lockMsg) lockMsg.style.display = "block";
             } else {
-                nameInput.disabled = false; phoneInput.disabled = false; btnSaveProfile.disabled = false; btnSaveProfile.innerText = "Save Details";
+                nameInput.disabled = false;
+                phoneInput.disabled = false;
+                btnSaveProfile.disabled = false;
+                btnSaveProfile.innerText = "Save Details";
                 if(lockMsg) lockMsg.style.display = "none";
+                
                 if(window.state.user.profile.name) nameInput.value = window.state.user.profile.name;
                 if(window.state.user.profile.phone) phoneInput.value = window.state.user.profile.phone;
             }
         }
         
-        if(window.state.user.referredBy){ const el = document.getElementById('enter-ref-section'); if(el) el.style.display = 'none'; }
-        window.renderWithdrawals(); window.renderTransactionHistory();
+        if(window.state.user.referredBy){
+            const el = document.getElementById('enter-ref-section');
+            if(el) el.style.display = 'none';
+        }
+        
+        window.renderWithdrawals();
+        window.renderTransactionHistory();
         
         const btnCheckin = document.getElementById('btn-checkin');
         if(btnCheckin){
             const last = window.state.tasks.checkInTime || 0;
-            if(window.getTrueTime() - last < 86400000){ btnCheckin.disabled = true; btnCheckin.innerText = "Claimed"; } 
-            else { btnCheckin.disabled = false; btnCheckin.innerText = "Claim 50"; }
+            if(window.getTrueTime() - last < 86400000){
+                btnCheckin.disabled = true; 
+                btnCheckin.innerText = "Claimed";
+            } else {
+                btnCheckin.disabled = false; 
+                btnCheckin.innerText = "Claim 50";
+            }
         }
     }
     
@@ -1203,44 +1963,89 @@
     window.renderWithdrawals = function() {
         const list1 = document.getElementById('my-withdrawals-list');
         if(!window.state || !window.state.withdrawals) return;
-        if(window.state.withdrawals.length === 0) { if(list1) list1.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No withdrawals yet.</p>'; return; }
+        
+        if(window.state.withdrawals.length === 0) {
+            if(list1) {
+                list1.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No withdrawals yet.</p>';
+            }
+            return;
+        }
         
         let htmlContent = '';
-        [...window.state.withdrawals].sort((a,b) => b.date - a.date).forEach(w => {
+        const sorted = [...window.state.withdrawals].sort((a,b) => b.date - a.date); 
+        
+        sorted.forEach(w => {
             const dateStr = new Date(w.date).toLocaleDateString();
             const maskedUpi = window.maskUPI(w.upi);
             let statusClass = 'status-pending';
+            
             if(w.status === 'Approved') statusClass = 'text-green';
             if(w.status === 'Rejected') statusClass = 'text-danger';
-            htmlContent += `<div class="history-item"><div class="h-info"><span class="h-upi">₹${w.amount} &rarr; ${maskedUpi}</span><span class="h-time">${dateStr}</span></div><div class="h-status ${statusClass}" style="${w.status === 'Approved' || w.status === 'Rejected' ? 'background:transparent; padding:0;' : ''}">${w.status}</div></div>`;
+            
+            htmlContent += `
+                <div class="history-item">
+                    <div class="h-info">
+                        <span class="h-upi">₹${w.amount} &rarr; ${maskedUpi}</span>
+                        <span class="h-time">${dateStr}</span>
+                    </div>
+                    <div class="h-status ${statusClass}" style="${w.status === 'Approved' || w.status === 'Rejected' ? 'background:transparent; padding:0;' : ''}">
+                        ${w.status}
+                    </div>
+                </div>`;
         });
+        
         if(list1) list1.innerHTML = htmlContent;
     }
 
     window.renderTransactionHistory = function() {
         const homeList = document.getElementById('home-recent-activity');
         const fullList = document.getElementById('full-history-list');
+        
         if(!window.state || !window.state.transactions || window.state.transactions.length === 0) {
             if(homeList) homeList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No recent activity.</p>';
-            if(fullList) fullList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No transactions found.</p>'; return;
+            if(fullList) fullList.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No transactions found.</p>';
+            return;
         }
+        
         let htmlContent = '';
         const sorted = [...window.state.transactions].sort((a,b) => getSafeMs(b.date) - getSafeMs(a.date)); 
+        
         sorted.forEach((t) => {
-            const dateObj = new Date(getSafeMs(t.date));
+            const ms = getSafeMs(t.date);
+            const dateObj = new Date(ms);
             const dateStr = isNaN(dateObj) ? "Just Now" : (dateObj.toLocaleDateString() + " " + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
             const amountColor = t.type === 'earn' ? 'text-green' : 'text-danger';
             const sign = t.type === 'earn' ? '+' : '-';
-            htmlContent += `<div class="history-item"><div class="h-info"><span class="h-title">${t.title}</span><span class="h-time">${dateStr}</span></div><div class="h-status ${amountColor}" style="font-size: 1rem; background:transparent;">${sign}${t.amount}</div></div>`;
+            
+            htmlContent += `
+            <div class="history-item">
+                <div class="h-info">
+                    <span class="h-title">${t.title}</span>
+                    <span class="h-time">${dateStr}</span>
+                </div>
+                <div class="h-status ${amountColor}" style="font-size: 1rem; background:transparent;">${sign}${t.amount}</div>
+            </div>`;
         });
+        
         if(fullList) fullList.innerHTML = htmlContent;
+        
         if(homeList) {
             let homeHTML = '';
             sorted.slice(0, 3).forEach(t => {
-                const dateObj = new Date(getSafeMs(t.date));
+                const ms = getSafeMs(t.date);
+                const dateObj = new Date(ms);
                 const dateStr = isNaN(dateObj) ? "Just Now" : dateObj.toLocaleDateString();
                 const amountColor = t.type === 'earn' ? 'text-green' : 'text-danger';
-                homeHTML += `<div class="history-item"><div class="h-info"><span class="h-title">${t.title}</span><span class="h-time">${dateStr}</span></div><div class="h-status ${amountColor}" style="background:transparent;">${t.type === 'earn'?'+':'-'}${t.amount}</div></div>`;
+                const sign = t.type === 'earn' ? '+' : '-';
+                
+                homeHTML += `
+                <div class="history-item">
+                    <div class="h-info">
+                        <span class="h-title">${t.title}</span>
+                        <span class="h-time">${dateStr}</span>
+                    </div>
+                    <div class="h-status ${amountColor}" style="background:transparent;">${sign}${t.amount}</div>
+                </div>`;
             });
             homeList.innerHTML = homeHTML;
         }
@@ -1248,36 +2053,63 @@
 
     window.maskUPI = function(upi) {
         if(!upi || !upi.includes('@')) return upi;
-        const parts = upi.split('@'); return parts[0].substring(0, 2) + "****@" + parts[1];
+        const parts = upi.split('@'); 
+        return parts[0].substring(0, 2) + "****@" + parts[1];
     }
 
     window.showToast = function(msg) {
         const toast = document.getElementById('toast'); 
         if(!toast) return;
-        clearTimeout(toastTimeout); toast.innerText = msg; toast.style.display = 'block';
-        toastTimeout = setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        
+        clearTimeout(toastTimeout); 
+        toast.innerText = msg; 
+        toast.style.display = 'block';
+        
+        toastTimeout = setTimeout(() => { 
+            toast.style.display = 'none'; 
+        }, 3000);
     }
 
     window.checkReferralUnlock = async function() {
         if(!window.state || !window.state.user || !window.state.user.pendingReferrer) return;
+        
         const coinsEarned = window.state.user.coins;
-        const msActive = window.getTrueTime() - (window.state.user.createdAt || window.getTrueTime());
-        if (coinsEarned >= 5000 && (msActive / (1000 * 60 * 60 * 24)) >= 5) {
+        const creationTime = window.state.user.createdAt || window.getTrueTime();
+        const msActive = window.getTrueTime() - creationTime;
+        const daysActive = msActive / (1000 * 60 * 60 * 24);
+        
+        if (coinsEarned >= 5000 && daysActive >= 5) {
             try {
                 const refId = window.state.user.pendingReferrer;
-                window.state.user.pendingReferrer = null; window.saveState();
+                window.state.user.pendingReferrer = null; 
+                window.saveState();
+                
                 const { doc, updateDoc, getDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-                const refDocRef = doc(window.db, "earnx_users", refId); const refSnap = await getDoc(refDocRef);
-                if(refSnap.exists()) await updateDoc(refDocRef, { coins: (Number(refSnap.data().coins) || 0) + 100 });
-                window.state.user.coins += 100; window.logTransaction("Referral Bonus Unlocked!", 100, "earn");
-                window.saveState(); window.showToast("Referral Bonus Unlocked! +100 Coins");
-            } catch(e) {}
+                const refDocRef = doc(window.db, "earnx_users", refId);
+                const refSnap = await getDoc(refDocRef);
+                
+                if(refSnap.exists()) {
+                    const refData = refSnap.data();
+                    await updateDoc(refDocRef, { coins: (Number(refData.coins) || 0) + 100 });
+                }
+                
+                window.state.user.coins += 100;
+                window.logTransaction("Referral Bonus Unlocked!", 100, "earn");
+                window.saveState();
+                window.showToast("Referral Bonus Unlocked! +100 Coins");
+                
+            } catch(e) { 
+                console.error("Error unlocking referral", e); 
+            }
         }
     }
 
     window.rewardCoins = function(amount, msg) {
         if(rewardLock) return; 
-        rewardLock = true; setTimeout(()=> { rewardLock = false; }, 2000);
+        rewardLock = true;
+        
+        setTimeout(()=> { rewardLock = false; }, 2000);
+        
         if(!navigator.onLine) return window.showToast("No internet");
         if(!window.state || !window.state.user) return window.showToast("Login required");
         if(amount <= 0 || amount > 200) return window.showToast("Invalid reward");
@@ -1287,16 +2119,31 @@
         lastCoinRewardTime = now;
         
         let today = new Date().toDateString();
-        if(window.state.lastRewardDate !== today){ window.state.dailyCoins = 0; window.state.lastRewardDate = today; }
-        if((window.state.dailyCoins || 0) >= MAX_DAILY_COINS) return window.showToast("Daily limit reached");
+        if(window.state.lastRewardDate !== today){ 
+            window.state.dailyCoins = 0; 
+            window.state.lastRewardDate = today; 
+        }
         
-        window.state.dailyCoins += amount; window.state.user.coins += amount;
-        window.logTransaction(msg, amount, "earn"); window.saveState(); window.showToast(`+${amount} Coins`); window.checkReferralUnlock();
+        if((window.state.dailyCoins || 0) >= MAX_DAILY_COINS) {
+            return window.showToast("Daily limit reached");
+        }
+        
+        window.state.dailyCoins += amount; 
+        window.state.user.coins += amount;
+        
+        window.logTransaction(msg, amount, "earn");
+        window.saveState(); 
+        window.showToast(`+${amount} Coins`);
+        window.checkReferralUnlock();
     }
 
-    /* 🔥 AdMob showAd Logic FIXED (Ad Load + Fallback) 🔥 */
+    /* 🔥 AdMob showAd Logic FIXED (Failed Ads + Compensation) 🔥 */
     window.showAd = async function(callback) {
-        // Hata diya isTimeLocked ka block yahan se kyunki compensation ruk jata hai.
+        if(isTimeLocked) { 
+            window.showToast("Please ensure correct phone time."); 
+            return callback('cooldown'); 
+        }
+        
         if(window.getTrueTime() - lastAdTime < 60000){ 
             window.showToast("Wait 1 min before next ad"); 
             return callback('cooldown'); 
@@ -1305,38 +2152,58 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
             try {
                 const { AdMob } = window.Capacitor.Plugins;
-                await AdMob.prepareRewardVideoAd({ adId: "ca-app-pub-6519206650027176/8005768127" });
+                const adId = "ca-app-pub-6519206650027176/8005768127"; 
+                await AdMob.prepareRewardVideoAd({ adId: adId });
                 
                 let adHandled = false;
                 
                 let dismissListener = await AdMob.addListener('rewardedVideoAdDismissed', () => {
-                    if(adHandled) return; adHandled = true; lastAdTime = window.getTrueTime();
+                    if(adHandled) return; 
+                    adHandled = true; 
+                    lastAdTime = window.getTrueTime();
                     if(dismissListener) dismissListener.remove(); 
                     callback('closed'); 
                 });
                 
                 let rewardListener = await AdMob.addListener('rewardedVideoAdReward', () => {
-                    if(adHandled) return; adHandled = true; lastAdTime = window.getTrueTime();
-                    if(rewardListener) rewardListener.remove(); if(dismissListener) dismissListener.remove(); 
+                    if(adHandled) return; 
+                    adHandled = true; 
+                    lastAdTime = window.getTrueTime();
+                    if(rewardListener) rewardListener.remove(); 
+                    if(dismissListener) dismissListener.remove(); 
                     callback('success'); 
                 });
 
                 let failListener = await AdMob.addListener('rewardedVideoAdFailedToShow', () => {
-                    if(adHandled) return; adHandled = true; lastAdTime = window.getTrueTime();
-                    if(failListener) failListener.remove(); if(dismissListener) dismissListener.remove(); 
+                    if(adHandled) return; 
+                    adHandled = true; 
+                    lastAdTime = window.getTrueTime();
+                    if(failListener) failListener.remove(); 
+                    if(dismissListener) dismissListener.remove(); 
                     callback('error'); 
                 });
                 
                 await AdMob.showRewardVideoAd();
                 
-            } catch (error) { callback('error'); }
-        } else { lastAdTime = window.getTrueTime(); callback('error'); }
+            } catch (error) { 
+                callback('error'); 
+            }
+        } else { 
+            lastAdTime = window.getTrueTime(); 
+            callback('error'); 
+        }
     }
 
     window.dailyCheckIn = function() {
+        if(isTimeLocked) return window.showToast("Securing Time...");
         const last = window.state.tasks.checkInTime || 0;
-        if(window.getTrueTime() - last < 86400000) return window.showToast("Already claimed today");
-        window.state.tasks.checkInTime = window.getTrueTime(); window.rewardCoins(50, "Daily Check-in");
+        
+        if(window.getTrueTime() - last < 86400000) {
+            return window.showToast("Already claimed today");
+        }
+        
+        window.state.tasks.checkInTime = window.getTrueTime();
+        window.rewardCoins(50, "Daily Check-in");
     }
 
     /* 🔥 MATH MANIA LOGIC 🔥 */
@@ -1344,219 +2211,557 @@
     
     window.generateMathProblem = function() {
         if(window.getTrueTime() < (window.state.tasks.mathCooldownEnd || 0)) {
-            window.showToast("Math Mania is cooling down!"); window.nav('tasks'); return;
+            window.showToast("Math Mania is cooling down!");
+            window.nav('tasks');
+            return;
         }
 
-        const ops = ['+', '-', '*', '/']; const op = ops[Math.floor(Math.random() * ops.length)]; let n1, n2;
-        if (op === '+') { n1 = Math.floor(Math.random() * 20) + 1; n2 = Math.floor(Math.random() * 20) + 1; window.mathAnswer = n1 + n2; } 
-        else if (op === '-') { n2 = Math.floor(Math.random() * 20) + 1; n1 = Math.floor(Math.random() * 20) + n2 + 1; window.mathAnswer = n1 - n2; } 
-        else if (op === '*') { n1 = Math.floor(Math.random() * 10) + 1; n2 = Math.floor(Math.random() * 10) + 1; window.mathAnswer = n1 * n2; } 
-        else if (op === '/') { window.mathAnswer = Math.floor(Math.random() * 10) + 1; n2 = Math.floor(Math.random() * 10) + 1; n1 = window.mathAnswer * n2; }
+        const ops = ['+', '-', '*', '/'];
+        const op = ops[Math.floor(Math.random() * ops.length)];
+        let n1, n2;
 
-        let uiOp = op; if(op === '*') uiOp = '×'; if(op === '/') uiOp = '÷';
-        document.getElementById('math-question').innerText = `${n1} ${uiOp} ${n2}`; document.getElementById('math-answer').value = "";
-        const btn = document.getElementById('btn-submit-math'); btn.disabled = false; btn.innerText = "Submit Answer";
+        if (op === '+') {
+            n1 = Math.floor(Math.random() * 20) + 1;
+            n2 = Math.floor(Math.random() * 20) + 1;
+            window.mathAnswer = n1 + n2;
+        } else if (op === '-') {
+            n2 = Math.floor(Math.random() * 20) + 1;
+            n1 = Math.floor(Math.random() * 20) + n2 + 1;
+            window.mathAnswer = n1 - n2;
+        } else if (op === '*') {
+            n1 = Math.floor(Math.random() * 10) + 1;
+            n2 = Math.floor(Math.random() * 10) + 1;
+            window.mathAnswer = n1 * n2;
+        } else if (op === '/') {
+            window.mathAnswer = Math.floor(Math.random() * 10) + 1;
+            n2 = Math.floor(Math.random() * 10) + 1;
+            n1 = window.mathAnswer * n2;
+        }
+
+        let uiOp = op;
+        if(op === '*') uiOp = '×';
+        if(op === '/') uiOp = '÷';
+
+        document.getElementById('math-question').innerText = `${n1} ${uiOp} ${n2}`;
+        document.getElementById('math-answer').value = "";
+        
+        const btn = document.getElementById('btn-submit-math');
+        btn.disabled = false;
+        btn.innerText = "Submit Answer";
+
         document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts || 0) + "/5";
     }
 
     window.submitMathAnswer = function() {
         if(adTaskLock) return;
+        
         const userInput = document.getElementById('math-answer').value;
-        if (userInput === "") return window.showToast("Enter an answer!");
-        const btn = document.getElementById('btn-submit-math'); btn.disabled = true;
+        if (userInput === "") {
+            return window.showToast("Enter an answer!");
+        }
+
+        const btn = document.getElementById('btn-submit-math');
+        btn.disabled = true;
 
         if (parseInt(userInput) === window.mathAnswer) {
-            if(!window.state.tasks.mathAttempts) window.state.tasks.mathAttempts = 0;
+            if(!window.state.tasks.mathAttempts) {
+                window.state.tasks.mathAttempts = 0;
+            }
             window.state.tasks.mathAttempts++;
-            let attempts = window.state.tasks.mathAttempts; let reward = 20;
+            
+            let attempts = window.state.tasks.mathAttempts;
+            let reward = 20;
 
             if (attempts === 2 || attempts === 5) {
-                btn.innerText = "Loading Ad..."; adTaskLock = true;
+                btn.innerText = "Loading Ad...";
+                adTaskLock = true;
+                
                 window.showAd((status) => {
                     adTaskLock = false;
-                    if(status === 'success') { window.processMathSuccess(reward, attempts); } 
-                    else if (status === 'error' || status === 'cooldown') { 
+                    
+                    if(status === 'success') {
+                        window.processMathSuccess(reward, attempts);
+                    } else if (status === 'error' || status === 'cooldown') { 
                         window.showToast("Ad unavailable. 25% Compensation given!"); 
                         window.processMathSuccess(Math.floor(reward * 0.25), attempts); 
                     } else { 
-                        if(status === 'closed') window.showToast("Ad closed early! Reward canceled.");
-                        btn.disabled = false; btn.innerText = "Submit Answer"; window.state.tasks.mathAttempts--; 
+                        if(status === 'closed') {
+                            window.showToast("Ad closed early! Reward canceled.");
+                        }
+                        btn.disabled = false;
+                        btn.innerText = "Submit Answer";
+                        window.state.tasks.mathAttempts--; 
                         document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts) + "/5"; 
                     }
                 });
-            } else { btn.innerText = "Correct!"; setTimeout(() => window.processMathSuccess(reward, attempts), 500); }
-        } else { window.showToast("Wrong Answer! Try again."); btn.disabled = false; btn.innerText = "Submit Answer"; document.getElementById('math-answer').value = ""; }
+            } else {
+                btn.innerText = "Correct!";
+                setTimeout(() => window.processMathSuccess(reward, attempts), 500);
+            }
+        } else {
+            window.showToast("Wrong Answer! Try again.");
+            btn.disabled = false;
+            btn.innerText = "Submit Answer";
+            document.getElementById('math-answer').value = "";
+        }
     }
 
     window.processMathSuccess = function(reward, attempts) {
         window.rewardCoins(reward, "Math Mania");
+        
         if (attempts >= 5) {
             window.state.tasks.mathCooldownEnd = window.getTrueTime() + (45 * 60 * 1000);
             window.state.tasks.mathAttempts = 0;
             window.showToast("Cooling down for 45 mins");
             setTimeout(() => window.nav('tasks'), 1500);
-        } else { window.generateMathProblem(); }
-        window.saveState(); window.updateTimersUI();
+        } else {
+            window.generateMathProblem();
+        }
+        
+        window.saveState();
+        window.updateTimersUI();
     }
 
 
     /* 🔥 LUCKY SCRATCH LOGIC 🔥 */
     window.isScratchFinished = false;
+    
     window.initScratchCard = function() {
         const now = window.getTrueTime();
-        if(now < (window.state.tasks.scratchCooldownEnd || 0)) { window.showToast("Scratch is cooling down!"); window.nav('tasks'); return; }
-        if(now < (window.state.tasks.scratchNextTime || 0)) { window.showToast("Wait 1 min before next scratch!"); window.nav('tasks'); return; }
         
-        window.isScratchFinished = false; document.getElementById('scratch-status').innerText = "Scratch 60% to claim"; document.getElementById('scratch-status').style.color = "var(--text-muted)"; document.getElementById('btn-next-scratch').style.display = 'none';
-        window.currentScratchCoins = Math.floor(Math.random() * (50 - 10 + 1)) + 10; document.getElementById('scratch-coin-value').innerText = `+${window.currentScratchCoins}`;
+        if(now < (window.state.tasks.scratchCooldownEnd || 0)) { 
+            window.showToast("Scratch is cooling down!"); 
+            window.nav('tasks'); 
+            return; 
+        }
+        
+        if(now < (window.state.tasks.scratchNextTime || 0)) { 
+            window.showToast("Wait 1 min before next scratch!"); 
+            window.nav('tasks'); 
+            return; 
+        }
+        
+        window.isScratchFinished = false;
+        document.getElementById('scratch-status').innerText = "Scratch 60% to claim";
+        document.getElementById('scratch-status').style.color = "var(--text-muted)";
+        document.getElementById('btn-next-scratch').style.display = 'none';
+        
+        window.currentScratchCoins = Math.floor(Math.random() * (50 - 10 + 1)) + 10;
+        document.getElementById('scratch-coin-value').innerText = `+${window.currentScratchCoins}`;
 
-        const canvas = document.getElementById('scratch-canvas'); const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = '#334155'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.font = "bold 18px Inter"; ctx.fillStyle = "#94a3b8"; ctx.textAlign = "center"; ctx.fillText("SCRATCH HERE", canvas.width / 2, canvas.height / 2 + 6);
-        ctx.globalCompositeOperation = 'destination-out'; document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts || 0) + "/5";
+        const canvas = document.getElementById('scratch-canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.font = "bold 18px Inter";
+        ctx.fillStyle = "#94a3b8";
+        ctx.textAlign = "center";
+        ctx.fillText("SCRATCH HERE", canvas.width / 2, canvas.height / 2 + 6);
+
+        ctx.globalCompositeOperation = 'destination-out';
+
+        document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts || 0) + "/5";
 
         function scratch(e) {
-            if (window.isScratchFinished) return; e.preventDefault(); 
-            const rect = canvas.getBoundingClientRect(); const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            ctx.beginPath(); ctx.arc(clientX - rect.left, clientY - rect.top, 25, 0, Math.PI * 2); ctx.fill(); checkPercent();
+            if (window.isScratchFinished) return;
+            e.preventDefault(); 
+            
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            ctx.beginPath();
+            ctx.arc(clientX - rect.left, clientY - rect.top, 25, 0, Math.PI * 2);
+            ctx.fill();
+            
+            checkPercent();
         }
 
         function checkPercent() {
-            const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data; let transparentPixels = 0;
-            for (let i = 0; i < pixels.length; i += 16) { if (pixels[i + 3] === 0) transparentPixels++; }
+            const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            let transparentPixels = 0;
+            
+            for (let i = 0; i < pixels.length; i += 16) {
+                if (pixels[i + 3] === 0) transparentPixels++;
+            }
+            
             if ((transparentPixels / (pixels.length / 16)) * 100 > 60 && !window.isScratchFinished) {
-                window.isScratchFinished = true; ctx.clearRect(0, 0, canvas.width, canvas.height); document.getElementById('scratch-status').innerText = "Verifying...";
-                if(!window.state.tasks.scratchAttempts) window.state.tasks.scratchAttempts = 0; window.state.tasks.scratchAttempts++; let attempts = window.state.tasks.scratchAttempts;
+                window.isScratchFinished = true;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                document.getElementById('scratch-status').innerText = "Verifying...";
+                
+                if(!window.state.tasks.scratchAttempts) {
+                    window.state.tasks.scratchAttempts = 0;
+                }
+                window.state.tasks.scratchAttempts++;
+                
+                let attempts = window.state.tasks.scratchAttempts;
 
                 if(attempts === 2 || attempts === 5) {
-                    adTaskLock = true; window.showToast("Loading Ad...");
+                    adTaskLock = true;
+                    window.showToast("Loading Ad...");
+                    
                     window.showAd((status) => {
                         adTaskLock = false;
-                        if(status === 'success') { window.processScratchSuccess(attempts, window.currentScratchCoins); } 
-                        else if (status === 'error' || status === 'cooldown') { window.showToast("Ad unavailable. 25% Compensation given!"); window.processScratchSuccess(attempts, Math.floor(window.currentScratchCoins * 0.25)); } 
-                        else { 
-                            if(status === 'closed') window.showToast("Ad closed early! Reward canceled.");
-                            window.state.tasks.scratchAttempts--; document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts) + "/5"; document.getElementById('btn-next-scratch').style.display = 'inline-block'; document.getElementById('scratch-status').innerText = "Ad failed. Try Next Card."; 
+                        
+                        if(status === 'success') {
+                            window.processScratchSuccess(attempts, window.currentScratchCoins);
+                        } else if (status === 'error' || status === 'cooldown') { 
+                            window.showToast("Ad unavailable. 25% Compensation given!"); 
+                            window.processScratchSuccess(attempts, Math.floor(window.currentScratchCoins * 0.25)); 
+                        } else { 
+                            if(status === 'closed') {
+                                window.showToast("Ad closed early! Reward canceled.");
+                            }
+                            window.state.tasks.scratchAttempts--; 
+                            document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts) + "/5"; 
+                            document.getElementById('btn-next-scratch').style.display = 'inline-block'; 
+                            document.getElementById('scratch-status').innerText = "Ad failed. Try Next Card."; 
                         }
                     });
-                } else { window.processScratchSuccess(attempts, window.currentScratchCoins); }
+                } else {
+                    window.processScratchSuccess(attempts, window.currentScratchCoins);
+                }
             }
         }
-        canvas.onmousedown = () => { canvas.onmousemove = scratch; }; canvas.onmouseup = () => { canvas.onmousemove = null; }; canvas.onmouseleave = () => { canvas.onmousemove = null; }; canvas.ontouchstart = (e) => { scratch(e); canvas.ontouchmove = scratch; }; canvas.ontouchend = () => { canvas.ontouchmove = null; };
+
+        canvas.onmousedown = () => { canvas.onmousemove = scratch; };
+        canvas.onmouseup = () => { canvas.onmousemove = null; };
+        canvas.onmouseleave = () => { canvas.onmousemove = null; };
+        canvas.ontouchstart = (e) => { scratch(e); canvas.ontouchmove = scratch; };
+        canvas.ontouchend = () => { canvas.ontouchmove = null; };
     }
 
     window.processScratchSuccess = function(attempts, coinsEarned) {
-        window.rewardCoins(coinsEarned, "Lucky Scratch"); document.getElementById('scratch-status').innerText = "Reward Claimed!"; document.getElementById('scratch-status').style.color = "var(--primary)";
+        window.rewardCoins(coinsEarned, "Lucky Scratch");
+        document.getElementById('scratch-status').innerText = "Reward Claimed!";
+        document.getElementById('scratch-status').style.color = "var(--primary)";
+
         if (attempts >= 5) {
-            window.state.tasks.scratchCooldownEnd = window.getTrueTime() + (30 * 60 * 1000); window.state.tasks.scratchAttempts = 0;
-            window.showToast("Cooling down for 30 mins"); setTimeout(() => window.nav('tasks'), 1500);
+            window.state.tasks.scratchCooldownEnd = window.getTrueTime() + (30 * 60 * 1000);
+            window.state.tasks.scratchAttempts = 0;
+            window.showToast("Cooling down for 30 mins");
+            setTimeout(() => window.nav('tasks'), 1500);
         } else {
-            window.state.tasks.scratchNextTime = window.getTrueTime() + (60 * 1000); document.getElementById('btn-next-scratch').style.display = 'inline-block';
+            window.state.tasks.scratchNextTime = window.getTrueTime() + (60 * 1000);
+            document.getElementById('btn-next-scratch').style.display = 'inline-block';
         }
-        window.saveState(); window.updateTimersUI();
+        
+        window.saveState();
+        window.updateTimersUI();
     }
 
 
     /* 🔥 TAP TASK LOGIC 🔥 */
     window.doTapTask = function() {
+        if(isTimeLocked) {
+            return window.showToast("Securing Time...");
+        }
+        
         if(!window.state || !window.state.tasks) return;
+        
         if(window.state.tasks.tapCount >= 20) return;
-        if(window.getTrueTime() < (window.state.tasks.lastTap || 0) + COOLDOWN_TAP) return window.showToast("Wait for timer!");
-        if(window.getTrueTime() < (window.state.tasks.tapNextTime || 0)) return window.showToast("Wait 2 seconds between taps!");
+        
+        if(window.getTrueTime() < (window.state.tasks.lastTap || 0) + COOLDOWN_TAP) {
+            return window.showToast("Wait for timer!");
+        }
+        
+        if(window.getTrueTime() < (window.state.tasks.tapNextTime || 0)) {
+            return window.showToast("Wait 2 seconds between taps!");
+        }
+        
         if(adTaskLock) return;
 
         if((window.state.tasks.tapCount + 1) === 10){
-            adTaskLock = true; window.showToast("Loading Ad..."); 
+            adTaskLock = true;
+            window.showToast("Loading Ad..."); 
+            
             window.showAd((status) => { 
                 adTaskLock = false; 
-                if(status === 'error' || status === 'cooldown') window.showToast("Ad unavailable right now.");
+                if(status === 'error' || status === 'cooldown') {
+                    window.showToast("Ad unavailable right now.");
+                }
             });
         }
         
-        window.state.tasks.tapCount++; window.state.tasks.tapNextTime = window.getTrueTime() + 2000;
+        window.state.tasks.tapCount++;
+        window.state.tasks.tapNextTime = window.getTrueTime() + 2000; // 2 seconds lock
+        
         if(window.state.tasks.tapCount >= 20){
-            window.state.tasks.tapCount = 0; window.state.tasks.lastTap = window.getTrueTime(); 
-            window.rewardCoins(150, "Tap Task"); window.saveState(); window.updateTimersUI();
-        } else { window.saveState(); }
+            window.state.tasks.tapCount = 0; 
+            window.state.tasks.lastTap = window.getTrueTime(); 
+            window.rewardCoins(150, "Tap Task"); 
+            window.saveState();
+            window.updateTimersUI();
+        } else {
+            window.saveState();
+        }
+        
         document.getElementById('tap-count').innerText = window.state.tasks.tapCount;
     }
 
 
     /* 🔥 EX SHUFFLE TASK LOGIC 🔥 */
     window.shuffleCardsClickable = false;
-    const shuffleCardTranslations = [{ tx: '110%', ty: '60%' }, { tx: '0%', ty: '60%' }, { tx: '-110%', ty: '60%' }, { tx: '110%', ty: '-60%' }, { tx: '0%', ty: '-60%' }, { tx: '-110%', ty: '-60%' }];
-    
+    const shuffleCardTranslations = [
+        { tx: '110%', ty: '60%' },   { tx: '0%', ty: '60%' },     { tx: '-110%', ty: '60%' },
+        { tx: '110%', ty: '-60%' },  { tx: '0%', ty: '-60%' },    { tx: '-110%', ty: '-60%' }
+    ];
+
     window.renderShuffleCards = function() {
-        const container = document.getElementById('shuffle-card-container'); if(!container) return; container.innerHTML = '';
+        const container = document.getElementById('shuffle-card-container');
+        if(!container) return;
+        
+        container.innerHTML = '';
+        
         for(let i = 0; i < 6; i++) { 
-            container.innerHTML += `<div class="shuffle-card disabled" id="scard-${i}" onclick="window.flipShuffleCard(${i})" style="--tx: ${shuffleCardTranslations[i].tx}; --ty: ${shuffleCardTranslations[i].ty};"><div class="sc-front" id="sfront-${i}"></div><div class="sc-back"><i class="fa-solid fa-rocket"></i><span>EARNX</span></div></div>`; 
+            container.innerHTML += `
+                <div class="shuffle-card disabled" id="scard-${i}" onclick="window.flipShuffleCard(${i})" style="--tx: ${shuffleCardTranslations[i].tx}; --ty: ${shuffleCardTranslations[i].ty};">
+                    <div class="sc-front" id="sfront-${i}"></div>
+                    <div class="sc-back">
+                        <i class="fa-solid fa-rocket"></i>
+                        <span>EARNX</span>
+                    </div>
+                </div>
+            `;
         }
     }
 
     window.startShuffleTask = function() {
-        if(window.state.shuffle.shufflesLeft <= 0) return window.showToast("Limit Reached!"); if(adTaskLock) return;
-        const btn = document.getElementById('shuffle-btn'); const grid = document.getElementById('shuffle-card-container');
-        btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mixing...'; window.shuffleCardsClickable = false;
+        if(isTimeLocked) {
+            return window.showToast("Securing Time...");
+        }
+        
+        if(window.state.shuffle.shufflesLeft <= 0) {
+            return window.showToast("Limit Reached!");
+        }
+        
+        if(adTaskLock) return;
+
+        const btn = document.getElementById('shuffle-btn');
+        const grid = document.getElementById('shuffle-card-container');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mixing...';
+        window.shuffleCardsClickable = false;
+
         document.querySelectorAll('.shuffle-card').forEach(card => card.classList.remove('flipped'));
 
         setTimeout(() => {
-            grid.classList.add('animating-grid'); document.querySelectorAll('.shuffle-card').forEach(card => card.classList.add('animating-card'));
+            grid.classList.add('animating-grid');
+            document.querySelectorAll('.shuffle-card').forEach(card => card.classList.add('animating-card'));
+
             setTimeout(() => {
-                grid.classList.remove('animating-grid'); document.querySelectorAll('.shuffle-card').forEach(card => { card.classList.remove('animating-card'); card.classList.remove('disabled'); });
-                btn.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Pick a Card!'; window.shuffleCardsClickable = true;
+                grid.classList.remove('animating-grid');
+                document.querySelectorAll('.shuffle-card').forEach(card => {
+                    card.classList.remove('animating-card');
+                    card.classList.remove('disabled'); 
+                });
+                
+                btn.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Pick a Card!';
+                window.shuffleCardsClickable = true;
             }, 1200);
+
         }, 300);
     }
 
     window.flipShuffleCard = function(index) {
-        if(!window.shuffleCardsClickable) return; window.shuffleCardsClickable = false; 
+        if(!window.shuffleCardsClickable) return;
+        window.shuffleCardsClickable = false; 
+        
         document.querySelectorAll('.shuffle-card').forEach(c => c.classList.add('disabled'));
 
         let wonCoins = Math.floor(Math.random() * (100 - 10 + 1)) + 10;
-        document.getElementById(`sfront-${index}`).innerHTML = `<i class="fa-solid fa-coins"></i><span>+${wonCoins}</span>`; document.getElementById(`scard-${index}`).classList.add('flipped');
+        document.getElementById(`sfront-${index}`).innerHTML = `<i class="fa-solid fa-coins"></i><span>+${wonCoins}</span>`;
+        document.getElementById(`scard-${index}`).classList.add('flipped');
 
-        window.state.shuffle.shufflesLeft--; window.state.shuffle.totalShuffles++;
-        if(window.state.shuffle.shufflesLeft === 4) window.state.shuffle.lastRefill = window.getTrueTime();
-        document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; window.saveState();
+        window.state.shuffle.shufflesLeft--;
+        window.state.shuffle.totalShuffles++;
+        
+        if(window.state.shuffle.shufflesLeft === 4) {
+            window.state.shuffle.lastRefill = window.getTrueTime();
+        }
+        
+        document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft;
+        window.saveState();
 
         if (window.state.shuffle.totalShuffles % 3 === 0 || window.state.shuffle.totalShuffles === 2 || window.state.shuffle.totalShuffles === 5) {
             setTimeout(() => {
-                adTaskLock = true; window.showToast("Loading Ad...");
+                adTaskLock = true;
+                window.showToast("Loading Ad...");
+                
                 window.showAd((status) => {
                     adTaskLock = false;
-                    if(status === 'success') { window.processShuffleReward(wonCoins); } 
-                    else if (status === 'error' || status === 'cooldown') { window.showToast("Ad unavailable. 25% Compensation given!"); window.processShuffleReward(Math.floor(wonCoins * 0.25)); } 
-                    else { 
-                        if(status === 'closed') window.showToast("Ad closed early! Reward canceled.");
-                        window.state.shuffle.shufflesLeft++; window.state.shuffle.totalShuffles--; document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; window.saveState(); window.resetShuffleUI(); 
+                    
+                    if(status === 'success') {
+                        window.processShuffleReward(wonCoins);
+                    } else if (status === 'error' || status === 'cooldown') { 
+                        window.showToast("Ad unavailable. 25% Compensation given!"); 
+                        window.processShuffleReward(Math.floor(wonCoins * 0.25)); 
+                    } else { 
+                        if(status === 'closed') {
+                            window.showToast("Ad closed early! Reward canceled.");
+                        }
+                        window.state.shuffle.shufflesLeft++; 
+                        window.state.shuffle.totalShuffles--; 
+                        document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; 
+                        window.saveState(); 
+                        window.resetShuffleUI(); 
                     }
                 });
             }, 800); 
-        } else { setTimeout(() => { window.processShuffleReward(wonCoins); }, 800); }
+        } else {
+            setTimeout(() => {
+                window.processShuffleReward(wonCoins);
+            }, 800);
+        }
     }
 
-    window.processShuffleReward = function(coins) { window.rewardCoins(coins, "Shuffle Task"); window.resetShuffleUI(); }
+    window.processShuffleReward = function(coins) {
+        window.rewardCoins(coins, "Shuffle Task");
+        window.resetShuffleUI();
+    }
+
     window.resetShuffleUI = function() {
         const btn = document.getElementById('shuffle-btn');
-        if(window.state.shuffle.shufflesLeft > 0) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Mix Again'; } 
-        else { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Limit Reached'; }
+        if(window.state.shuffle.shufflesLeft > 0) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Mix Again';
+        } else {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Limit Reached';
+        }
     }
 
     const prizeMap = [100, 75, 50, 20, 10, 5]; 
+    
     window.spinWheel = function() {
-        const btn = document.getElementById('btn-spin'); if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0 || adTaskLock) return;
-        btn.disabled = true; window.state.spin.spinsLeft--; window.state.spin.totalSpins++; if(window.state.spin.spinsLeft === 4) window.state.spin.lastRefill = window.getTrueTime(); window.saveState();
+        if(isTimeLocked) return window.showToast("Securing Time...");
         
-        const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6); const targetDeg = (360 * 5) + (360 - (safeRandom * 60)) - 30 + (Math.random() * 40 - 20);
+        const btn = document.getElementById('btn-spin');
+        if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0 || adTaskLock) return;
+        
+        btn.disabled = true;
+        window.state.spin.spinsLeft--; 
+        window.state.spin.totalSpins++;
+        
+        if(window.state.spin.spinsLeft === 4) {
+            window.state.spin.lastRefill = window.getTrueTime();
+        }
+        window.saveState();
+        
+        const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6);
+        const targetDeg = (360 * 5) + (360 - (safeRandom * 60)) - 30 + (Math.random() * 40 - 20);
+        
         const wheel = document.getElementById('wheel-inner');
-        if(wheel) { wheel.style.transition = 'none'; wheel.style.transform = `rotate(0deg)`; void wheel.offsetWidth; wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)'; wheel.style.transform = `rotate(${targetDeg}deg)`; }
+        if(wheel) {
+            wheel.style.transition = 'none'; 
+            wheel.style.transform = `rotate(0deg)`; 
+            void wheel.offsetWidth;
+            wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)'; 
+            wheel.style.transform = `rotate(${targetDeg}deg)`;
+        }
         
         setTimeout(() => {
             window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
-            if(window.state.spin.totalSpins % 3 === 0) { adTaskLock = true; setTimeout(() => window.showAd((status)=>{ adTaskLock = false; if(status === 'error' || status === 'cooldown') window.showToast("Ad unavailable right now."); }), 500); }
+            
+            if(window.state.spin.totalSpins % 3 === 0) { 
+                adTaskLock = true; 
+                setTimeout(() => window.showAd((status)=>{ 
+                    adTaskLock = false; 
+                    if(status === 'error' || status === 'cooldown') {
+                        window.showToast("Ad unavailable right now.");
+                    }
+                }), 500); 
+            }
         }, 4200);
+        
         setTimeout(() => { btn.disabled = false; }, 4500);
     }
+
+    window.applyReferralFirebase = async function(){
+        if(referralLock || !navigator.onLine || !window.state.user) return;
+        referralLock = true;
+        
+        try {
+            const el = document.getElementById('ref-input'); 
+            const code = el.value.trim().toUpperCase();
+            
+            if(!code || window.state.user.referredBy || code === window.state.user.refCode.toUpperCase()) {
+                return window.showToast("Invalid code");
+            }
+            
+            const { collection, query, where, getDocs } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            const snapshot = await getDocs(query(collection(window.db, "earnx_users"), where("refCode", "==", code)));
+            
+            if(snapshot.empty) {
+                return window.showToast("Invalid code");
+            }
+            
+            const refDoc = snapshot.docs[0];
+            if(refDoc.data().deviceId === localStorage.getItem("earnx_device_id")) {
+                return window.showToast("Fraud detected!");
+            }
+            
+            window.state.user.referredBy = true; 
+            window.state.user.pendingReferrer = refDoc.id;
+            window.saveState(); 
+            window.showToast("Code Applied!"); 
+            el.value = "";
+            
+        } catch(e) {
+            window.showToast("Error applying referral");
+        } finally {
+            referralLock = false;
+        }
+    }
+
+    window.submitWithdraw = async function(){
+        if(withdrawLock || !navigator.onLine) return; 
+        withdrawLock = true;
+        setTimeout(()=> { withdrawLock = false; }, 5000); 
+        
+        try {
+            const coins = Math.floor(window.state.user.coins / 10000) * 10000;
+            if(coins < 10000) {
+                return window.showToast("Min 10k coins");
+            }
+            
+            const upi = document.getElementById('upi-input').value.trim();
+            if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)) {
+                return window.showToast("Invalid UPI");
+            }
+            
+            const { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+            const userRef = doc(window.db, "earnx_users", window.currentUser.uid);
+            const currentCoins = (await getDoc(userRef)).data().coins || 0;
+            
+            if(currentCoins < coins) {
+                return window.showToast("Balance mismatch");
+            }
+            
+            await updateDoc(userRef, { coins: currentCoins - coins });
+            await addDoc(collection(window.db, "earnx_withdrawals"), { 
+                userId: window.currentUser.uid, 
+                coins: coins, 
+                upiId: upi, 
+                status: "Pending", 
+                createdAt: serverTimestamp() 
+            });
+            
+            window.state.user.coins -= coins; 
+            window.logTransaction("Withdrawal Request", coins, "spend");
+            window.saveState(); 
+            window.loadWithdrawals();
+            window.showToast("Withdraw Requested");
+            
+        } catch(e){
+            window.showToast("Withdraw failed");
+        }
+    };
 
     window.startTimers = function() {
         if(timerInterval) clearInterval(timerInterval);
@@ -1564,88 +2769,77 @@
         window.updateTimersUI();
     }
 
-    /* 🔥 UI TIMERS FIXED FOR TASKS SCREEN (With Strong Error Bounds & Type Checks) 🔥 */
+    /* 🔥 UI TIMERS FIXED FOR TASKS SCREEN 🔥 */
     window.updateTimersUI = function() {
-        try {
-            // Humne `if(isTimeLocked) return;` ko hata diya hai. Agar time API fail bhi hota hai,
-            // toh phone ke local time se UI ekdum smoothly chalti rahegi, rukegi nahi!
-            const now = window.getTrueTime();
-            
-            // 1. Tap Timer
-            const tapLast = Number(window.state.tasks.lastTap) || 0;
-            window.updateSingleTimer('tap', tapLast, now, COOLDOWN_TAP);
+        if(isTimeLocked) return;
+        const now = window.getTrueTime();
+        
+        // Tap Timer
+        window.updateSingleTimer('tap', window.state.tasks.lastTap || 0, now, COOLDOWN_TAP);
 
-            // 2. Math Timer
-            const mathEnd = Number(window.state.tasks.mathCooldownEnd) || 0;
-            if (mathEnd > now) {
-                safeSetText('math-timer-display', window.formatMS(mathEnd - now));
-                const btnMath = document.getElementById('btn-math');
-                if(btnMath) btnMath.disabled = true;
-            } else {
-                safeSetText('math-timer-display', "Ready");
-                const btnMath = document.getElementById('btn-math');
-                if(btnMath) btnMath.disabled = false;
-            }
+        // Math Timer
+        const mathEnd = window.state.tasks.mathCooldownEnd || 0;
+        if (mathEnd > now) {
+            safeSetText('math-timer-display', window.formatMS(mathEnd - now));
+            const btnMath = document.getElementById('btn-math');
+            if(btnMath) btnMath.disabled = true;
+        } else {
+            safeSetText('math-timer-display', "Ready");
+            const btnMath = document.getElementById('btn-math');
+            if(btnMath) btnMath.disabled = false;
+        }
 
-            // 3. Scratch Timer
-            const scratchEnd = Number(window.state.tasks.scratchCooldownEnd) || 0;
-            const scratchNext = Number(window.state.tasks.scratchNextTime) || 0;
-            const scratchTarget = Math.max(scratchEnd, scratchNext);
-            
-            if (scratchTarget > now) {
-                safeSetText('scratch-timer-display', window.formatMS(scratchTarget - now));
-                const btnScratch = document.getElementById('btn-scratch');
-                if(btnScratch) btnScratch.disabled = true;
-            } else {
-                safeSetText('scratch-timer-display', "Ready");
-                const btnScratch = document.getElementById('btn-scratch');
-                if(btnScratch) btnScratch.disabled = false;
-            }
-            
-            // 4. Spin Refill
-            const spinRefill = Number(window.state.spin.lastRefill) || 0;
-            if(window.state.spin.spinsLeft < 5 && spinRefill > 0) {
-                const passed = now - spinRefill;
-                if(passed >= SPIN_REFILL_MS) { 
-                    window.state.spin.spinsLeft = 5; 
-                    window.state.spin.lastRefill = 0; 
-                    window.saveState(); 
-                } else { 
-                    safeSetText('spin-refill-timer', "Refill in: " + window.formatMS(SPIN_REFILL_MS - passed)); 
-                }
+        // Scratch Timer
+        const scratchTarget = Math.max((window.state.tasks.scratchCooldownEnd || 0), (window.state.tasks.scratchNextTime || 0));
+        if (scratchTarget > now) {
+            safeSetText('scratch-timer-display', window.formatMS(scratchTarget - now));
+            const btnScratch = document.getElementById('btn-scratch');
+            if(btnScratch) btnScratch.disabled = true;
+        } else {
+            safeSetText('scratch-timer-display', "Ready");
+            const btnScratch = document.getElementById('btn-scratch');
+            if(btnScratch) btnScratch.disabled = false;
+        }
+        
+        // Spin Refill
+        if(window.state.spin.spinsLeft < 5 && window.state.spin.lastRefill > 0) {
+            const passed = now - window.state.spin.lastRefill;
+            if(passed >= SPIN_REFILL_MS) { 
+                window.state.spin.spinsLeft = 5; 
+                window.state.spin.lastRefill = 0; 
+                window.saveState(); 
             } else { 
-                safeSetText('spin-refill-timer', ""); 
+                safeSetText('spin-refill-timer', "Refill in: " + window.formatMS(SPIN_REFILL_MS - passed)); 
             }
+        } else { 
+            safeSetText('spin-refill-timer', ""); 
+        }
 
-            // 5. Shuffle Refill Fix
-            const shuffleRefill = Number(window.state.shuffle.lastRefill) || 0;
-            if(window.state.shuffle.shufflesLeft < 5 && shuffleRefill > 0) {
-                const passedShuffle = now - shuffleRefill;
-                if(passedShuffle >= SPIN_REFILL_MS) { 
-                    window.state.shuffle.shufflesLeft = 5; 
-                    window.state.shuffle.lastRefill = 0; 
-                    window.saveState(); 
-                    safeSetText('shuffle-timer-display', "Ready");
-                    const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
-                    if(btnGotoShuffle) btnGotoShuffle.disabled = false;
-                } else { 
-                    if(window.state.shuffle.shufflesLeft <= 0) {
-                        safeSetText('shuffle-timer-display', window.formatMS(SPIN_REFILL_MS - passedShuffle));
-                        const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
-                        if(btnGotoShuffle) btnGotoShuffle.disabled = true;
-                    } else {
-                        safeSetText('shuffle-timer-display', "Ready");
-                        const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
-                        if(btnGotoShuffle) btnGotoShuffle.disabled = false;
-                    }
-                }
-            } else { 
+        // Shuffle Refill Fix (Fix for Tasks Screen UI)
+        if(window.state.shuffle.shufflesLeft < 5 && window.state.shuffle.lastRefill > 0) {
+            const passedShuffle = now - window.state.shuffle.lastRefill;
+            if(passedShuffle >= SPIN_REFILL_MS) { 
+                window.state.shuffle.shufflesLeft = 5; 
+                window.state.shuffle.lastRefill = 0; 
+                window.saveState(); 
                 safeSetText('shuffle-timer-display', "Ready");
                 const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
                 if(btnGotoShuffle) btnGotoShuffle.disabled = false;
+            } else { 
+                if(window.state.shuffle.shufflesLeft <= 0) {
+                    safeSetText('shuffle-timer-display', window.formatMS(SPIN_REFILL_MS - passedShuffle));
+                    const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
+                    if(btnGotoShuffle) btnGotoShuffle.disabled = true;
+                } else {
+                    safeSetText('shuffle-timer-display', "Ready");
+                    const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
+                    if(btnGotoShuffle) btnGotoShuffle.disabled = false;
+                }
             }
-        } catch(e) {
-            console.error("Timer Update Error:", e);
+        } else { 
+            safeSetText('shuffle-timer-display', "Ready");
+            const btnGotoShuffle = document.getElementById('btn-goto-shuffle');
+            if(btnGotoShuffle) btnGotoShuffle.disabled = false;
         }
     }
 
