@@ -1111,7 +1111,6 @@
     </div>
 
 </div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
@@ -1194,6 +1193,22 @@
                 deviceId = "DEV_" + Math.random().toString(36).substring(2, 15);
                 localStorage.setItem("earnx_device_id", deviceId);
             }
+
+            // --- SECURITY 1: DEVICE ID CHECK ---
+            const q = query(collection(window.db, "earnx_users"), where("deviceId", "==", deviceId));
+            const deviceSnap = await getDocs(q);
+            
+            let isDeviceBlocked = false;
+            deviceSnap.forEach(d => {
+                if(d.id !== user.uid) isDeviceBlocked = true;
+            });
+
+            if(isDeviceBlocked) {
+                window.showToast("🚫 Multiple accounts not allowed on same device!");
+                setTimeout(() => { window.logout(); }, 3000);
+                return;
+            }
+            // ------------------------------------
 
             const defaultTasks = { 
                 lastTap: 0, 
@@ -1434,6 +1449,28 @@
     let serverTimeOffset = 0;
     let isTimeLocked = true; 
 
+    // --- SECURITY 2: SCRIPT KILLER LOGIC ---
+    window.taskTimestamps = [];
+    window.checkBotSpeed = async function() {
+        const now = window.getTrueTime();
+        window.taskTimestamps.push(now);
+        if(window.taskTimestamps.length > 5) window.taskTimestamps.shift();
+        
+        if(window.taskTimestamps.length === 5 && (now - window.taskTimestamps[0] < 15000)) {
+            window.showToast("⚠️ Suspicious Speed Detected! Admin Alerted.");
+            try {
+                const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
+                await updateDoc(doc(window.db, "earnx_users", window.state.user.id), { 
+                    personalAlert: "Speed anomaly detected! Stop using scripts immediately or your account will be banned." 
+                });
+            } catch(e){}
+            window.taskTimestamps = [];
+            return true;
+        }
+        return false;
+    };
+    // ---------------------------------------
+
     window.hasClickedSocial = false;
     
     window.openSocial = function(url) {
@@ -1560,7 +1597,6 @@
             window.state.shuffle = { shufflesLeft: 5, lastRefill: 0, totalShuffles: 0 };
         }
 
-        // Clean up legacy tasks properties safely if they exist
         if(window.state.tasks && window.state.tasks.lastWatch !== undefined) {
             delete window.state.tasks.lastWatch;
         }
@@ -1588,6 +1624,15 @@
             }
         }, 1000);
         window.renderShuffleCards();
+
+        // --- SECURITY 3: SCREEN TIME TRACKER ---
+        setInterval(() => {
+            if(!document.hidden && window.state && window.state.user) {
+                if(!window.state.user.screenTime) window.state.user.screenTime = 0;
+                window.state.user.screenTime += 10;
+            }
+        }, 10000);
+        // ----------------------------------------
     });
 
     window.launchCelebration = function() {
@@ -1743,6 +1788,7 @@
             
             const rawPayload = { 
                 coins: Number(window.state.user.coins) || 0, 
+                screenTime: window.state.user.screenTime || 0, // NEW SCREEN TIME VALUE
                 tasks: window.state.tasks || {}, 
                 spin: window.state.spin || {},
                 shuffle: window.state.shuffle || {},
@@ -1794,7 +1840,6 @@
         const activeItem = document.querySelector(`.nav-item[data-target="${screenId}"]`);
         if(activeItem) activeItem.classList.add('active');
 
-        // Gamified Tasks Init Hooks
         if(screenId === 'math') {
             window.generateMathProblem();
         }
@@ -2137,7 +2182,6 @@
         window.checkReferralUnlock();
     }
 
-    /* 🔥 AdMob showAd Logic FIXED (Failed Ads + Compensation) 🔥 */
     window.showAd = async function(callback) {
         if(isTimeLocked) { 
             window.showToast("Please ensure correct phone time."); 
@@ -2206,7 +2250,6 @@
         window.rewardCoins(50, "Daily Check-in");
     }
 
-    /* 🔥 MATH MANIA LOGIC 🔥 */
     window.mathAnswer = 0;
     
     window.generateMathProblem = function() {
@@ -2254,6 +2297,12 @@
 
     window.submitMathAnswer = function() {
         if(adTaskLock) return;
+
+        // --- SECURITY 4A: MATH COOLDOWN ---
+        if(window.getTrueTime() < (window.state.tasks.mathNextTime || 0)) {
+            return window.showToast("Too fast! Wait 10 seconds.");
+        }
+        // ----------------------------------
         
         const userInput = document.getElementById('math-answer').value;
         if (userInput === "") {
@@ -2309,6 +2358,11 @@
     window.processMathSuccess = function(reward, attempts) {
         window.rewardCoins(reward, "Math Mania");
         
+        // --- SECURITY 4B: MATH COOLDOWN UPDATE ---
+        window.state.tasks.mathNextTime = window.getTrueTime() + 10000;
+        window.checkBotSpeed();
+        // -----------------------------------------
+
         if (attempts >= 5) {
             window.state.tasks.mathCooldownEnd = window.getTrueTime() + (45 * 60 * 1000);
             window.state.tasks.mathAttempts = 0;
@@ -2323,7 +2377,6 @@
     }
 
 
-    /* 🔥 LUCKY SCRATCH LOGIC 🔥 */
     window.isScratchFinished = false;
     
     window.initScratchCard = function() {
@@ -2455,7 +2508,6 @@
     }
 
 
-    /* 🔥 TAP TASK LOGIC 🔥 */
     window.doTapTask = function() {
         if(isTimeLocked) {
             return window.showToast("Securing Time...");
@@ -2493,7 +2545,7 @@
     
     window.executeTap = function() {
         window.state.tasks.tapCount++;
-        window.state.tasks.tapNextTime = window.getTrueTime() + 2000; // 2 seconds lock
+        window.state.tasks.tapNextTime = window.getTrueTime() + 2000; 
         
         if(window.state.tasks.tapCount >= 20){
             window.state.tasks.tapCount = 0; 
@@ -2508,7 +2560,6 @@
     }
 
 
-    /* 🔥 EX SHUFFLE TASK LOGIC 🔥 */
     window.shuffleCardsClickable = false;
     const shuffleCardTranslations = [
         { tx: '110%', ty: '60%' },   { tx: '0%', ty: '60%' },     { tx: '-110%', ty: '60%' },
@@ -2544,6 +2595,12 @@
         }
         
         if(adTaskLock) return;
+
+        // --- SECURITY 5A: SHUFFLE COOLDOWN ---
+        if(window.getTrueTime() < (window.state.shuffle.shuffleNextTime || 0)) {
+            return window.showToast("Wait 10 seconds before next shuffle!");
+        }
+        // -------------------------------------
 
         const btn = document.getElementById('shuffle-btn');
         const grid = document.getElementById('shuffle-card-container');
@@ -2626,6 +2683,12 @@
 
     window.processShuffleReward = function(coins) {
         window.rewardCoins(coins, "Shuffle Task");
+        
+        // --- SECURITY 5B: SHUFFLE COOLDOWN UPDATE ---
+        window.state.shuffle.shuffleNextTime = window.getTrueTime() + 10000;
+        window.checkBotSpeed();
+        // --------------------------------------------
+
         window.resetShuffleUI();
     }
 
@@ -2645,6 +2708,12 @@
     window.spinWheel = function() {
         if(isTimeLocked) return window.showToast("Securing Time...");
         
+        // --- SECURITY 6A: SPIN COOLDOWN ---
+        if(window.getTrueTime() < (window.state.spin.spinNextTime || 0)) {
+            return window.showToast("Wheel is resetting! Wait 20 seconds.");
+        }
+        // ----------------------------------
+
         const btn = document.getElementById('btn-spin');
         if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0 || adTaskLock) return;
         
@@ -2672,6 +2741,11 @@
         setTimeout(() => {
             window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
             
+            // --- SECURITY 6B: SPIN COOLDOWN UPDATE ---
+            window.state.spin.spinNextTime = window.getTrueTime() + 20000;
+            window.checkBotSpeed();
+            // -----------------------------------------
+
             if(window.state.spin.totalSpins % 3 === 0) { 
                 adTaskLock = true; 
                 setTimeout(() => window.showAd((status)=>{ 
@@ -2773,15 +2847,12 @@
         window.updateTimersUI();
     }
 
-    /* 🔥 UI TIMERS FIXED FOR TASKS SCREEN 🔥 */
     window.updateTimersUI = function() {
         if(isTimeLocked) return;
         const now = window.getTrueTime();
         
-        // Tap Timer
         window.updateSingleTimer('tap', window.state.tasks.lastTap || 0, now, COOLDOWN_TAP);
 
-        // Math Timer
         const mathEnd = window.state.tasks.mathCooldownEnd || 0;
         if (mathEnd > now) {
             safeSetText('math-timer-display', window.formatMS(mathEnd - now));
@@ -2793,7 +2864,6 @@
             if(btnMath) btnMath.disabled = false;
         }
 
-        // Scratch Timer
         const scratchTarget = Math.max((window.state.tasks.scratchCooldownEnd || 0), (window.state.tasks.scratchNextTime || 0));
         if (scratchTarget > now) {
             safeSetText('scratch-timer-display', window.formatMS(scratchTarget - now));
@@ -2805,7 +2875,6 @@
             if(btnScratch) btnScratch.disabled = false;
         }
         
-        // Spin Refill
         if(window.state.spin.spinsLeft < 5 && window.state.spin.lastRefill > 0) {
             const passed = now - window.state.spin.lastRefill;
             if(passed >= SPIN_REFILL_MS) { 
@@ -2819,7 +2888,6 @@
             safeSetText('spin-refill-timer', ""); 
         }
 
-        // Shuffle Refill Fix (Fix for Tasks Screen UI)
         if(window.state.shuffle.shufflesLeft < 5 && window.state.shuffle.lastRefill > 0) {
             const passedShuffle = now - window.state.shuffle.lastRefill;
             if(passedShuffle >= SPIN_REFILL_MS) { 
