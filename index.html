@@ -179,6 +179,29 @@
             cursor: not-allowed; 
         }
 
+        /* SHOW PASSWORD TOGGLE CSS */
+        .password-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .password-container input {
+            margin-bottom: 0;
+            padding-right: 45px;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            cursor: pointer;
+            z-index: 10;
+            font-size: 1.1rem;
+        }
+
         .bottom-nav { 
             position: fixed; 
             bottom: 0; 
@@ -777,7 +800,12 @@
 
             <div id="app-login-section" style="display: none;">
                 <input type="email" id="email-input" placeholder="Enter Email ID" style="margin-bottom: 10px;">
-                <input type="password" id="password-input" placeholder="Enter Password (Min 6 chars)" style="margin-bottom: 5px;">
+                
+                <div class="password-container">
+                    <input type="password" id="password-input" placeholder="Enter Password (Min 6 chars)">
+                    <i class="fa-solid fa-eye toggle-password" onclick="window.togglePassword()"></i>
+                </div>
+                
                 <p style="font-size: 0.8rem; color: var(--primary); text-align: right; margin-bottom: 15px; cursor: pointer;" onclick="window.resetPassword()">Forgot Password?</p>
                 <button class="btn" onclick="window.loginWithEmail()">Login / Sign Up</button>
                 <p style="font-size: 0.75rem; text-align: center; margin-top: 10px; color: var(--text-muted);">If email is not registered, a new account will be created automatically.</p>
@@ -1007,7 +1035,7 @@
             <h3>Withdraw Details</h3>
             <p class="mb-2">Minimum withdrawal: 10,000 Coins (₹100)</p>
             <input type="text" id="upi-input" placeholder="Enter UPI ID (e.g. name@upi)">
-            <p style="font-size: 0.8rem; margin-bottom: 15px; color: var(--danger);"><i class="fa-solid fa-circle-info"></i> All withdrawals are subject to verification (48-72 hours).</p>
+            <p style="font-size: 0.8rem; margin-bottom: 15px; color: var(--danger);"><i class="fa-solid fa-circle-info"></i> All withdrawals are subject to verification by Server (48-72 hours).</p>
             <button class="btn" id="btn-withdraw" onclick="window.submitWithdraw()">Withdraw Now</button>
         </div>
 
@@ -1057,7 +1085,7 @@
             <div style="text-align: left; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--card-border);">
                 
                 <div id="profile-lock-msg" style="display: none; font-size: 0.75rem; color: var(--warning); margin-bottom: 15px; background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 8px; border: 1px solid var(--warning);">
-                    <i class="fa-solid fa-lock"></i> Profile details are locked. Contact Admin to make changes.
+                    <i class="fa-solid fa-lock"></i> Profile details are locked. Contact Support to make changes.
                 </div>
 
                 <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Full Name (Must match UPI Name)</label>
@@ -1096,9 +1124,9 @@
                 <li><strong>Profile & Withdrawal Rules:</strong> Withdrawals will only be processed if your Profile is 100% complete. Your Profile Name MUST match the name on your UPI ID exactly. If data mismatches, your payout will be declined or kept pending. <b>Profile details can only be saved ONCE</b>, so fill them carefully! Minimum withdrawal is 10,000 Coins.</li>
                 <li><strong>Referral Bonus Rules:</strong> 100 Coins are credited to both users ONLY after the referred user stays active for 5 days AND earns a minimum of 5,000 coins.</li>
                 <li><strong>Task Rules:</strong> You must complete ads and gamified tasks fully. Closing them early will result in 0 rewards.</li>
-                <li><strong>Anti-Cheat:</strong> Use of VPN, bots, auto-clickers, or multiple accounts on one device will lead to a permanent ban and forfeiture of balance.</li>
+                <li><strong>Anti-Cheat:</strong> Use of VPN, bots, auto-clickers, or multiple accounts on one device will lead to a permanent ban and forfeiture of balance by Server.</li>
                 <li><strong>Mega Task Warning:</strong> Following FB & Insta is mandatory. Unfollowing after getting coins will lead to coin deduction and permanent block.</li>
-                <li><strong>App Rights:</strong> We reserve the right to reject suspicious activity and update these terms at any time.</li>
+                <li><strong>App Rights:</strong> We reserve the right to reject suspicious activity and update these terms at any time automatically through our Server.</li>
             </ul>
         </div>
     </div>
@@ -1147,6 +1175,20 @@
         }
     }, 200);
 
+    window.togglePassword = function() {
+        const input = document.getElementById('password-input');
+        const icon = document.querySelector('.toggle-password');
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = "password";
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    };
+
     window.checkForGlobalNotice = async function() {
         try {
             const noticeRef = doc(window.db, "earnx_settings", "app_notice");
@@ -1188,59 +1230,58 @@
             const ref = doc(db, "earnx_users", user.uid);
             const snap = await getDoc(ref);
 
-            let deviceId = localStorage.getItem("earnx_device_id");
-            if(!deviceId){
-                deviceId = "DEV_" + Math.random().toString(36).substring(2, 15);
-                localStorage.setItem("earnx_device_id", deviceId);
-            }
-
-            // --- SECURITY 1: DEVICE ID CHECK ---
-            const q = query(collection(window.db, "earnx_users"), where("deviceId", "==", deviceId));
-            const deviceSnap = await getDocs(q);
-            
-            let isDeviceBlocked = false;
-            deviceSnap.forEach(d => {
-                if(d.id !== user.uid) isDeviceBlocked = true;
-            });
-
-            if(isDeviceBlocked) {
-                window.showToast("🚫 Multiple accounts not allowed on same device!");
-                setTimeout(() => { window.logout(); }, 3000);
-                return;
-            }
-            // ------------------------------------
+            // --- SECURITY 1: HARDWARE DEVICE FINGERPRINT ---
+            let hardwareFp = [
+                window.screen.height || 0,
+                window.screen.width || 0,
+                navigator.hardwareConcurrency || 4,
+                new Date().getTimezoneOffset() || 0
+            ].join("-");
+            let deviceId = "DEV_" + hardwareFp;
+            localStorage.setItem("earnx_device_id", deviceId);
 
             const defaultTasks = { 
-                lastTap: 0, 
-                tapCount: 0, 
-                tapNextTime: 0, 
-                checkInTime: 0, 
-                mathAttempts: 0, 
-                mathCooldownEnd: 0, 
-                scratchAttempts: 0, 
-                scratchNextTime: 0, 
-                scratchCooldownEnd: 0 
+                lastTap: 0, tapCount: 0, tapNextTime: 0, checkInTime: 0, 
+                mathAttempts: 0, mathCooldownEnd: 0, 
+                scratchAttempts: 0, scratchNextTime: 0, scratchCooldownEnd: 0 
             };
-            
-            const defaultSpin = { 
-                spinsLeft: 5, 
-                lastRefill: 0, 
-                totalSpins: 0 
-            };
-            
-            const defaultShuffle = { 
-                shufflesLeft: 5, 
-                lastRefill: 0, 
-                totalShuffles: 0 
-            };
+            const defaultSpin = { spinsLeft: 5, lastRefill: 0, totalSpins: 0 };
+            const defaultShuffle = { shufflesLeft: 5, lastRefill: 0, totalShuffles: 0 };
 
             if(!snap.exists()){
+                
+                // MULTIPLE ACCOUNT DETECTION BLOCK
+                const q = query(collection(window.db, "earnx_users"), where("deviceId", "==", deviceId));
+                const deviceSnap = await getDocs(q);
+                let isDeviceBlocked = false;
+                deviceSnap.forEach(d => {
+                    if(d.id !== user.uid) isDeviceBlocked = true;
+                });
+
+                if(isDeviceBlocked) {
+                    window.showToast("🚫 Multiple accounts restricted by Server!");
+                    
+                    // Auto-block the user in DB directly
+                    await setDoc(ref, {
+                        email: user.email || "Unknown",
+                        deviceId: deviceId,
+                        isBlocked: true,
+                        reason: "Multiple Account Detected by Server",
+                        createdAt: window.getTrueTime()
+                    }, { merge: true });
+
+                    setTimeout(() => { window.logout(); }, 3000);
+                    return;
+                }
+
                 const newRefCode = user.uid.substring(0,4).toUpperCase() + Math.floor(Math.random()*9000+1000);
                 
                 const data = {
                     coins: 0,
+                    lifetimeCoins: 0,
                     refCode: newRefCode,
                     deviceId: deviceId,
+                    isBlocked: false,
                     createdAt: window.getTrueTime(),
                     tasks: defaultTasks,
                     spin: defaultSpin,
@@ -1251,14 +1292,8 @@
                 await setDoc(ref, data);
                 
                 window.state.user = { 
-                    id: user.uid, 
-                    phone: user.email, 
-                    coins: 0, 
-                    refCode: newRefCode, 
-                    referredBy: false, 
-                    pendingReferrer: null, 
-                    createdAt: window.getTrueTime(), 
-                    profile: {name: "", phone: ""} 
+                    id: user.uid, phone: user.email, coins: 0, lifetimeCoins: 0, refCode: newRefCode, 
+                    referredBy: false, pendingReferrer: null, createdAt: window.getTrueTime(), profile: {name: "", phone: ""} 
                 };
                 window.state.tasks = defaultTasks;
                 window.state.spin = defaultSpin;
@@ -1268,14 +1303,15 @@
             } else {
                 const data = snap.data();
 
+                // INSTANT BLOCK ENFORCEMENT
                 if (data.isBlocked === true) {
-                    window.showToast("🚫 Your account is BLOCKED by Admin.");
+                    window.showToast("🚫 ID Blocked by Server.");
                     setTimeout(() => { window.logout(); }, 2500); 
                     return; 
                 }
 
                 if (data.personalAlert && data.personalAlert.trim() !== "") {
-                    alert("⚠️ ADMIN WARNING ⚠️\n\n" + data.personalAlert);
+                    alert("⚠️ SERVER SECURITY ALERT ⚠️\n\n" + data.personalAlert);
                     try {
                         await updateDoc(ref, { personalAlert: "" });
                     } catch(e) {
@@ -1285,14 +1321,9 @@
 
                 window.state.user = {
                     ...(window.state.user || {}),
-                    id: user.uid,
-                    phone: user.email,
-                    coins: data.coins || 0,
-                    refCode: data.refCode,
-                    referredBy: data.referredBy || false,
-                    pendingReferrer: data.pendingReferrer || null,
-                    createdAt: data.createdAt || window.getTrueTime(),
-                    profile: data.profile || {name: "", phone: ""}
+                    id: user.uid, phone: user.email, coins: data.coins || 0, lifetimeCoins: data.lifetimeCoins || 0,
+                    refCode: data.refCode, referredBy: data.referredBy || false, pendingReferrer: data.pendingReferrer || null,
+                    createdAt: data.createdAt || window.getTrueTime(), profile: data.profile || {name: "", phone: ""}
                 };
                 
                 window.state.tasks = { ...defaultTasks, ...(data.tasks || {}) };
@@ -1311,7 +1342,6 @@
             
         } catch (error) {
             console.error("Firebase Auth Error:", error);
-            // 🚀 MAGIC FIX 1: Showing the Real Error
             window.showToast("Error: " + (error.message || "Connection failed"));
         } finally {
             loginLoading = false;
@@ -1325,28 +1355,12 @@
                 window.state = {
                     user: null,
                     tasks: { 
-                        lastTap: 0, 
-                        tapCount: 0, 
-                        tapNextTime: 0, 
-                        checkInTime: 0, 
-                        mathAttempts: 0, 
-                        mathCooldownEnd: 0, 
-                        scratchAttempts: 0, 
-                        scratchNextTime: 0, 
-                        scratchCooldownEnd: 0 
+                        lastTap: 0, tapCount: 0, tapNextTime: 0, checkInTime: 0, 
+                        mathAttempts: 0, mathCooldownEnd: 0, scratchAttempts: 0, scratchNextTime: 0, scratchCooldownEnd: 0 
                     },
-                    spin: { 
-                        spinsLeft: 5,
-                        lastRefill: 0,
-                        totalSpins: 0 
-                    },
-                    shuffle: { 
-                        shufflesLeft: 5,
-                        lastRefill: 0,
-                        totalShuffles: 0 
-                    },
-                    withdrawals: [],
-                    transactions: []
+                    spin: { spinsLeft: 5, lastRefill: 0, totalSpins: 0 },
+                    shuffle: { shufflesLeft: 5, lastRefill: 0, totalShuffles: 0 },
+                    withdrawals: [], transactions: []
                 };
             }
             await window.handleSuccessfulLogin(user);
@@ -1458,7 +1472,7 @@
         if(window.taskTimestamps.length > 5) window.taskTimestamps.shift();
         
         if(window.taskTimestamps.length === 5 && (now - window.taskTimestamps[0] < 15000)) {
-            window.showToast("⚠️ Suspicious Speed Detected! Admin Alerted.");
+            window.showToast("⚠️ Suspicious Speed Detected! Server Alerted.");
             try {
                 const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
                 await updateDoc(doc(window.db, "earnx_users", window.state.user.id), { 
@@ -1568,28 +1582,12 @@
             window.state = {
                 user: null,
                 tasks: { 
-                    lastTap: 0, 
-                    tapCount: 0, 
-                    tapNextTime: 0, 
-                    checkInTime: 0, 
-                    mathAttempts: 0, 
-                    mathCooldownEnd: 0, 
-                    scratchAttempts: 0, 
-                    scratchNextTime: 0, 
-                    scratchCooldownEnd: 0 
+                    lastTap: 0, tapCount: 0, tapNextTime: 0, checkInTime: 0, 
+                    mathAttempts: 0, mathCooldownEnd: 0, scratchAttempts: 0, scratchNextTime: 0, scratchCooldownEnd: 0 
                 },
-                spin: { 
-                    spinsLeft: 5,
-                    lastRefill: 0,
-                    totalSpins: 0 
-                },
-                shuffle: { 
-                    shufflesLeft: 5,
-                    lastRefill: 0,
-                    totalShuffles: 0 
-                },
-                withdrawals: [],
-                transactions: []
+                spin: { spinsLeft: 5, lastRefill: 0, totalSpins: 0 },
+                shuffle: { shufflesLeft: 5, lastRefill: 0, totalShuffles: 0 },
+                withdrawals: [], transactions: []
             };
         }
         
@@ -1622,6 +1620,21 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         init();
+        
+        // HARDWARE BACK BUTTON LOGIC
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+            window.Capacitor.Plugins.App.addListener('backButton', () => {
+                const homeScreen = document.getElementById('screen-home');
+                const loginScreen = document.getElementById('screen-login');
+                if ((homeScreen && homeScreen.classList.contains('active')) || 
+                    (loginScreen && loginScreen.classList.contains('active'))) {
+                    window.Capacitor.Plugins.App.exitApp();
+                } else {
+                    window.nav('home');
+                }
+            });
+        }
+
         setTimeout(() => {
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
                 window.Capacitor.Plugins.AdMob.initialize().catch(e => console.log("AdMob Init Error"));
@@ -1690,7 +1703,7 @@
 
             const threeDaysAgo = now - (3 * 24 * 60 * 60 * 1000);
             const activeEarnings = window.state.transactions
-                .filter(t => getSafeMs(t.date) >= threeDaysAgo && t.title !== "Admin Adjustment" && t.type === "earn")
+                .filter(t => getSafeMs(t.date) >= threeDaysAgo && t.title !== "Server Adjustment" && t.type === "earn")
                 .reduce((sum, t) => sum + Number(t.amount), 0);
 
             if(activeEarnings < 500) {
@@ -1725,6 +1738,8 @@
             }
 
             window.state.user.coins += win;
+            if(!window.state.user.lifetimeCoins) window.state.user.lifetimeCoins = 0;
+            window.state.user.lifetimeCoins += win;
             
             if(!window.state.tasks.claimedPromos) {
                 window.state.tasks.claimedPromos = [];
@@ -1792,6 +1807,7 @@
             
             const rawPayload = { 
                 coins: Number(window.state.user.coins) || 0, 
+                lifetimeCoins: Number(window.state.user.lifetimeCoins) || 0,
                 screenTime: window.state.user.screenTime || 0, 
                 tasks: window.state.tasks || {}, 
                 spin: window.state.spin || {},
@@ -2038,7 +2054,7 @@
                         <span class="h-time">${dateStr}</span>
                     </div>
                     <div class="h-status ${statusClass}" style="${w.status === 'Approved' || w.status === 'Rejected' ? 'background:transparent; padding:0;' : ''}">
-                        ${w.status}
+                        ${w.status === 'Rejected' ? 'Rejected by Server' : w.status}
                     </div>
                 </div>`;
         });
@@ -2139,10 +2155,15 @@
                 
                 if(refSnap.exists()) {
                     const refData = refSnap.data();
-                    await updateDoc(refDocRef, { coins: (Number(refData.coins) || 0) + 100 });
+                    await updateDoc(refDocRef, { 
+                        coins: (Number(refData.coins) || 0) + 100,
+                        lifetimeCoins: (Number(refData.lifetimeCoins) || 0) + 100
+                    });
                 }
                 
                 window.state.user.coins += 100;
+                if(!window.state.user.lifetimeCoins) window.state.user.lifetimeCoins = 0;
+                window.state.user.lifetimeCoins += 100;
                 window.logTransaction("Referral Bonus Unlocked!", 100, "earn");
                 window.saveState();
                 window.showToast("Referral Bonus Unlocked! +100 Coins");
@@ -2159,7 +2180,7 @@
         
         setTimeout(()=> { rewardLock = false; }, 2000);
         
-        if(!navigator.onLine) return window.showToast("No internet");
+        if(!navigator.onLine) return window.showToast("No internet connection!");
         if(!window.state || !window.state.user) return window.showToast("Login required");
         if(amount <= 0 || amount > 200) return window.showToast("Invalid reward");
         
@@ -2179,6 +2200,9 @@
         
         window.state.dailyCoins += amount; 
         window.state.user.coins += amount;
+        
+        if(!window.state.user.lifetimeCoins) window.state.user.lifetimeCoins = 0;
+        window.state.user.lifetimeCoins += amount;
         
         window.logTransaction(msg, amount, "earn");
         window.saveState(); 
