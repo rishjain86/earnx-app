@@ -1620,20 +1620,6 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         init();
-        
-        // HARDWARE BACK BUTTON LOGIC
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-            window.Capacitor.Plugins.App.addListener('backButton', () => {
-                const homeScreen = document.getElementById('screen-home');
-                const loginScreen = document.getElementById('screen-login');
-                if ((homeScreen && homeScreen.classList.contains('active')) || 
-                    (loginScreen && loginScreen.classList.contains('active'))) {
-                    window.Capacitor.Plugins.App.exitApp();
-                } else {
-                    window.nav('home');
-                }
-            });
-        }
 
         setTimeout(() => {
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
@@ -1865,6 +1851,11 @@
         }
         if(screenId === 'scratch') {
             setTimeout(() => { window.initScratchCard(); }, 50);
+        }
+        
+        // 🚀 NEW HACK: PushState for native back button
+        if (screenId !== 'login' && screenId !== 'home') {
+            history.pushState({ screen: screenId }, null, window.location.href);
         }
     }
 
@@ -2982,6 +2973,29 @@
                 setTimeout(() => { splash.style.display = 'none'; }, 600);
             }
         }, 2500); 
+    });
+
+    // 🚀 MASTER BACK BUTTON HANDLER 
+    window.addEventListener("popstate", (e) => {
+        const homeScreen = document.getElementById('screen-home');
+        const loginScreen = document.getElementById('screen-login');
+        
+        if (homeScreen && homeScreen.classList.contains('active')) {
+            // Agar Home screen par hai, toh App Exit allow karo
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+                window.Capacitor.Plugins.App.exitApp();
+            } else {
+                history.back(); // Native fallback
+            }
+        } else if (loginScreen && loginScreen.classList.contains('active')) {
+            // Agar Login screen par hai, toh bhi Exit allow karo
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+                window.Capacitor.Plugins.App.exitApp();
+            }
+        } else {
+            // Agar kisi aur screen (Tasks, Spin, Profile, etc.) par hai, toh Home par wapas bhej do
+            window.nav('home');
+        }
     });
 </script>
 </body>
