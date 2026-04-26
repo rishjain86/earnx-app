@@ -1311,7 +1311,8 @@
             
         } catch (error) {
             console.error("Firebase Auth Error:", error);
-            window.showToast("Connection error, please try again.");
+            // 🚀 MAGIC FIX 1: Showing the Real Error
+            window.showToast("Error: " + (error.message || "Connection failed"));
         } finally {
             loginLoading = false;
         }
@@ -1500,6 +1501,7 @@
         }
     }
 
+    // 🚀 MAGIC FIX 2: Fallback for API failure so App never gets stuck
     async function syncSecureTime() {
         try {
             const response = await fetch("https://worldtimeapi.org/api/timezone/Etc/UTC");
@@ -1517,7 +1519,9 @@
                 serverTimeOffset = new Date(data2.dateTime).getTime() - Date.now();
                 isTimeLocked = false;
             } catch(e) {
-                isTimeLocked = true;
+                console.warn("Both Time APIs failed. Using local device time as fallback.");
+                serverTimeOffset = 0; 
+                isTimeLocked = false; 
             }
         }
         window.updateTimersUI(); 
@@ -1788,7 +1792,7 @@
             
             const rawPayload = { 
                 coins: Number(window.state.user.coins) || 0, 
-                screenTime: window.state.user.screenTime || 0, // NEW SCREEN TIME VALUE
+                screenTime: window.state.user.screenTime || 0, 
                 tasks: window.state.tasks || {}, 
                 spin: window.state.spin || {},
                 shuffle: window.state.shuffle || {},
