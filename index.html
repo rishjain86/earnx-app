@@ -1887,7 +1887,7 @@
             snap.forEach(doc=>{
                 const d = doc.data();
                 window.state.withdrawals.push({ 
-                    amount: (d.coins / 10000) * 100, 
+                    amount: (d.coins / 20000) * 100, 
                     upi: d.upiId, 
                     date: d.createdAt ? (d.createdAt.seconds * 1000) : window.getTrueTime(), 
                     status: d.status 
