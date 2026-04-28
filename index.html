@@ -2822,9 +2822,9 @@
         setTimeout(()=> { withdrawLock = false; }, 5000); 
         
         try {
-            const coins = Math.floor(window.state.user.coins / 10000) * 10000;
-            if(coins < 10000) {
-                return window.showToast("Min 10k coins");
+            const coins = Math.floor(window.state.user.coins / 20000) * 20000;
+            if(coins < 20000) {
+                return window.showToast("Min 20k coins");
             }
             
             const upi = document.getElementById('upi-input').value.trim();
