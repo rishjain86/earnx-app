@@ -1956,7 +1956,7 @@
             el.innerText = window.state.user.coins.toLocaleString(); 
         });
         
-        safeSetText('rupee-display', (window.state.user.coins / (10000 / COIN_RATE)).toFixed(2));
+        safeSetText('rupee-display', (window.state.user.coins / (20000 / COIN_RATE)).toFixed(2));
         safeSetText('profile-phone', window.state.user.phone);
         safeSetText('profile-uid', window.state.user.id);
         safeSetText('my-ref-code', window.state.user.refCode);
