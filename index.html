@@ -155,7 +155,7 @@
             margin-right: 8px; 
         }
         
-        input { 
+        input, select { 
             width: 100%; 
             background: var(--bg-darker); 
             border: 1px solid var(--card-border); 
@@ -168,11 +168,11 @@
             transition: border 0.3s; 
         }
         
-        input:focus { 
+        input:focus, select:focus { 
             border-color: var(--primary); 
         }
         
-        input:disabled { 
+        input:disabled, select:disabled { 
             background: rgba(0,0,0,0.5); 
             color: var(--text-muted); 
             border-color: var(--card-border); 
@@ -811,7 +811,7 @@
                 <p style="font-size: 0.75rem; text-align: center; margin-top: 10px; color: var(--text-muted);">If email is not registered, a new account will be created automatically.</p>
             </div>
         </div>
-        <p style="text-align: center; font-size: 0.75rem; margin-top: 20px;">By continuing, you agree to our <span class="text-green" onclick="window.nav('terms')">Terms & Conditions</span>.</p>
+        <p style="text-align: center; font-size: 0.75rem; margin-top: 20px;">By continuing, you agree to our <span class="text-green" onclick="window.nav('terms')">Privacy Policy & Terms</span>.</p>
     </div>
 
     <div id="screen-home" class="screen">
@@ -821,10 +821,10 @@
         </div>
         
         <div class="card hero-card">
-            <div class="balance-title">Total Balance</div>
+            <div class="balance-title">Available Balance</div>
             <div class="balance-amount"><i class="fa-solid fa-coins" style="color: gold;"></i> <span class="global-coin-display">0</span></div>
-            <div class="rupee-eq">≈ ₹<span id="rupee-display">0.00</span></div>
-            <p style="margin-top: 10px; font-size: 0.8rem;">(20,000 Coins = ₹100)</p>
+            <div class="rupee-eq">≈ ₹<span id="rupee-display">0.00</span> in Gift Cards</div>
+            <p style="margin-top: 10px; font-size: 0.8rem;">(20,000 Coins = ₹100 Reward)</p>
             <div style="margin-top: 15px; border-top: 1px solid var(--card-border); padding-top: 15px;" class="flex-between">
                 <span style="font-size: 0.9rem;">Daily Check-in</span>
                 <button class="btn" style="width: auto; padding: 8px 15px; font-size: 0.9rem;" id="btn-checkin" onclick="window.dailyCheckIn()">Claim 50</button>
@@ -833,10 +833,10 @@
 
         <h3>Quick Actions</h3>
         <div class="grid-actions mb-2">
-            <div class="action-card" onclick="window.nav('tasks')"><i class="fa-solid fa-list-check"></i><div style="font-weight: 600;">Tasks</div></div>
+            <div class="action-card" onclick="window.nav('tasks')"><i class="fa-solid fa-list-check"></i><div style="font-weight: 600;">Play Tasks</div></div>
             <div class="action-card" onclick="window.nav('spin')"><i class="fa-solid fa-dharmachakra"></i><div style="font-weight: 600;">Spin Wheel</div></div>
-            <div class="action-card" onclick="window.nav('referral')"><i class="fa-solid fa-users"></i><div style="font-weight: 600;">Referrals</div></div>
-            <div class="action-card" onclick="window.nav('withdraw')"><i class="fa-solid fa-wallet"></i><div style="font-weight: 600;">Withdraw</div></div>
+            <div class="action-card" onclick="window.nav('referral')"><i class="fa-solid fa-users"></i><div style="font-weight: 600;">Refer Friends</div></div>
+            <div class="action-card" onclick="window.nav('withdraw')"><i class="fa-solid fa-gift"></i><div style="font-weight: 600;">Gift Cards</div></div>
         </div>
 
         <div class="flex-between">
@@ -888,8 +888,8 @@
             </div>
 
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.8rem;" onclick="window.openSocial('https://www.facebook.com/share/1Gh2PDFQEz/')"><i class="fa-brands fa-facebook"></i> Go to FB</button>
-                <button class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.8rem;" onclick="window.openSocial('https://www.instagram.com/earnx_admin')"><i class="fa-brands fa-instagram"></i> Go to Insta</button>
+                <button class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.8rem;" onclick="window.openSocial('https://www.facebook.com/share/1CiqQEymfn/')"><i class="fa-brands fa-facebook"></i> Go to FB</button>
+                <button class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 0.8rem;" onclick="window.openSocial('https://www.instagram.com/earnx_admin?igsh=eWt1bnZhaHA1MTk0')"><i class="fa-brands fa-instagram"></i> Go to Insta</button>
             </div>
 
             <input type="text" id="mega-promo-code" placeholder="Enter Promo Code (Find on FB/Insta)" style="text-transform: uppercase;">
@@ -1027,16 +1027,31 @@
 
     <div id="screen-withdraw" class="screen">
         <div class="header">
-            <h2><i class="fa-solid fa-wallet text-green"></i> Withdraw</h2>
+            <h2><i class="fa-solid fa-gift text-green"></i> Withdraw</h2>
             <div class="coin-badge" onclick="window.nav('history')"><span class="global-coin-display">0</span></div>
         </div>
 
         <div class="card">
-            <h3>Withdraw Details</h3>
+            <h3>Redeem Gift Cards</h3>
             <p class="mb-2">Minimum withdrawal: 20,000 Coins (₹100)</p>
-            <input type="text" id="upi-input" placeholder="Enter UPI ID (e.g. name@upi)">
-            <p style="font-size: 0.8rem; margin-bottom: 15px; color: var(--danger);"><i class="fa-solid fa-circle-info"></i> All withdrawals are subject to verification by Server (48-72 hours).</p>
-            <button class="btn" id="btn-withdraw" onclick="window.submitWithdraw()">Withdraw Now</button>
+            
+            <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Select Reward:</label>
+            <select id="gift-card-type" style="text-align: left;">
+                <option value="Amazon">Amazon Gift Card (₹100)</option>
+                <option value="Flipkart">Flipkart Gift Card (₹100)</option>
+                <option value="GooglePlay">Google Play Redeem Code (₹100)</option>
+            </select>
+
+            <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Delivery Email:</label>
+            <input type="email" id="payout-email" placeholder="Enter Email to receive code">
+            
+            <p style="font-size: 0.70rem; color: var(--text-muted); margin-bottom: 10px; font-style: italic;">
+                *Amazon, Flipkart, and Google Play are not sponsors or partners of EarnX. Gift cards are provided as loyalty rewards only.
+            </p>
+            <p style="font-size: 0.8rem; margin-bottom: 15px; color: var(--warning);">
+                <i class="fa-solid fa-circle-info"></i> Codes are verified and sent to your email within 48-72 hours.
+            </p>
+            <button class="btn" id="btn-withdraw" onclick="window.submitWithdraw()">Redeem Now</button>
         </div>
 
         <h3>My Withdrawals</h3>
@@ -1073,7 +1088,7 @@
 
     <div id="screen-profile" class="screen">
         <div class="header">
-            <h2><i class="fa-solid fa-user text-green"></i> Profile</h2>
+            <h2><i class="fa-solid fa-user text-green"></i> Profile & Support</h2>
         </div>
         
         <div class="card" style="text-align: center;">
@@ -1081,33 +1096,40 @@
                 <i class="fa-solid fa-user-astronaut"></i>
             </div>
             <h3 id="profile-phone">Loading...</h3>
-            
-            <div style="text-align: left; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--card-border);">
-                
-                <div id="profile-lock-msg" style="display: none; font-size: 0.75rem; color: var(--warning); margin-bottom: 15px; background: rgba(245, 158, 11, 0.1); padding: 10px; border-radius: 8px; border: 1px solid var(--warning);">
-                    <i class="fa-solid fa-lock"></i> Profile details are locked. Contact Support to make changes.
-                </div>
+        </div>
 
-                <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Full Name (Must match UPI Name)</label>
-                <input type="text" id="profile-name-input" placeholder="Enter your full name">
-                
-                <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Mobile Number</label>
-                <input type="tel" id="profile-phone-input" placeholder="Enter mobile number">
-                
-                <button class="btn" id="btn-save-profile" style="margin-top: 10px;" onclick="window.saveProfileDetails()">Save Details</button>
+        <div class="card">
+            <h4 class="mb-1" style="color: var(--primary);">Official Socials</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="btn" style="flex: 1; padding: 12px; background: #1877F2; border-radius: 8px; font-size: 0.9rem;" onclick="window.openSocial('https://www.facebook.com/share/1CiqQEymfn/')">
+                    <i class="fa-brands fa-facebook"></i> Facebook
+                </button>
+                <button class="btn" style="flex: 1; padding: 12px; background: #E1306C; border-radius: 8px; font-size: 0.9rem;" onclick="window.openSocial('https://www.instagram.com/earnx_admin?igsh=eWt1bnZhaHA1MTk0')">
+                    <i class="fa-brands fa-instagram"></i> Instagram
+                </button>
+            </div>
+            
+            <h4 class="mb-1 mt-2" style="color: var(--primary);">Help & Support</h4>
+            <div class="history-item" onclick="window.openSocial('mailto:lootocashnow@gmail.com')" style="cursor: pointer;">
+                <span><i class="fa-solid fa-envelope text-green" style="width: 25px;"></i> lootocashnow@gmail.com</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </div>
+            <div class="history-item" onclick="window.openSocial('https://t.me/Earnx_Supportbot')" style="cursor: pointer;">
+                <span><i class="fa-brands fa-telegram text-green" style="width: 25px;"></i> Telegram Support Bot</span>
+                <i class="fa-solid fa-chevron-right"></i>
             </div>
         </div>
 
         <div class="card">
             <div class="history-item" onclick="window.nav('terms')" style="cursor: pointer;">
-                <span><i class="fa-solid fa-file-contract text-green" style="width: 25px;"></i> Terms & Conditions</span>
+                <span><i class="fa-solid fa-shield-halved text-green" style="width: 25px;"></i> Privacy Policy & Terms</span>
                 <i class="fa-solid fa-chevron-right"></i>
             </div>
             <div class="history-item" onclick="window.logout()" style="cursor: pointer; border: none;">
                 <span class="text-danger" style="color: var(--danger);"><i class="fa-solid fa-arrow-right-from-bracket" style="width: 25px;"></i> Logout</span>
             </div>
         </div>
-
+        
         <div style="text-align: center; margin-top: 30px;">
             <p style="font-size: 0.65rem; color: #475569; letter-spacing: 1px;">USER ID: <span id="profile-uid">-----</span></p>
         </div>
@@ -1115,18 +1137,17 @@
 
     <div id="screen-terms" class="screen">
         <div class="header">
-            <h2>Terms & Conditions</h2>
+            <h2>Privacy & Terms</h2>
             <i class="fa-solid fa-times" style="font-size: 1.5rem; cursor: pointer;" onclick="window.nav('profile')"></i>
         </div>
         <div class="card">
             <ul class="tc-list">
-                <li><strong>Virtual Currency:</strong> Coins are purely virtual rewards. 20,000 Coins = ₹100 Cash.</li>
-                <li><strong>Profile & Withdrawal Rules:</strong> Withdrawals will only be processed if your Profile is 100% complete. Your Profile Name MUST match the name on your UPI ID exactly. If data mismatches, your payout will be declined or kept pending. <b>Profile details can only be saved ONCE</b>, so fill them carefully! Minimum withdrawal is 20,000 Coins.</li>
-                <li><strong>Referral Bonus Rules:</strong> 100 Coins are credited to both users ONLY after the referred user stays active for 5 days AND earns a minimum of 5,000 coins.</li>
-                <li><strong>Task Rules:</strong> You must complete ads and gamified tasks fully. Closing them early will result in 0 rewards.</li>
-                <li><strong>Anti-Cheat:</strong> Use of VPN, bots, auto-clickers, or multiple accounts on one device will lead to a permanent ban and forfeiture of balance by Server.</li>
-                <li><strong>Mega Task Warning:</strong> Following FB & Insta is mandatory. Unfollowing after getting coins will lead to coin deduction and permanent block.</li>
-                <li><strong>App Rights:</strong> We reserve the right to reject suspicious activity and update these terms at any time automatically through our Server.</li>
+                <li><strong>Data Protection:</strong> Your email address is collected strictly for delivering Gift Card rewards. We do not sell or share your data with 3rd parties.</li>
+                <li><strong>Virtual Currency:</strong> Coins are purely virtual loyalty rewards. 20,000 Coins = ₹100 Gift Card. Not valid for real cash.</li>
+                <li><strong>Withdrawal Tracking:</strong> Reward processing takes 48-72 hours. You can track status (Pending/Approved) in the App.</li>
+                <li><strong>Task & Ads Rules:</strong> Users must not click on ads excessively or use VPNs/Proxies. Fraudulent clicks will lead to instant account termination to protect our ad network partners.</li>
+                <li><strong>No Affiliation:</strong> Amazon, Flipkart, and Google are not sponsors of this app.</li>
+                <li><strong>Fair Play:</strong> Use of bots, auto-clickers, or multiple accounts on one device will lead to a permanent ban and forfeiture of balance.</li>
             </ul>
         </div>
     </div>
@@ -1139,6 +1160,7 @@
     </div>
 
 </div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
@@ -1230,7 +1252,6 @@
             const ref = doc(db, "earnx_users", user.uid);
             const snap = await getDoc(ref);
 
-            // --- SECURITY 1: HARDWARE DEVICE FINGERPRINT ---
             let hardwareFp = [
                 window.screen.height || 0,
                 window.screen.width || 0,
@@ -1250,7 +1271,6 @@
 
             if(!snap.exists()){
                 
-                // MULTIPLE ACCOUNT DETECTION BLOCK
                 const q = query(collection(window.db, "earnx_users"), where("deviceId", "==", deviceId));
                 const deviceSnap = await getDocs(q);
                 let isDeviceBlocked = false;
@@ -1261,7 +1281,6 @@
                 if(isDeviceBlocked) {
                     window.showToast("🚫 Multiple accounts restricted by Server!");
                     
-                    // Auto-block the user in DB directly
                     await setDoc(ref, {
                         email: user.email || "Unknown",
                         deviceId: deviceId,
@@ -1303,7 +1322,6 @@
             } else {
                 const data = snap.data();
 
-                // INSTANT BLOCK ENFORCEMENT
                 if (data.isBlocked === true) {
                     window.showToast("🚫 ID Blocked by Server.");
                     setTimeout(() => { window.logout(); }, 2500); 
@@ -1493,6 +1511,12 @@
         window.location.href = url;
     }
 
+    window.maskEmail = function(email) {
+        if(!email || !email.includes('@')) return "Hidden";
+        const parts = email.split('@'); 
+        return parts[0].substring(0, Math.min(3, parts[0].length)) + "***@" + parts[1];
+    }
+
     function getSafeMs(timestamp) {
         if (!timestamp) return 0;
         return typeof timestamp === 'number' ? timestamp : (timestamp.seconds * 1000);
@@ -1515,7 +1539,6 @@
         }
     }
 
-    // 🚀 MAGIC FIX 2: Fallback for API failure so App never gets stuck
     async function syncSecureTime() {
         try {
             const response = await fetch("https://worldtimeapi.org/api/timezone/Etc/UTC");
@@ -1628,14 +1651,12 @@
         }, 1000);
         window.renderShuffleCards();
 
-        // --- SECURITY 3: SCREEN TIME TRACKER ---
         setInterval(() => {
             if(!document.hidden && window.state && window.state.user) {
                 if(!window.state.user.screenTime) window.state.user.screenTime = 0;
                 window.state.user.screenTime += 10;
             }
         }, 10000);
-        // ----------------------------------------
     });
 
     window.launchCelebration = function() {
@@ -1853,7 +1874,6 @@
             setTimeout(() => { window.initScratchCard(); }, 50);
         }
         
-        // 🚀 NEW HACK: PushState for native back button
         if (screenId !== 'login' && screenId !== 'home') {
             history.pushState({ screen: screenId }, null, window.location.href);
         }
@@ -1888,7 +1908,8 @@
                 const d = doc.data();
                 window.state.withdrawals.push({ 
                     amount: (d.coins / 20000) * 100, 
-                    upi: d.upiId, 
+                    email: d.email, 
+                    payoutMethod: d.payoutMethod,
                     date: d.createdAt ? (d.createdAt.seconds * 1000) : window.getTrueTime(), 
                     status: d.status 
                 });
@@ -2032,20 +2053,23 @@
         
         sorted.forEach(w => {
             const dateStr = new Date(w.date).toLocaleDateString();
-            const maskedUpi = window.maskUPI(w.upi);
-            let statusClass = 'status-pending';
+            const targetInfo = w.payoutMethod ? `${w.payoutMethod} (${window.maskEmail(w.email)})` : window.maskEmail(w.email);
             
-            if(w.status === 'Approved') statusClass = 'text-green';
-            if(w.status === 'Rejected') statusClass = 'text-danger';
+            let statusClass = 'status-pending';
+            let statusText = w.status;
+            
+            if(w.status === 'Approved') { statusClass = 'text-green'; statusText = 'Sent to Email'; }
+            if(w.status === 'Rejected') { statusClass = 'text-danger'; statusText = 'Declined'; }
             
             htmlContent += `
                 <div class="history-item">
                     <div class="h-info">
-                        <span class="h-upi">₹${w.amount} &rarr; ${maskedUpi}</span>
-                        <span class="h-time">${dateStr}</span>
+                        <span class="h-upi" style="color:var(--primary);">₹${w.amount} Reward</span>
+                        <span class="h-time">${targetInfo}</span>
+                        <span class="h-time" style="font-size: 0.65rem;">${dateStr}</span>
                     </div>
                     <div class="h-status ${statusClass}" style="${w.status === 'Approved' || w.status === 'Rejected' ? 'background:transparent; padding:0;' : ''}">
-                        ${w.status === 'Rejected' ? 'Rejected by Server' : w.status}
+                        ${statusText}
                     </div>
                 </div>`;
         });
@@ -2105,12 +2129,6 @@
             });
             homeList.innerHTML = homeHTML;
         }
-    }
-
-    window.maskUPI = function(upi) {
-        if(!upi || !upi.includes('@')) return upi;
-        const parts = upi.split('@'); 
-        return parts[0].substring(0, 2) + "****@" + parts[1];
     }
 
     window.showToast = function(msg) {
@@ -2317,11 +2335,9 @@
     window.submitMathAnswer = function() {
         if(adTaskLock) return;
 
-        // --- SECURITY 4A: MATH COOLDOWN ---
         if(window.getTrueTime() < (window.state.tasks.mathNextTime || 0)) {
             return window.showToast("Too fast! Wait 10 seconds.");
         }
-        // ----------------------------------
         
         const userInput = document.getElementById('math-answer').value;
         if (userInput === "") {
@@ -2377,10 +2393,8 @@
     window.processMathSuccess = function(reward, attempts) {
         window.rewardCoins(reward, "Math Mania");
         
-        // --- SECURITY 4B: MATH COOLDOWN UPDATE ---
         window.state.tasks.mathNextTime = window.getTrueTime() + 10000;
         window.checkBotSpeed();
-        // -----------------------------------------
 
         if (attempts >= 5) {
             window.state.tasks.mathCooldownEnd = window.getTrueTime() + (45 * 60 * 1000);
@@ -2615,11 +2629,9 @@
         
         if(adTaskLock) return;
 
-        // --- SECURITY 5A: SHUFFLE COOLDOWN ---
         if(window.getTrueTime() < (window.state.shuffle.shuffleNextTime || 0)) {
             return window.showToast("Wait 10 seconds before next shuffle!");
         }
-        // -------------------------------------
 
         const btn = document.getElementById('shuffle-btn');
         const grid = document.getElementById('shuffle-card-container');
@@ -2703,10 +2715,8 @@
     window.processShuffleReward = function(coins) {
         window.rewardCoins(coins, "Shuffle Task");
         
-        // --- SECURITY 5B: SHUFFLE COOLDOWN UPDATE ---
         window.state.shuffle.shuffleNextTime = window.getTrueTime() + 10000;
         window.checkBotSpeed();
-        // --------------------------------------------
 
         window.resetShuffleUI();
     }
@@ -2727,11 +2737,9 @@
     window.spinWheel = function() {
         if(isTimeLocked) return window.showToast("Securing Time...");
         
-        // --- SECURITY 6A: SPIN COOLDOWN ---
         if(window.getTrueTime() < (window.state.spin.spinNextTime || 0)) {
             return window.showToast("Wheel is resetting! Wait 20 seconds.");
         }
-        // ----------------------------------
 
         const btn = document.getElementById('btn-spin');
         if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0 || adTaskLock) return;
@@ -2760,10 +2768,8 @@
         setTimeout(() => {
             window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
             
-            // --- SECURITY 6B: SPIN COOLDOWN UPDATE ---
             window.state.spin.spinNextTime = window.getTrueTime() + 20000;
             window.checkBotSpeed();
-            // -----------------------------------------
 
             if(window.state.spin.totalSpins % 3 === 0) { 
                 adTaskLock = true; 
@@ -2817,46 +2823,63 @@
     }
 
     window.submitWithdraw = async function(){
-        if(withdrawLock || !navigator.onLine) return; 
+        if(typeof withdrawLock !== 'undefined' && withdrawLock) return; 
+        if(!navigator.onLine) return window.showToast("No internet!");
+        
         withdrawLock = true;
         setTimeout(()=> { withdrawLock = false; }, 5000); 
         
         try {
             const coins = Math.floor(window.state.user.coins / 20000) * 20000;
             if(coins < 20000) {
-                return window.showToast("Min 20k coins");
+                return window.showToast("Min 20,000 coins required!");
             }
             
-            const upi = document.getElementById('upi-input').value.trim();
-            if(!/^[a-zA-Z0-9._-]+@[a-zA-Z]{3,}$/.test(upi)) {
-                return window.showToast("Invalid UPI");
+            const email = document.getElementById('payout-email').value.trim();
+            const gcType = document.getElementById('gift-card-type').value;
+
+            if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                return window.showToast("Enter a valid email address!");
             }
             
             const { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js");
-            const userRef = doc(window.db, "earnx_users", window.currentUser.uid);
+            const userRef = doc(window.db, "earnx_users", window.state.user.id);
             const currentCoins = (await getDoc(userRef)).data().coins || 0;
             
             if(currentCoins < coins) {
-                return window.showToast("Balance mismatch");
+                return window.showToast("Server Balance mismatch!");
             }
             
             await updateDoc(userRef, { coins: currentCoins - coins });
+            
             await addDoc(collection(window.db, "earnx_withdrawals"), { 
-                userId: window.currentUser.uid, 
+                userId: window.state.user.id, 
                 coins: coins, 
-                upiId: upi, 
+                email: email, 
+                payoutMethod: gcType,
                 status: "Pending", 
                 createdAt: serverTimestamp() 
             });
             
             window.state.user.coins -= coins; 
-            window.logTransaction("Withdrawal Request", coins, "spend");
+            window.logTransaction(`${gcType} Gift Card Req`, coins, "spend");
             window.saveState(); 
-            window.loadWithdrawals();
-            window.showToast("Withdraw Requested");
+            
+            window.state.withdrawals.push({
+                amount: (coins / 20000) * 100,
+                email: email,
+                payoutMethod: gcType,
+                date: window.getTrueTime(),
+                status: "Pending"
+            });
+            
+            window.renderWithdrawals();
+            window.showToast("Reward Request Submitted!");
+            document.getElementById('payout-email').value = '';
             
         } catch(e){
-            window.showToast("Withdraw failed");
+            console.log(e);
+            window.showToast("Withdraw failed. Try again.");
         }
     };
 
@@ -2975,25 +2998,21 @@
         }, 2500); 
     });
 
-    // 🚀 MASTER BACK BUTTON HANDLER 
     window.addEventListener("popstate", (e) => {
         const homeScreen = document.getElementById('screen-home');
         const loginScreen = document.getElementById('screen-login');
         
         if (homeScreen && homeScreen.classList.contains('active')) {
-            // Agar Home screen par hai, toh App Exit allow karo
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
                 window.Capacitor.Plugins.App.exitApp();
             } else {
-                history.back(); // Native fallback
+                history.back(); 
             }
         } else if (loginScreen && loginScreen.classList.contains('active')) {
-            // Agar Login screen par hai, toh bhi Exit allow karo
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
                 window.Capacitor.Plugins.App.exitApp();
             }
         } else {
-            // Agar kisi aur screen (Tasks, Spin, Profile, etc.) par hai, toh Home par wapas bhej do
             window.nav('home');
         }
     });
