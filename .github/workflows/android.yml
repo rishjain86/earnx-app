@@ -25,6 +25,12 @@ jobs:
           cp -r assets www/assets/
       - name: Generate Android Project
         run: npx cap add android
+        
+      - name: Update App Version
+        run: |
+          sed -i 's/versionCode 1/versionCode 7/g' android/app/build.gradle
+          sed -i 's/versionName "1.0"/versionName "7.0"/g' android/app/build.gradle
+
       - name: Update SDK & Inject REAL AdMob ID
         run: |
           sed -i "s/compileSdkVersion = [0-9]*/compileSdkVersion = 34/g" android/variables.gradle
