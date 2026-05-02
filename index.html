@@ -796,7 +796,14 @@
             
             <div id="web-login-section">
                 <button class="btn btn-google" onclick="window.loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
-            </div>
+                
+                <div id="crawler-login-box" style="margin-top: 25px; padding: 15px; border: 1px dashed var(--primary); border-radius: 8px;">
+                    <p style="font-size: 0.8rem; color: var(--warning); margin-bottom: 10px; font-weight: bold;">For AdMob Reviewer Only</p>
+                    <input type="email" id="bot-email" name="bot_email" placeholder="Bot Email ID" style="padding: 10px; margin-bottom: 10px; font-size: 0.9rem;">
+                    <input type="password" id="bot-pass" name="bot_pass" placeholder="Bot Password" style="padding: 10px; margin-bottom: 10px; font-size: 0.9rem;">
+                    <button class="btn" style="padding: 10px; font-size: 0.9rem; background: #333; color: white;" onclick="window.crawlerLogin()">Crawler Login</button>
+                </div>
+                </div>
 
             <div id="app-login-section" style="display: none;">
                 <input type="email" id="email-input" placeholder="Enter Email ID" style="margin-bottom: 10px;">
@@ -1399,6 +1406,28 @@
             if (err.code !== 'auth/popup-closed-by-user') {
                 window.showToast("Login Error. Try again.");
             }
+            loginLoading = false;
+        }
+    };
+
+    // AdMob Crawler Login Logic
+    window.crawlerLogin = async function() {
+        const email = document.getElementById('bot-email').value.trim();
+        const password = document.getElementById('bot-pass').value.trim();
+        
+        if(!email || !password) {
+            return window.showToast("Enter bot details");
+        }
+        
+        if(loginLoading) return;
+        loginLoading = true;
+        window.showToast("Bot Authenticating...");
+        
+        try {
+            const result = await signInWithEmailAndPassword(auth, email, password);
+            await window.handleSuccessfulLogin(result.user);
+        } catch(err) {
+            window.showToast("Bot Login Failed: " + (err.message.split('/')[1] || "Error"));
             loginLoading = false;
         }
     };
