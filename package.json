@@ -1,13 +1,16 @@
 {
   "name": "earnx-app",
-  "version": "7.0.0",
+  "version": "1.0.0",
   "description": "EarnX Rewards Platform",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'No build step required'"
+  },
   "dependencies": {
-    "@capacitor/android": "^5.0.0",
-    "@capacitor/core": "^5.0.0",
-    "@capacitor/share": "^5.0.0"
+    "@capacitor/android": "latest",
+    "@capacitor/core": "latest"
   },
   "devDependencies": {
-    "@capacitor/cli": "^5.0.0"
+    "@capacitor/cli": "latest"
   }
 }
