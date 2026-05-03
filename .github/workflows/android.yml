@@ -29,6 +29,7 @@ jobs:
       - name: Install Dependencies
         run: |
           npm install --legacy-peer-deps
+          npm install @capacitor/assets --save-dev --legacy-peer-deps
 
       - name: Prepare Web Folder
         run: |
@@ -36,12 +37,17 @@ jobs:
           cp index.html www/ || true
           cp script.js www/ || true
           cp style.css www/ || true
+          cp sw.js www/ || true
           cp -r assets www/assets/ || true
 
       - name: Generate Android Project
         run: |
           npx cap add android
           npx cap sync android
+
+      - name: Generate App Icons & Splash
+        run: |
+          npx capacitor-assets generate --android
 
       - name: Update App Version
         run: |
