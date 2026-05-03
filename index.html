@@ -343,7 +343,7 @@
             border-right: 15px solid transparent; 
             border-top: 25px solid var(--warning); 
             z-index: 10; 
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5)); 
+            filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.5)); 
         }
         
         .wheel-center { 
@@ -2265,11 +2265,8 @@
         const triggerMonetagDirectLink = () => {
             window.showToast("Loading Sponsor Link...");
             
-            // 👇👇👇 PASTE YOUR MONETAG DIRECT LINK BELOW 👇👇👇
-            const directLinkUrl = "https://www.profitablecpmrate.com/https://omg10.com/4/10957927; 
-            // 👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆
+            const directLinkUrl = "https://omg10.com/4/10957927"; 
             
-            // Open link in new tab or Capacitor browser
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
                 window.Capacitor.Plugins.Browser.open({ url: directLinkUrl });
             } else {
@@ -2321,11 +2318,9 @@
                 await AdMob.showRewardVideoAd();
                 
             } catch (error) { 
-                // Fallback to Monetag Direct Link if AdMob prep fails
                 triggerMonetagDirectLink(); 
             }
         } else { 
-            // Fallback to Monetag Direct Link for Web/Browser version
             triggerMonetagDirectLink(); 
         }
     }
