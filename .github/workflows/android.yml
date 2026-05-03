@@ -49,10 +49,15 @@ jobs:
         run: |
           npx capacitor-assets generate --android
 
-      - name: Update App Version
+      - name: Update App Version & Android SDK
         run: |
-          sed -i 's/versionCode [0-9]*/versionCode 7/g' android/app/build.gradle || true
-          sed -i 's/versionName "[0-9.]*"/versionName "7.0"/g' android/app/build.gradle || true
+          # Version 8.0 update
+          sed -i 's/versionCode [0-9]*/versionCode 8/g' android/app/build.gradle || true
+          sed -i 's/versionName "[0-9.]*"/versionName "8.0"/g' android/app/build.gradle || true
+          
+          # Fix for "Older version of Android" warning (API 34/Android 14)
+          sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 34/g' android/variables.gradle || true
+          sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 34/g' android/variables.gradle || true
 
       - name: Build APK
         run: |
