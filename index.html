@@ -1670,14 +1670,17 @@
         window.nav('login');
     }
 
+    // 🚀 NATIVE UNITY ADS INITIALIZATION (Via Capacitor/Cordova Plugin)
+    document.addEventListener("deviceready", () => {
+        if (typeof UnityAds !== 'undefined') {
+            UnityAds.initialize("6105265", true); // Test Mode is TRUE. Jab publish karo toh isko FALSE kar dena.
+            console.log("Unity Ads Initialized via Capacitor/Cordova!");
+        }
+    }, false);
+
     document.addEventListener("DOMContentLoaded", () => {
         init();
 
-        setTimeout(() => {
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-                window.Capacitor.Plugins.AdMob.initialize().catch(e => console.log("AdMob Init Error"));
-            }
-        }, 1000);
         window.renderShuffleCards();
 
         setInterval(() => {
@@ -2248,59 +2251,35 @@
         window.checkReferralUnlock();
     }
 
+    // 🚀 SHOW AD FUNCTION (Updated for Unity)
     window.showAd = async function(callback) {
-        if(isTimeLocked) { 
-            window.showToast("Please ensure correct phone time."); 
-            return callback('cooldown'); 
+        if(isTimeLocked) {
+            window.showToast("Please ensure correct phone time.");
+            return callback('cooldown');
         }
-        
-        if(window.getTrueTime() - lastAdTime < 60000){ 
-            window.showToast("Wait 1 min before next ad"); 
-            return callback('cooldown'); 
-        }
-        
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-            try {
-                const { AdMob } = window.Capacitor.Plugins;
-                const adId = "ca-app-pub-6519206650027176/8005768127"; 
-                await AdMob.prepareRewardVideoAd({ adId: adId });
-                
-                let adHandled = false;
-                
-                let dismissListener = await AdMob.addListener('rewardedVideoAdDismissed', () => {
-                    if(adHandled) return; 
-                    adHandled = true; 
-                    lastAdTime = window.getTrueTime();
-                    if(dismissListener) dismissListener.remove(); 
-                    callback('closed'); 
-                });
-                
-                let rewardListener = await AdMob.addListener('rewardedVideoAdReward', () => {
-                    if(adHandled) return; 
-                    adHandled = true; 
-                    lastAdTime = window.getTrueTime();
-                    if(rewardListener) rewardListener.remove(); 
-                    if(dismissListener) dismissListener.remove(); 
-                    callback('success'); 
-                });
 
-                let failListener = await AdMob.addListener('rewardedVideoAdFailedToShow', () => {
-                    if(adHandled) return; 
-                    adHandled = true; 
+        if(window.getTrueTime() - lastAdTime < 60000){
+            window.showToast("Wait 1 min before next ad");
+            return callback('cooldown');
+        }
+
+        if (typeof UnityAds !== 'undefined') {
+            window.showToast("Loading Ad...");
+            UnityAds.show("Rewarded_Android", 
+                function(placementId) {
+                    // Success callback
                     lastAdTime = window.getTrueTime();
-                    if(failListener) failListener.remove(); 
-                    if(dismissListener) dismissListener.remove(); 
-                    callback('error'); 
-                });
-                
-                await AdMob.showRewardVideoAd();
-                
-            } catch (error) { 
-                callback('error'); 
-            }
-        } else { 
-            lastAdTime = window.getTrueTime(); 
-            callback('error'); 
+                    callback('success');
+                }, 
+                function(placementId) {
+                    // Fail/Skip/Close callback
+                    window.showToast("Ad Closed or Skipped.");
+                    callback('closed'); 
+                }
+            );
+        } else {
+            lastAdTime = window.getTrueTime();
+            callback('error');
         }
     }
 
