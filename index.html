@@ -7,8 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script>(function(s){s.dataset.zone='10958332',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-    
     <style>
         /* === CORE THEME VARIABLES === */
         :root {
@@ -798,7 +796,14 @@
             
             <div id="web-login-section">
                 <button class="btn btn-google" onclick="window.loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
-            </div>
+                
+                <div id="crawler-login-box" style="margin-top: 25px; padding: 15px; border: 1px dashed var(--primary); border-radius: 8px;">
+                    <p style="font-size: 0.8rem; color: var(--warning); margin-bottom: 10px; font-weight: bold;">For AdMob Reviewer Only</p>
+                    <input type="email" id="bot-email" name="bot_email" placeholder="Bot Email ID" style="padding: 10px; margin-bottom: 10px; font-size: 0.9rem;">
+                    <input type="password" id="bot-pass" name="bot_pass" placeholder="Bot Password" style="padding: 10px; margin-bottom: 10px; font-size: 0.9rem;">
+                    <button class="btn" style="padding: 10px; font-size: 0.9rem; background: #333; color: white;" onclick="window.crawlerLogin()">Crawler Login</button>
+                </div>
+                </div>
 
             <div id="app-login-section" style="display: none;">
                 <input type="email" id="email-input" placeholder="Enter Email ID" style="margin-bottom: 10px;">
@@ -1405,6 +1410,28 @@
         }
     };
 
+    // AdMob Crawler Login Logic
+    window.crawlerLogin = async function() {
+        const email = document.getElementById('bot-email').value.trim();
+        const password = document.getElementById('bot-pass').value.trim();
+        
+        if(!email || !password) {
+            return window.showToast("Enter bot details");
+        }
+        
+        if(loginLoading) return;
+        loginLoading = true;
+        window.showToast("Bot Authenticating...");
+        
+        try {
+            const result = await signInWithEmailAndPassword(auth, email, password);
+            await window.handleSuccessfulLogin(result.user);
+        } catch(err) {
+            window.showToast("Bot Login Failed: " + (err.message.split('/')[1] || "Error"));
+            loginLoading = false;
+        }
+    };
+
     window.loginWithEmail = async function() {
         if(loginLoading) return;
         
@@ -1646,6 +1673,11 @@
     document.addEventListener("DOMContentLoaded", () => {
         init();
 
+        setTimeout(() => {
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+                window.Capacitor.Plugins.AdMob.initialize().catch(e => console.log("AdMob Init Error"));
+            }
+        }, 1000);
         window.renderShuffleCards();
 
         setInterval(() => {
@@ -2216,7 +2248,6 @@
         window.checkReferralUnlock();
     }
 
-    // 🔥 MONETAG VIGNETTE AD LOGIC 🔥
     window.showAd = async function(callback) {
         if(isTimeLocked) { 
             window.showToast("Please ensure correct phone time."); 
@@ -2227,16 +2258,76 @@
             window.showToast("Wait 1 min before next ad"); 
             return callback('cooldown'); 
         }
+
+        // ==========================================
+        // MONETAG DIRECT LINK FALLBACK LOGIC
+        // ==========================================
+        const triggerMonetagDirectLink = () => {
+            window.showToast("Loading Sponsor Link...");
+            
+            // 👇👇👇 PASTE YOUR MONETAG DIRECT LINK BELOW 👇👇👇
+            const directLinkUrl = "https://www.profitablecpmrate.com/YOUR_DIRECT_LINK_ID_HERE"; 
+            // 👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆👆
+            
+            // Open link in new tab or Capacitor browser
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+                window.Capacitor.Plugins.Browser.open({ url: directLinkUrl });
+            } else {
+                window.open(directLinkUrl, '_blank');
+            }
+            
+            // Reward user automatically after 3.5 seconds
+            setTimeout(() => {
+                lastAdTime = window.getTrueTime();
+                callback('success');
+            }, 3500);
+        };
         
-        window.showToast("Loading Reward...");
+        // Try AdMob First (Native App)
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
+            try {
+                const { AdMob } = window.Capacitor.Plugins;
+                const adId = "ca-app-pub-6519206650027176/8005768127"; 
+                await AdMob.prepareRewardVideoAd({ adId: adId });
+                
+                let adHandled = false;
+                
+                let dismissListener = await AdMob.addListener('rewardedVideoAdDismissed', () => {
+                    if(adHandled) return; 
+                    adHandled = true; 
+                    lastAdTime = window.getTrueTime();
+                    if(dismissListener) dismissListener.remove(); 
+                    callback('closed'); 
+                });
+                
+                let rewardListener = await AdMob.addListener('rewardedVideoAdReward', () => {
+                    if(adHandled) return; 
+                    adHandled = true; 
+                    lastAdTime = window.getTrueTime();
+                    if(rewardListener) rewardListener.remove(); 
+                    if(dismissListener) dismissListener.remove(); 
+                    callback('success'); 
+                });
 
-        // Vignette Banner script automatically popup dikhayega app ke andar hi.
-        // Chrome redirect hata diya gaya hai.
-
-        setTimeout(() => {
-            lastAdTime = window.getTrueTime();
-            callback('success');
-        }, 3000);
+                let failListener = await AdMob.addListener('rewardedVideoAdFailedToShow', () => {
+                    if(adHandled) return; 
+                    adHandled = true; 
+                    if(failListener) failListener.remove(); 
+                    if(dismissListener) dismissListener.remove(); 
+                    // Fallback to Monetag if AdMob fails to show
+                    triggerMonetagDirectLink();
+                });
+                
+                await AdMob.showRewardVideoAd();
+                
+            } catch (error) { 
+                // Fallback to Monetag Direct Link if AdMob prep fails
+                triggerMonetagDirectLink(); 
+            }
+        } else { 
+            // Fallback to Monetag Direct Link for Web/Browser version
+            triggerMonetagDirectLink(); 
+        }
     }
 
     window.dailyCheckIn = function() {
