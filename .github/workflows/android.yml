@@ -15,21 +15,28 @@ jobs:
           node-version: '20'
       - name: Install Dependencies
         run: |
-          npm install
-          npm uninstall @capacitor/share
-          npm install @capacitor-community/admob@5 --legacy-peer-deps
+          npm install --legacy-peer-deps
+          npm install cordova-plugin-unityads --legacy-peer-deps
+          
       - name: Prepare Web Folder
         run: |
           mkdir -p www
           cp index.html www/
-          cp -r assets www/assets/
-      - name: Generate Android Project
-        run: npx cap add android
-        
+          # Agar aapke paas style.css ya script.js alag hain toh unhe bhi yahan cp kijiye
+          cp script.js www/ || true
+          cp style.css www/ || true
+          cp -r assets www/assets/ || true
+
+      - name: Capacitor Sync & Android Setup
+        run: |
+          npx cap sync android
+          # Agar android folder nahi hai toh ye line add karega
+          if [ ! -d "android" ]; then npx cap add android; fi
+
       - name: Update App Version
         run: |
-          sed -i 's/versionCode 1/versionCode 7/g' android/app/build.gradle
-          sed -i 's/versionName "1.0"/versionName "7.0"/g' android/app/build.gradle
+          sed -i 's/versionCode [0-9]*/versionCode 7/g' android/app/build.gradle
+          sed -i 's/versionName "[0-9.]*"/versionName "7.0"/g' android/app/build.gradle
 
       - name: Update SDK & Inject REAL AdMob ID
         run: |
