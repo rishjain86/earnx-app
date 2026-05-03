@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <script>(function(s){s.dataset.zone='10958332',s.src='https://n6wxm.com/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+    
     <style>
         /* === CORE THEME VARIABLES === */
         :root {
@@ -2214,7 +2216,7 @@
         window.checkReferralUnlock();
     }
 
-    // 🔥 MONETAG REWARDED AD LOGIC 🔥
+    // 🔥 MONETAG VIGNETTE AD LOGIC 🔥
     window.showAd = async function(callback) {
         if(isTimeLocked) { 
             window.showToast("Please ensure correct phone time."); 
@@ -2226,16 +2228,15 @@
             return callback('cooldown'); 
         }
         
-        window.showToast("Opening Ad... Please wait 5-6 seconds.");
+        window.showToast("Loading Reward...");
 
-        // Ad Browser mein khulega
-        window.open("https://omg10.com/4/10957927", "_blank");
+        // Vignette Banner script automatically popup dikhayega app ke andar hi.
+        // Chrome redirect hata diya gaya hai.
 
-        // 6 second baad automatically success callback jayega jisse usko coins mil jayenge
         setTimeout(() => {
             lastAdTime = window.getTrueTime();
             callback('success');
-        }, 6000);
+        }, 3000);
     }
 
     window.dailyCheckIn = function() {
