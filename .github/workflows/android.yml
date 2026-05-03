@@ -36,13 +36,12 @@ jobs:
           cp index.html www/ || true
           cp script.js www/ || true
           cp style.css www/ || true
-          cp sw.js www/ || true
           cp -r assets www/assets/ || true
 
-      - name: Sync Capacitor Android
+      - name: Generate Android Project
         run: |
+          npx cap add android
           npx cap sync android
-          if [ ! -d "android" ]; then npx cap add android; fi
 
       - name: Update App Version
         run: |
