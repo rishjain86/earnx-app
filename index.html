@@ -3047,13 +3047,26 @@
         return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
     }
 
-    window.copyReferral = function() {
+        window.copyReferral = function() {
         if(!window.state || !window.state.user) return;
         const code = window.state.user.refCode;
-        if (navigator.clipboard) {
+        
+        // Better Copy Logic for App WebView
+        if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(code).then(() => window.showToast("Referral Code Copied!"));
         } else {
-            window.showToast("Copy failed, please copy manually.");
+            let textArea = document.createElement("textarea");
+            textArea.value = code;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                window.showToast("Referral Code Copied!");
+            } catch (err) {
+                window.showToast("Copy failed, please copy manually.");
+            }
+            document.body.removeChild(textArea);
         }
     }
 
@@ -3062,20 +3075,23 @@
         const code = window.state.user.refCode;
         const shareText = `Hey! Download the EarnX app and use my referral code: ${code} to get 100 Bonus Coins! 🚀`;
         
-        if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
-            const intentUrl = `intent:#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=${encodeURIComponent(shareText)};end`;
-            window.location.href = intentUrl;
-        } else if (navigator.share) {
+        // 1. Standard Share Menu (Works in most modern WebViews)
+        if (navigator.share) {
             navigator.share({
                 title: 'EarnX Rewards',
                 text: shareText
             }).catch(err => {
+                // User cancelled or error, fallback to copy
                 window.copyReferral();
-                window.showToast("Code Copied!");
             });
         } else {
-            window.copyReferral();
-            window.showToast("Code Copied! Share menu not supported.");
+            // 2. Direct WhatsApp Bypass if Native Share is missing
+            window.location.href = `whatsapp://send?text=${encodeURIComponent(shareText)}`;
+            
+            // Backup code copy
+            setTimeout(() => {
+                window.copyReferral();
+            }, 800);
         }
     }
 
