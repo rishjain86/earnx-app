@@ -796,14 +796,7 @@
             
             <div id="web-login-section">
                 <button class="btn btn-google" onclick="window.loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
-                
-                <div id="crawler-login-box" style="margin-top: 25px; padding: 15px; border: 1px dashed var(--primary); border-radius: 8px;">
-                    <p style="font-size: 0.8rem; color: var(--warning); margin-bottom: 10px; font-weight: bold;">For AdMob Reviewer Only</p>
-                    <input type="email" id="bot-email" name="bot_email" placeholder="Bot Email ID" style="padding: 10px; margin-bottom: 10px; font-size: 0.9rem;">
-                    <input type="password" id="bot-pass" name="bot_pass" placeholder="Bot Password" style="padding: 10px; margin-bottom: 10px; font-size: 0.9rem;">
-                    <button class="btn" style="padding: 10px; font-size: 0.9rem; background: #333; color: white;" onclick="window.crawlerLogin()">Crawler Login</button>
-                </div>
-                </div>
+            </div>
 
             <div id="app-login-section" style="display: none;">
                 <input type="email" id="email-input" placeholder="Enter Email ID" style="margin-bottom: 10px;">
@@ -1410,28 +1403,6 @@
         }
     };
 
-    // AdMob Crawler Login Logic
-    window.crawlerLogin = async function() {
-        const email = document.getElementById('bot-email').value.trim();
-        const password = document.getElementById('bot-pass').value.trim();
-        
-        if(!email || !password) {
-            return window.showToast("Enter bot details");
-        }
-        
-        if(loginLoading) return;
-        loginLoading = true;
-        window.showToast("Bot Authenticating...");
-        
-        try {
-            const result = await signInWithEmailAndPassword(auth, email, password);
-            await window.handleSuccessfulLogin(result.user);
-        } catch(err) {
-            window.showToast("Bot Login Failed: " + (err.message.split('/')[1] || "Error"));
-            loginLoading = false;
-        }
-    };
-
     window.loginWithEmail = async function() {
         if(loginLoading) return;
         
@@ -1669,14 +1640,6 @@
         window.updateUI();
         window.nav('login');
     }
-
-    // 🚀 NATIVE UNITY ADS INITIALIZATION (Via Capacitor/Cordova Plugin)
-    document.addEventListener("deviceready", () => {
-        if (typeof UnityAds !== 'undefined') {
-            UnityAds.initialize("6105265", true); // Test Mode is TRUE. Jab publish karo toh isko FALSE kar dena.
-            console.log("Unity Ads Initialized via Capacitor/Cordova!");
-        }
-    }, false);
 
     document.addEventListener("DOMContentLoaded", () => {
         init();
@@ -2251,36 +2214,28 @@
         window.checkReferralUnlock();
     }
 
-    // 🚀 SHOW AD FUNCTION (Updated for Unity)
+    // 🔥 MONETAG REWARDED AD LOGIC 🔥
     window.showAd = async function(callback) {
-        if(isTimeLocked) {
-            window.showToast("Please ensure correct phone time.");
-            return callback('cooldown');
+        if(isTimeLocked) { 
+            window.showToast("Please ensure correct phone time."); 
+            return callback('cooldown'); 
         }
-
-        if(window.getTrueTime() - lastAdTime < 60000){
-            window.showToast("Wait 1 min before next ad");
-            return callback('cooldown');
+        
+        if(window.getTrueTime() - lastAdTime < 60000){ 
+            window.showToast("Wait 1 min before next ad"); 
+            return callback('cooldown'); 
         }
+        
+        window.showToast("Opening Ad... Please wait 5-6 seconds.");
 
-        if (typeof UnityAds !== 'undefined') {
-            window.showToast("Loading Ad...");
-            UnityAds.show("Rewarded_Android", 
-                function(placementId) {
-                    // Success callback
-                    lastAdTime = window.getTrueTime();
-                    callback('success');
-                }, 
-                function(placementId) {
-                    // Fail/Skip/Close callback
-                    window.showToast("Ad Closed or Skipped.");
-                    callback('closed'); 
-                }
-            );
-        } else {
+        // Ad Browser mein khulega
+        window.open("https://omg10.com/4/10957927", "_blank");
+
+        // 6 second baad automatically success callback jayega jisse usko coins mil jayenge
+        setTimeout(() => {
             lastAdTime = window.getTrueTime();
-            callback('error');
-        }
+            callback('success');
+        }, 6000);
     }
 
     window.dailyCheckIn = function() {
