@@ -25,7 +25,6 @@ const COOLDOWN_MS = 3 * 60 * 1000;
 const SPIN_REFILL_MS = 3 * 60 * 60 * 1000; 
 const MAX_DAILY_COINS = 5000;
 
-let admobLoaded = false;
 let lastAdTime = 0; 
 let timerInterval = null;
 let withdrawLock = false; 
@@ -117,13 +116,17 @@ async function init() {
     window.nav('login');
 }
 
+// 🚀 UNITY ADS INITIALIZATION HOOK
+document.addEventListener("deviceready", () => {
+    if (typeof UnityAds !== 'undefined') {
+        // App is native, initialize Unity Ads
+        UnityAds.initialize("6105265", true); // Test Mode is TRUE. Jab publish karo toh isko FALSE kar dena.
+        console.log("Unity Ads Initialized via Capacitor/Cordova!");
+    }
+}, false);
+
 document.addEventListener("DOMContentLoaded", () => {
     init();
-    setTimeout(() => {
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-            window.Capacitor.Plugins.AdMob.initialize().catch(e => console.log("AdMob Init Error"));
-        }
-    }, 1000);
 });
 
 window.addEventListener("storage", (e) => { if(e.key === "earnx_state") location.reload(); });
@@ -413,6 +416,7 @@ function rewardCoins(amount, msg) {
     window.saveState(); window.showToast(`${amount} Coins Added`);
 }
 
+// 🚀 SHOW AD FUNCTION (Updated for Unity)
 async function showAd(callback) {
     if(isTimeLocked) return window.showToast("Please ensure correct phone time & active internet.");
     
@@ -421,32 +425,21 @@ async function showAd(callback) {
         return;
     }
 
-    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-        try {
-            window.showToast("Loading Ad...");
-            const { AdMob } = window.Capacitor.Plugins;
-            const adId = "ca-app-pub-6519206650027176/8005768127"; 
-
-            await AdMob.prepareRewardVideoAd({ adId: adId });
-
-            let listener = AdMob.addListener('onRewardedVideoAdRewarded', (rewardItem) => {
+    if (typeof UnityAds !== 'undefined') {
+        window.showToast("Loading Ad...");
+        UnityAds.show("Rewarded_Android", 
+            function(placementId) {
+                // Success: User watched the ad
                 lastAdTime = window.getTrueTime();
                 if(callback) callback();
-                
-                if (listener && listener.remove) {
-                    listener.remove();
-                } else {
-                    AdMob.removeAllListeners();
-                }
-            });
-
-            await AdMob.showRewardVideoAd();
-
-        } catch (error) {
-            window.showToast("Ad not available right now.");
-        }
+            }, 
+            function(placementId) {
+                // Failed/Skipped: User closed ad early
+                window.showToast("Ad Skipped. No reward.");
+            }
+        );
     } else {
-        window.showToast("App not running on Mobile!");
+        window.showToast("Ads not available right now. Are you on mobile?");
     }
 }
 
@@ -523,7 +516,7 @@ window.spinWheel = function() {
     setTimeout(() => {
         rewardCoins(prizeMap[safeRandom], "Spin Wheel");
         if(window.state.spin.totalSpins % 3 === 0) {
-            if(window.getTrueTime() - lastAdTime >= 60000) { setTimeout(() => showAd(), 500); }
+            if(window.getTrueTime() - lastAdTime >= 60000) { setTimeout(() => showAd(()=>{}), 500); }
         }
     }, 4200);
     setTimeout(() => { btn.disabled = false; }, 4500);
