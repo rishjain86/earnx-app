@@ -1102,7 +1102,20 @@
             <div style="width: 80px; height: 80px; background: var(--card-border); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; font-size: 2.5rem;">
                 <i class="fa-solid fa-user-astronaut"></i>
             </div>
-            <h3 id="profile-phone">Loading...</h3>
+            <h3 id="profile-phone" style="margin-bottom: 15px;">Loading...</h3>
+
+            <div style="text-align: left;">
+                <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Full Name:</label>
+                <input type="text" id="profile-name-input" placeholder="Enter Full Name">
+                
+                <label style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: block;">Mobile Number:</label>
+                <input type="tel" id="profile-phone-input" placeholder="Enter Mobile Number">
+            </div>
+            
+            <p id="profile-lock-msg" style="font-size: 0.75rem; color: var(--warning); margin-bottom: 15px; display: none;">
+                <i class="fa-solid fa-lock"></i> Details are locked securely after saving.
+            </p>
+            <button class="btn" id="btn-save-profile" onclick="window.saveProfileDetails()">Save Details</button>
         </div>
 
         <div class="card">
@@ -1122,7 +1135,7 @@
                 <i class="fa-solid fa-chevron-right"></i>
             </div>
             <div class="history-item" onclick="window.openSocial('https://t.me/Earnx_Supportbot')" style="cursor: pointer;">
-                <span><i class="fa-brands fa-telegram text-green" style="width: 25px;"></i> Telegram Support Bot</span>
+                <span><i class="brands fa-telegram text-green" style="width: 25px;"></i> Telegram Support Bot</span>
                 <i class="fa-solid fa-chevron-right"></i>
             </div>
         </div>
@@ -3032,6 +3045,34 @@
         const m = Math.floor(totalSec / 60);
         const s = totalSec % 60;
         return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+    }
+
+    window.copyReferral = function() {
+        if(!window.state || !window.state.user) return;
+        const code = window.state.user.refCode;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(code).then(() => window.showToast("Referral Code Copied!"));
+        } else {
+            window.showToast("Copy failed, please copy manually.");
+        }
+    }
+
+    window.shareReferral = function() {
+        if(!window.state || !window.state.user) return;
+        const code = window.state.user.refCode;
+        const shareText = `Hey! Download the EarnX app and use my referral code: ${code} to get 100 Bonus Coins! 🚀`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'EarnX Rewards',
+                text: shareText
+            }).catch(err => {
+                console.log("Share cancelled", err);
+            });
+        } else {
+            window.copyReferral();
+            window.showToast("Code Copied! Your device doesn't support direct share.");
+        }
     }
 
     document.addEventListener("DOMContentLoaded", function() {
