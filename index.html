@@ -1135,7 +1135,7 @@
                 <i class="fa-solid fa-chevron-right"></i>
             </div>
             <div class="history-item" onclick="window.openSocial('https://t.me/Earnx_Supportbot')" style="cursor: pointer;">
-                <span><i class="brands fa-telegram text-green" style="width: 25px;"></i> Telegram Support Bot</span>
+                <span><i class="fa-brands fa-telegram text-green" style="width: 25px;"></i> Telegram Support Bot</span>
                 <i class="fa-solid fa-chevron-right"></i>
             </div>
         </div>
@@ -3062,16 +3062,20 @@
         const code = window.state.user.refCode;
         const shareText = `Hey! Download the EarnX app and use my referral code: ${code} to get 100 Bonus Coins! 🚀`;
         
-        if (navigator.share) {
+        if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
+            const intentUrl = `intent:#Intent;action=android.intent.action.SEND;type=text/plain;S.android.intent.extra.TEXT=${encodeURIComponent(shareText)};end`;
+            window.location.href = intentUrl;
+        } else if (navigator.share) {
             navigator.share({
                 title: 'EarnX Rewards',
                 text: shareText
             }).catch(err => {
-                console.log("Share cancelled", err);
+                window.copyReferral();
+                window.showToast("Code Copied!");
             });
         } else {
             window.copyReferral();
-            window.showToast("Code Copied! Your device doesn't support direct share.");
+            window.showToast("Code Copied! Share menu not supported.");
         }
     }
 
