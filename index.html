@@ -746,9 +746,41 @@
             font-weight: 800; 
             color: var(--primary); 
         }
+
+        /* 🔥 AD TIMER OVERLAY CSS 🔥 */
+        #ad-verification-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.95); z-index: 200000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 30px;
+        }
+        .timer-loader-wrap {
+            position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px;
+        }
+        .timer-loader-ring {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border: 8px solid var(--card-border); border-top: 8px solid var(--warning);
+            border-radius: 50%; animation: spin-slow 1.5s linear infinite;
+        }
+        .timer-loader-text {
+            position: relative; font-size: 2.2rem; font-weight: 800; color: var(--warning); z-index: 5;
+        }
+        @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .timer-text { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; color: white; }
+        .warning-text { color: var(--danger); font-size: 0.85rem; font-weight: bold; }
     </style>
 </head>
 <body>
+
+<div id="ad-verification-overlay">
+    <div class="timer-loader-wrap">
+        <div class="timer-loader-ring"></div>
+        <div class="timer-loader-text" id="ad-timer-display">15</div>
+    </div>
+    <div class="timer-text">Verifying Advertisement...</div>
+    <p style="margin-bottom: 20px; color: var(--text-muted); font-size: 0.9rem;">Please do not close the app. Reward will be added automatically after verification.</p>
+    <div class="warning-text"><i class="fa-solid fa-triangle-exclamation"></i> Ad skip ya early close karne par reward nahi milega!</div>
+</div>
 
 <div id="custom-splash">
     <img src="assets/splash.png" alt="EarnX Splash Logo">
@@ -2261,7 +2293,8 @@
         window.checkReferralUnlock();
     }
 
-    window.showAd = async function(callback) {
+    // 🔥 UPDATED SHOW AD WITH TIMER LOGIC 🔥
+    window.showAd = function(callback) {
         if(isTimeLocked) { 
             window.showToast("Please ensure correct phone time."); 
             return callback('cooldown'); 
@@ -2272,70 +2305,48 @@
             return callback('cooldown'); 
         }
 
-        // ==========================================
-        // MONETAG DIRECT LINK FALLBACK LOGIC
-        // ==========================================
-        const triggerMonetagDirectLink = () => {
-            window.showToast("Loading Sponsor Link...");
-            
-            const directLinkUrl = "https://omg10.com/4/10957927"; 
-            
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-                window.Capacitor.Plugins.Browser.open({ url: directLinkUrl });
-            } else {
-                window.open(directLinkUrl, '_blank');
-            }
-            
-            // Reward user automatically after 3.5 seconds
-            setTimeout(() => {
-                lastAdTime = window.getTrueTime();
-                callback('success');
-            }, 3500);
-        };
-        
-        // Try AdMob First (Native App)
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-            try {
-                const { AdMob } = window.Capacitor.Plugins;
-                const adId = "ca-app-pub-6519206650027176/8005768127"; 
-                await AdMob.prepareRewardVideoAd({ adId: adId });
-                
-                let adHandled = false;
-                
-                let dismissListener = await AdMob.addListener('rewardedVideoAdDismissed', () => {
-                    if(adHandled) return; 
-                    adHandled = true; 
-                    lastAdTime = window.getTrueTime();
-                    if(dismissListener) dismissListener.remove(); 
-                    callback('closed'); 
-                });
-                
-                let rewardListener = await AdMob.addListener('rewardedVideoAdReward', () => {
-                    if(adHandled) return; 
-                    adHandled = true; 
-                    lastAdTime = window.getTrueTime();
-                    if(rewardListener) rewardListener.remove(); 
-                    if(dismissListener) dismissListener.remove(); 
-                    callback('success'); 
-                });
+        if(adTaskLock) return;
+        adTaskLock = true;
 
-                let failListener = await AdMob.addListener('rewardedVideoAdFailedToShow', () => {
-                    if(adHandled) return; 
-                    adHandled = true; 
-                    if(failListener) failListener.remove(); 
-                    if(dismissListener) dismissListener.remove(); 
-                    // Fallback to Monetag if AdMob fails to show
-                    triggerMonetagDirectLink();
-                });
-                
-                await AdMob.showRewardVideoAd();
-                
-            } catch (error) { 
-                triggerMonetagDirectLink(); 
-            }
-        } else { 
-            triggerMonetagDirectLink(); 
+        const adUrl = "https://omg10.com/4/10957927"; // Aapka Monetag Link
+        const overlay = document.getElementById('ad-verification-overlay');
+        const display = document.getElementById('ad-timer-display');
+        let timeLeft = 15;
+
+        window.showToast("Loading Sponsor Link...");
+
+        // 1. Browser kholo
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+            window.Capacitor.Plugins.Browser.open({ url: adUrl });
+        } else {
+            window.open(adUrl, '_blank');
         }
+
+        // 2. Timer Overlay Dikhao
+        overlay.style.display = 'flex';
+        display.innerText = timeLeft;
+
+        const countdown = setInterval(() => {
+            timeLeft--;
+            display.innerText = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                overlay.style.display = 'none';
+                lastAdTime = window.getTrueTime();
+                adTaskLock = false;
+                window.showToast("✅ Ad Verified! Reward Added.");
+                callback('success'); // Timer khatam hone par hi reward unlock hoga
+            }
+        }, 1000);
+
+        // Optional Backup: App minimize check
+        document.addEventListener('visibilitychange', function handleVis() {
+            if (document.visibilityState === 'visible' && timeLeft > 0 && overlay.style.display === 'flex') {
+                window.showToast("⚠️ Don't close early! Verification pending.");
+                document.removeEventListener('visibilitychange', handleVis);
+            }
+        });
     }
 
     window.dailyCheckIn = function() {
@@ -3047,7 +3058,7 @@
         return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
     }
 
-        window.copyReferral = function() {
+    window.copyReferral = function() {
         if(!window.state || !window.state.user) return;
         const code = window.state.user.refCode;
         
