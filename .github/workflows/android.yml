@@ -45,40 +45,43 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Force Clean Default Icons
+      - name: Deep Clean Default Android Assets
         run: |
           find android/app/src/main/res -name "ic_launcher*" -delete
           find android/app/src/main/res -name "ic_launcher_round*" -delete
+          rm -rf android/app/src/main/res/mipmap-anydpi-v26/* || true
 
       - name: Generate App Icons & Splash
         run: |
-          npx capacitor-assets generate --android
+          npx capacitor-assets generate --android --icon-path assets/icon.png --splash-path assets/splash.png
 
       - name: Update App Name & Version
         run: |
-          # App ka naam EarnX set karna (Native Android level par)
           sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">EarnX<\/string>/g' android/app/src/main/res/values/strings.xml || true
-          
-          # Version 8.0 update
           sed -i 's/versionCode [0-9]*/versionCode 8/g' android/app/build.gradle || true
           sed -i 's/versionName "[0-9.]*"/versionName "8.0"/g' android/app/build.gradle || true
-          
-          # SDK 34 update (Play Protect fix)
           sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 34/g' android/variables.gradle || true
           sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 34/g' android/variables.gradle || true
 
-      - name: Build APK
+      - name: Setup Release Signing
+        run: |
+          # Release build ko auto-sign karne ka trick taaki store use accept kar le
+          sed -i 's/release {/release {\n            signingConfig signingConfigs.debug/g' android/app/build.gradle || true
+
+      - name: Build Release APK
         run: |
           cd android
           chmod +x ./gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
 
       - name: Rename APK for Release
         run: |
-          mv android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/EarnX_v8.0.apk
+          # Ab output 'release' folder mein aayega
+          mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/EarnX_v8.0_Release.apk || true
+          mv android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/EarnX_v8.0_Release.apk || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: EarnX-v8.0
-          path: android/app/build/outputs/apk/debug/EarnX_v8.0.apk
+          name: EarnX-v8.0-Release
+          path: android/app/build/outputs/apk/release/EarnX_v8.0_Release.apk
