@@ -53,7 +53,8 @@ jobs:
 
       - name: Generate App Icons & Splash
         run: |
-          npx capacitor-assets generate --android --icon-path assets/icon.png --splash-path assets/splash.png
+          # Yahan se extra flags hata diye hain, ye default assets folder se auto-detect kar lega
+          npx capacitor-assets generate --android
 
       - name: Update App Name & Version
         run: |
@@ -65,7 +66,7 @@ jobs:
 
       - name: Setup Release Signing
         run: |
-          # Release build ko auto-sign karne ka trick taaki store use accept kar le
+          # Release build ko auto-sign karne ka trick
           sed -i 's/release {/release {\n            signingConfig signingConfigs.debug/g' android/app/build.gradle || true
 
       - name: Build Release APK
@@ -76,7 +77,6 @@ jobs:
 
       - name: Rename APK for Release
         run: |
-          # Ab output 'release' folder mein aayega
           mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/EarnX_v8.0_Release.apk || true
           mv android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/EarnX_v8.0_Release.apk || true
 
