@@ -2305,8 +2305,8 @@
         window.checkReferralUnlock();
     }
 
-    // 🔥 100% WORKING WEB ADS (MONETAG) + SECURE OVERLAY TIMER 🔥
-    window.showAd = function(callback) {
+    // 🔥 NATIVE UNITY ADS (CORDOVA PLUGIN) 🔥
+    window.showAd = async function(callback) {
         if(adTaskLock) return;
         adTaskLock = true;
 
@@ -2317,7 +2317,6 @@
             return;
         }
 
-        // 45 sec cooldown
         if(window.getTrueTime() - lastAdTime < 45000){ 
             window.showToast("Wait 45 seconds before next ad"); 
             adTaskLock = false;
@@ -2325,30 +2324,56 @@
             return;
         }
 
-        const adUrl = "https://omg10.com/4/10957927"; 
-        const overlay = document.getElementById('ad-verification-overlay');
-        const display = document.getElementById('ad-timer-display');
-        let timeLeft = 15;
+        // Checking for the Cordova Unity Ads object
+        if (window.unityads) {
+            window.showToast("Loading Native Video Ad...");
+            let adHandled = false;
 
-        window.showToast("Loading Sponsor Link...");
-        window.open(adUrl, '_blank');
+            // ⏱️ 8-Second Anti-Freeze
+            let adTimeout = setTimeout(() => {
+                if(!adHandled) {
+                    adHandled = true; adTaskLock = false;
+                    window.showToast("Ad server busy. Skipping safely.");
+                    if(callback) callback('success'); // Task nahi rukega
+                }
+            }, 8000);
 
-        overlay.style.display = 'flex';
-        display.innerText = timeLeft;
-
-        const countdown = setInterval(() => {
-            timeLeft--;
-            display.innerText = timeLeft;
-
-            if (timeLeft <= 0) {
-                clearInterval(countdown);
-                overlay.style.display = 'none';
-                lastAdTime = window.getTrueTime();
-                adTaskLock = false;
-                window.showToast("✅ Ad Verified! Reward Added.");
-                if(callback) callback('success'); 
+            try {
+                window.unityads.showRewardedVideo('Rewarded_Android', 
+                    function() { // Success callback
+                        if(!adHandled) {
+                            clearTimeout(adTimeout); adHandled = true;
+                            lastAdTime = window.getTrueTime(); adTaskLock = false;
+                            if(callback) callback('success'); 
+                        }
+                    },
+                    function(err) { // Error callback
+                        if(!adHandled) {
+                            clearTimeout(adTimeout); adHandled = true;
+                            lastAdTime = window.getTrueTime(); adTaskLock = false;
+                            
+                            // ⚠️ X-Ray Alert ⚠️
+                            alert("Unity Debug Error:\n" + err);
+                            
+                            if(callback) callback('success'); // Error par bhi task chalne do
+                        }
+                    }
+                );
+            } catch(e) {
+                if(!adHandled) {
+                    clearTimeout(adTimeout); adHandled = true;
+                    lastAdTime = window.getTrueTime(); adTaskLock = false;
+                    alert("Catch Error:\n" + (e.message || e));
+                    if(callback) callback('success');
+                }
             }
-        }, 1000);
+        } else {
+            window.showToast("Web Test: Native Ad Skipped.");
+            setTimeout(() => {
+                lastAdTime = window.getTrueTime(); adTaskLock = false;
+                if(callback) callback('success');
+            }, 1000);
+        }
     }
 
     window.dailyCheckIn = function() {
@@ -3105,6 +3130,18 @@
                 setTimeout(() => { splash.style.display = 'none'; }, 600);
             }
         }, 2500); 
+    });
+    
+    // 🚀 CORDOVA UNITY ADS INITIALIZATION 🚀
+    document.addEventListener('deviceready', function () {
+        if(window.unityads) {
+            try {
+                window.unityads.init('6105265', true);
+                console.log("Cordova Unity Engine Initialized!");
+            } catch(e) {
+                console.error("Unity Init Error", e);
+            }
+        }
     });
 
     window.addEventListener("popstate", (e) => {
