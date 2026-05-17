@@ -61,6 +61,7 @@ jobs:
           import android.webkit.WebView;
           import com.getcapacitor.BridgeActivity;
           import com.unity3d.ads.IUnityAdsInitializationListener;
+          import com.unity3d.ads.IUnityAdsLoadListener;
           import com.unity3d.ads.IUnityAdsShowListener;
           import com.unity3d.ads.UnityAds;
           import com.unity3d.ads.UnityAdsShowOptions;
@@ -90,38 +91,49 @@ jobs:
               private class UnityAdsJSInterface {
                   @JavascriptInterface
                   public void showRewardedAd(String placementId) {
-                      runOnUiThread(new Runnable() {
-                          @Override
-                          public void run() {
-                              UnityAds.show(MainActivity.this, placementId, new UnityAdsShowOptions(), new IUnityAdsShowListener() {
-                                  @Override
-                                  public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {
-                                      runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('failed');", null));
-                                  }
-                                  @Override
-                                  public void onUnityAdsShowStart(String placementId) {}
-                                  @Override
-                                  public void onUnityAdsShowClick(String placementId) {}
-                                  @Override
-                                  public void onUnityAdsShowComplete(String placementId, UnityAds.UnityAdsShowCompletionState state) {
-                                      if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
-                                          runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('success');", null));
-                                      } else {
+                      runOnUiThread(() -> {
+                          // 🔥 NAYA FIX: Pehle Ad Load karo, phir Show karo 🔥
+                          UnityAds.load(placementId, new IUnityAdsLoadListener() {
+                              @Override
+                              public void onUnityAdsAdLoaded(String placementId) {
+                                  UnityAds.show(MainActivity.this, placementId, new UnityAdsShowOptions(), new IUnityAdsShowListener() {
+                                      @Override
+                                      public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {
                                           runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('failed');", null));
                                       }
-                                  }
-                              });
-                          }
+                                      @Override
+                                      public void onUnityAdsShowStart(String placementId) {}
+                                      @Override
+                                      public void onUnityAdsShowClick(String placementId) {}
+                                      @Override
+                                      public void onUnityAdsShowComplete(String placementId, UnityAds.UnityAdsShowCompletionState state) {
+                                          if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
+                                              runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('success');", null));
+                                          } else {
+                                              runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('failed');", null));
+                                          }
+                                      }
+                                  });
+                              }
+                              @Override
+                              public void onUnityAdsFailedToLoad(String placementId, UnityAds.UnityAdsLoadError error, String message) {
+                                  runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('failed');", null));
+                              }
+                          });
                       });
                   }
 
                   @JavascriptInterface
                   public void showInterstitialAd(String placementId) {
-                      runOnUiThread(new Runnable() {
-                          @Override
-                          public void run() {
-                              UnityAds.show(MainActivity.this, placementId);
-                          }
+                      runOnUiThread(() -> {
+                          UnityAds.load(placementId, new IUnityAdsLoadListener() {
+                              @Override
+                              public void onUnityAdsAdLoaded(String placementId) {
+                                  UnityAds.show(MainActivity.this, placementId);
+                              }
+                              @Override
+                              public void onUnityAdsFailedToLoad(String placementId, UnityAds.UnityAdsLoadError error, String message) {}
+                          });
                       });
                   }
               }
@@ -172,3 +184,4 @@ jobs:
         with:
           name: EarnX-v8.0-Release
           path: android/app/build/outputs/apk/release/EarnX_v8.0_Release.apk
+          
