@@ -68,7 +68,9 @@ jobs:
 
           public class MainActivity extends BridgeActivity {
               private String unityGameID = "6105265";
-              private Boolean testMode = false;
+              
+              // 🔥 YAHAN CHANGE KIYA HAI: testMode = true kar diya 🔥
+              private Boolean testMode = true; 
 
               @Override
               public void onCreate(Bundle savedInstanceState) {
@@ -92,7 +94,6 @@ jobs:
                   @JavascriptInterface
                   public void showRewardedAd(String placementId) {
                       runOnUiThread(() -> {
-                          // 🔥 NAYA FIX: Pehle Ad Load karo, phir Show karo 🔥
                           UnityAds.load(placementId, new IUnityAdsLoadListener() {
                               @Override
                               public void onUnityAdsAdLoaded(String placementId) {
