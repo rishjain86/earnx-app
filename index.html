@@ -746,9 +746,41 @@
             font-weight: 800; 
             color: var(--primary); 
         }
+
+        /* 🔥 AD TIMER OVERLAY CSS 🔥 */
+        #ad-verification-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 6, 23, 0.95); z-index: 200000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 30px;
+        }
+        .timer-loader-wrap {
+            position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px;
+        }
+        .timer-loader-ring {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border: 8px solid var(--card-border); border-top: 8px solid var(--warning);
+            border-radius: 50%; animation: spin-slow 1.5s linear infinite;
+        }
+        .timer-loader-text {
+            position: relative; font-size: 2.2rem; font-weight: 800; color: var(--warning); z-index: 5;
+        }
+        @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .timer-text { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; color: white; }
+        .warning-text { color: var(--danger); font-size: 0.85rem; font-weight: bold; }
     </style>
 </head>
 <body>
+
+<div id="ad-verification-overlay">
+    <div class="timer-loader-wrap">
+        <div class="timer-loader-ring"></div>
+        <div class="timer-loader-text" id="ad-timer-display">15</div>
+    </div>
+    <div class="timer-text">Verifying Advertisement...</div>
+    <p style="margin-bottom: 20px; color: var(--text-muted); font-size: 0.9rem;">Please do not close the app. Reward will be added automatically after verification.</p>
+    <div class="warning-text"><i class="fa-solid fa-triangle-exclamation"></i> Ad skip ya early close karne par reward nahi milega!</div>
+</div>
 
 <div id="custom-splash">
     <img src="assets/splash.png" alt="EarnX Splash Logo">
@@ -1695,12 +1727,6 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         init();
-
-        setTimeout(() => {
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AdMob) {
-                window.Capacitor.Plugins.AdMob.initialize().catch(e => console.log("AdMob Init Error"));
-            }
-        }, 1000);
         window.renderShuffleCards();
 
         setInterval(() => {
@@ -2279,71 +2305,50 @@
         window.checkReferralUnlock();
     }
 
-    // 🔥 X-RAY DEBUG AD SYSTEM (100% FREEZE-PROOF) 🔥
-    window.showAd = async function(callback) {
+    // 🔥 100% WORKING WEB ADS (MONETAG) + SECURE OVERLAY TIMER 🔥
+    window.showAd = function(callback) {
         if(adTaskLock) return;
         adTaskLock = true;
 
         if(isTimeLocked) { 
             window.showToast("Please ensure correct phone time."); 
-            adTaskLock = false; 
+            adTaskLock = false;
             if(callback) callback('cooldown'); 
             return;
         }
 
-        // Bypassing normal cooldown for pure testing. Wait 5s minimum.
-        if(window.getTrueTime() - lastAdTime < 5000){ 
-            window.showToast("Wait 5 seconds..."); 
-            adTaskLock = false; 
+        // 45 sec cooldown
+        if(window.getTrueTime() - lastAdTime < 45000){ 
+            window.showToast("Wait 45 seconds before next ad"); 
+            adTaskLock = false;
             if(callback) callback('cooldown'); 
             return;
         }
 
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
-            window.showToast("Requesting Ad from Unity...");
-            let adHandled = false;
+        const adUrl = "https://omg10.com/4/10957927"; 
+        const overlay = document.getElementById('ad-verification-overlay');
+        const display = document.getElementById('ad-timer-display');
+        let timeLeft = 15;
 
-            // ⏱️ 8 Second Safety Net (App Freeze nahi hogi)
-            let adTimeout = setTimeout(() => {
-                if(!adHandled) {
-                    adHandled = true; 
-                    adTaskLock = false; // Lock automatically khul jayega
-                    window.showToast("Unity Timeout: Ad didn't load in 8s.");
-                    if(callback) callback('success'); // User ko free coins mil jayenge taaki task na ruke
-                }
-            }, 8000);
+        window.showToast("Loading Sponsor Link...");
+        window.open(adUrl, '_blank');
 
-            try {
-                await window.Capacitor.Plugins.UnityAds.showVideoAd({ placementId: 'Rewarded_Android' });
-                if(!adHandled) {
-                    clearTimeout(adTimeout); 
-                    adHandled = true;
-                    lastAdTime = window.getTrueTime(); 
-                    adTaskLock = false; // Ad dekhne ke baad lock khul gaya
-                    if(callback) callback('success'); 
-                }
-            } catch(e) {
-                if(!adHandled) {
-                    clearTimeout(adTimeout); 
-                    adHandled = true;
-                    lastAdTime = window.getTrueTime(); 
-                    adTaskLock = false; // Error aane par bhi lock khul gaya
-                    
-                    // ⚠️ YAHAN POPUP AAYEGA JO BATAEGA UNITY KYU ROKA HAI ⚠️
-                    let errorMsg = e.message ? e.message : JSON.stringify(e);
-                    alert("Unity Debug Error:\n" + errorMsg);
-                    
-                    if(callback) callback('success'); // User ko aage badhne do
-                }
-            }
-        } else {
-            window.showToast("Web Testing: Ad Skipped.");
-            setTimeout(() => {
-                lastAdTime = window.getTrueTime(); 
+        overlay.style.display = 'flex';
+        display.innerText = timeLeft;
+
+        const countdown = setInterval(() => {
+            timeLeft--;
+            display.innerText = timeLeft;
+
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                overlay.style.display = 'none';
+                lastAdTime = window.getTrueTime();
                 adTaskLock = false;
-                if(callback) callback('success');
-            }, 500);
-        }
+                window.showToast("✅ Ad Verified! Reward Added.");
+                if(callback) callback('success'); 
+            }
+        }, 1000);
     }
 
     window.dailyCheckIn = function() {
@@ -3092,24 +3097,6 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
             window.Capacitor.Plugins.SplashScreen.hide();
         }
-
-        // 🚀 UNITY ADS INITIALIZATION (With Error Log) 🚀
-        setTimeout(async () => {
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
-                try {
-                    await window.Capacitor.Plugins.UnityAds.initialize({
-                        gameId: '6105265', 
-                        testMode: true
-                    });
-                    console.log("Unity Ads Initialized!");
-                    window.showToast("✅ Unity System Ready!");
-                } catch (e) {
-                    alert("Unity Init Error: " + (e.message || JSON.stringify(e)));
-                }
-            } else {
-                console.log("Unity Plugin NOT found in App!");
-            }
-        }, 2000);
         
         setTimeout(function() {
             let splash = document.getElementById('custom-splash');
