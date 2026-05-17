@@ -48,7 +48,7 @@
             position: relative;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-bottom: 70px;
+            padding-bottom: 120px; 
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         
@@ -204,7 +204,7 @@
 
         .bottom-nav { 
             position: fixed; 
-            bottom: 0; 
+            bottom: 50px; /* SHIFTED UP FOR BANNER AD */
             width: 100%; 
             max-width: 480px; 
             background: var(--card-bg); 
@@ -746,41 +746,9 @@
             font-weight: 800; 
             color: var(--primary); 
         }
-
-        /* 🔥 AD TIMER OVERLAY CSS 🔥 */
-        #ad-verification-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 6, 23, 0.95); z-index: 200000;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 30px;
-        }
-        .timer-loader-wrap {
-            position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px;
-        }
-        .timer-loader-ring {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            border: 8px solid var(--card-border); border-top: 8px solid var(--warning);
-            border-radius: 50%; animation: spin-slow 1.5s linear infinite;
-        }
-        .timer-loader-text {
-            position: relative; font-size: 2.2rem; font-weight: 800; color: var(--warning); z-index: 5;
-        }
-        @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .timer-text { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; color: white; }
-        .warning-text { color: var(--danger); font-size: 0.85rem; font-weight: bold; }
     </style>
 </head>
 <body>
-
-<div id="ad-verification-overlay">
-    <div class="timer-loader-wrap">
-        <div class="timer-loader-ring"></div>
-        <div class="timer-loader-text" id="ad-timer-display">15</div>
-    </div>
-    <div class="timer-text">Verifying Advertisement...</div>
-    <p style="margin-bottom: 20px; color: var(--text-muted); font-size: 0.9rem;">Please do not close the app. Reward will be added automatically after verification.</p>
-    <div class="warning-text"><i class="fa-solid fa-triangle-exclamation"></i> Ad skip ya early close karne par reward nahi milega!</div>
-</div>
 
 <div id="custom-splash">
     <img src="assets/splash.png" alt="EarnX Splash Logo">
@@ -812,12 +780,12 @@
         <i class="fa-solid fa-rocket" style="font-size: 5rem; color: var(--primary); margin-bottom: 25px; filter: drop-shadow(0px 10px 15px rgba(16, 185, 129, 0.4));"></i>
         <h2 style="font-size: 2rem;">Update Required!</h2>
         <p style="margin-bottom: 30px; color: var(--text-muted); font-size: 1rem; max-width: 300px;">A new version of EarnX is available. Please update the app to continue earning rewards safely.</p>
-        <button class="btn" style="max-width: 300px; padding: 18px;" onclick="window.location.href='https://shorturl.at/RknTL'">Update App Now</button>
+        <button class="btn" style="max-width: 300px; padding: 18px;" onclick="window.open('https://play.google.com/store/apps/details?id=com.earnx.app', '_blank')">Update App Now</button>
     </div>
 
     <div id="screen-login" class="screen active">
         <div style="text-align: center; margin-top: 60px; margin-bottom: 40px;">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="EarnX Logo" class="app-logo">
+            <img src="assets/icon.png" alt="EarnX Logo" class="app-logo">
             <h1 style="font-size: 2.5rem;">EarnX</h1>
             <p>Your ultimate rewards platform.</p>
         </div>
@@ -827,15 +795,8 @@
             <p class="mb-2" style="font-size: 0.85rem;">Secure access for your EarnX account.</p>
             
             <div id="web-login-section">
-                
-                
-                <div id="crawler-login-box" style="margin-top: 25px; padding: 15px; border: 1px dashed var(--primary); border-radius: 8px;">
-                    <p style="font-size: 0.8rem; color: var(--warning); margin-bottom: 10px; font-weight: bold;">For AdMob Reviewer Only</p>
-                    <input type="email" id="bot-email" name="bot_email" placeholder="Bot Email ID" style="padding: 10px; margin-bottom: 10px; font-size: 0.9rem;">
-                    <input type="password" id="bot-pass" name="bot_pass" placeholder="Bot Password" style="padding: 10px; margin-bottom: 10px; font-size: 0.9rem;">
-                    <button class="btn" style="padding: 10px; font-size: 0.9rem; background: #333; color: white;" onclick="window.crawlerLogin()">Crawler Login</button>
-                </div>
-                </div>
+                <button class="btn btn-google" onclick="window.loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
+            </div>
 
             <div id="app-login-section" style="display: none;">
                 <input type="email" id="email-input" placeholder="Enter Email ID" style="margin-bottom: 10px;">
@@ -1440,8 +1401,19 @@
     });
 
     window.loginWithGoogle = async function(){
-        window.showToast("Google Login disabled in WebView. Use Email Login.");
-        return;
+        if(loginLoading) return;
+        loginLoading = true;
+        const provider = new GoogleAuthProvider();
+        try {
+            const result = await signInWithPopup(auth, provider);
+            await window.handleSuccessfulLogin(result.user);
+        } catch(err) {
+            console.error(err);
+            if (err.code !== 'auth/popup-closed-by-user') {
+                window.showToast("Login Error. Try again.");
+            }
+            loginLoading = false;
+        }
     };
 
     window.crawlerLogin = async function() {
@@ -1518,6 +1490,15 @@
             window.showToast("Error: " + (err.message.split('/')[1] || "Could not send link"));
         }
     };
+
+window.checkInternet = function(){
+    if(!navigator.onLine){
+        window.showToast("No internet connection");
+        return false;
+    }
+    return true;
+};
+
 </script>
 
 <script>
@@ -1579,15 +1560,13 @@
 
     window.hasClickedSocial = false;
     
-    window.openSocial = function(url) {
-        window.hasClickedSocial = true;
-
-        if(!navigator.onLine){
-            window.showToast("No internet connection");
-            return;
+    window.openSocial = function(url){
+        if(!window.checkInternet()) return;
+        try{
+            window.open(url, '_blank');
+        }catch(e){
+            console.log(e);
         }
-
-        window.open(url, '_blank');
     }
 
     window.maskEmail = function(email) {
@@ -1720,63 +1699,7 @@
         window.nav('login');
     }
 
-    
-window.checkInternet = function(){
-    if(!navigator.onLine){
-        window.showToast("No internet connection");
-        return false;
-    }
-    return true;
-};
-
-window.showAd = function(callback){
-
-    if(!navigator.onLine){
-        callback('failed');
-        return;
-    }
-
-    if(!window.unityads){
-        callback('success');
-        return;
-    }
-
-    try{
-
-        if(typeof unityads.showRewardedVideoAd === 'function'){
-
-            unityads.showRewardedVideoAd(
-
-                'Rewarded_Android',
-
-                function(){
-                    callback('success');
-                },
-
-                function(err){
-                    console.log(err);
-                    callback('failed');
-                }
-
-            );
-
-        } else {
-
-            callback('success');
-
-        }
-
-    } catch(e){
-
-        console.log(e);
-        callback('failed');
-
-    }
-
-}
-
-
-document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", () => {
         init();
         window.renderShuffleCards();
 
@@ -1792,6 +1715,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const modal = document.getElementById('celebration-modal');
         modal.style.display = 'flex';
         
+        // Memory Leak Fix: Clean previous confetti
+        document.querySelectorAll('.confetti-piece').forEach(e => e.remove());
+        
         for(let i=0; i<50; i++) {
             const piece = document.createElement('div');
             piece.className = 'confetti-piece';
@@ -1805,6 +1731,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     window.doMegaTask = async function() {
+        if(!window.checkInternet()) return;
         if(isTimeLocked) {
             return window.showToast("Securing Time... Please wait.");
         }
@@ -1934,7 +1861,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     window.saveCoinsToFirebase = async function(){
-        if(!navigator.onLine || !window.state.user || !window.state.user.id || saving) return;
+        if(!window.checkInternet() || !window.state.user || !window.state.user.id || saving) return;
         
         saving = true;
         try {
@@ -2005,6 +1932,13 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (screenId !== 'login' && screenId !== 'home') {
             history.pushState({ screen: screenId }, null, window.location.href);
+        }
+
+        // 🔥 INTERSTITIAL AD TRIGGER (25% Chance on Navigation) 🔥
+        if (['home', 'history', 'withdraw', 'referral', 'profile'].includes(screenId)) {
+            if (Math.random() < 0.25) { 
+                window.showInterstitialAd();
+            }
         }
     }
 
@@ -2312,14 +2246,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 🔥 REWARD COINS (WITH ADBLOCKER SECURITY) 🔥
+    // 🔥 REWARD COINS (WITH SECURE FREEZE & ADBLOCKER) 🔥
     window.rewardCoins = async function(amount, msg) {
         if(rewardLock) return; 
         rewardLock = true;
         
         setTimeout(()=> { rewardLock = false; }, 2000);
         
-        if(!navigator.onLine) return window.showToast("No internet connection!");
+        if(!window.checkInternet()) return;
         if(!window.state || !window.state.user) return window.showToast("Login required");
 
         // GATEKEEPER: Check AdBlocker
@@ -2355,9 +2289,44 @@ document.addEventListener("DOMContentLoaded", () => {
         window.showToast(`+${amount} Coins`);
         window.checkReferralUnlock();
     }
+    // Client-Side Hack Protection
+    Object.freeze(window.rewardCoins);
 
-    // 🔥 NATIVE UNITY ADS (CORDOVA PLUGIN) 🔥
+    // 🔥 NATIVE UNITY ADS HELPER (BANNER) 🔥
+    window.loadBannerAd = function() {
+        if(window.unityads) {
+            try {
+                if(typeof window.unityads.showBanner === 'function') {
+                    window.unityads.showBanner('Banner_Android'); 
+                } else if(typeof window.unityads.loadBanner === 'function') {
+                    window.unityads.loadBanner('Banner_Android');
+                }
+            } catch(e) { console.log("Banner Error", e); }
+        }
+    }
+
+    // 🔥 NATIVE UNITY ADS HELPER (INTERSTITIAL) 🔥
+    window.showInterstitialAd = function() {
+        if(window.unityads) {
+            try {
+                if (typeof window.unityads.showInterstitialAd === 'function') {
+                    window.unityads.showInterstitialAd('Interstitial_Android');
+                } else if (typeof window.unityads.show === 'function') {
+                    window.unityads.show('Interstitial_Android');
+                } else if (typeof window.unityads.showVideoAd === 'function') {
+                    window.unityads.showVideoAd('Interstitial_Android');
+                }
+            } catch(e) { console.log("Interstitial Error", e); }
+        }
+    }
+
+    // 🔥 NATIVE UNITY ADS (REWARDED) SECURE CALLBACKS 🔥
     window.showAd = async function(callback) {
+        if(!window.checkInternet()) {
+            if(callback) callback('failed');
+            return;
+        }
+
         if(adTaskLock) return;
         adTaskLock = true;
 
@@ -2375,7 +2344,6 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Checking for the Cordova Unity Ads object
         if (window.unityads) {
             window.showToast("Loading Native Video Ad...");
             let adHandled = false;
@@ -2389,34 +2357,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }, 8000);
 
-            try {
-                window.unityads.showRewardedVideo('Rewarded_Android', 
-                    function() { // Success callback
-                        if(!adHandled) {
-                            clearTimeout(adTimeout); adHandled = true;
-                            lastAdTime = window.getTrueTime(); adTaskLock = false;
-                            if(callback) callback('success'); 
-                        }
-                    },
-                    function(err) { // Error callback
-                        if(!adHandled) {
-                            clearTimeout(adTimeout); adHandled = true;
-                            lastAdTime = window.getTrueTime(); adTaskLock = false;
-                            
-                            // ⚠️ X-Ray Alert ⚠️
-                            alert("Unity Debug Error:\n" + err);
-                            
-                            if(callback) callback('success'); // Error par bhi task chalne do
-                        }
-                    }
-                );
-            } catch(e) {
+            const handleSuccess = function() {
                 if(!adHandled) {
                     clearTimeout(adTimeout); adHandled = true;
                     lastAdTime = window.getTrueTime(); adTaskLock = false;
-                    alert("Catch Error:\n" + (e.message || e));
                     if(callback) callback('success');
                 }
+            };
+
+            const handleError = function(err) {
+                if(!adHandled) {
+                    clearTimeout(adTimeout); adHandled = true;
+                    lastAdTime = window.getTrueTime(); adTaskLock = false;
+                    console.log("Ad Error/Closed:", err);
+                    window.showToast("Ad skipped or failed.");
+                    if(callback) callback('failed'); // Fake reward blocked
+                }
+            };
+
+            try {
+                if (typeof window.unityads.showRewardedVideoAd === 'function') {
+                    window.unityads.showRewardedVideoAd('Rewarded_Android', handleSuccess, handleError);
+                } else if (typeof window.unityads.showRewardedVideo === 'function') {
+                    window.unityads.showRewardedVideo('Rewarded_Android', handleSuccess, handleError);
+                } else if (typeof window.unityads.showVideoAd === 'function') {
+                    window.unityads.showVideoAd('Rewarded_Android', handleSuccess, handleError);
+                } else if (typeof window.unityads.show === 'function') {
+                    window.unityads.show('Rewarded_Android', handleSuccess, handleError);
+                } else {
+                    handleError("Method not found");
+                }
+            } catch(e) {
+                handleError(e);
             }
         } else {
             window.showToast("Web Test: Native Ad Skipped.");
@@ -2428,6 +2400,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     window.dailyCheckIn = function() {
+        if(!window.checkInternet()) return;
         if(isTimeLocked) return window.showToast("Securing Time...");
         const last = window.state.tasks.checkInTime || 0;
         
@@ -2442,6 +2415,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.mathAnswer = 0;
     
     window.generateMathProblem = function() {
+        if(!window.checkInternet()) return;
         if(window.getTrueTime() < (window.state.tasks.mathCooldownEnd || 0)) {
             window.showToast("Math Mania is cooling down!");
             window.nav('tasks');
@@ -2518,8 +2492,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         btn.disabled = false;
                         btn.innerText = "Submit Answer";
                     } else { 
-                        window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to claim.");
-                        window.state.tasks.mathAttempts--; // Revert attempt
+                        // Failed to load or skipped
+                        window.state.tasks.mathAttempts--; 
                         document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts) + "/5";
                         btn.disabled = false;
                         btn.innerText = "Submit Answer";
@@ -2560,6 +2534,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.isScratchFinished = false;
     
     window.initScratchCard = function() {
+        if(!window.checkInternet()) return;
         const now = window.getTrueTime();
         
         if(now < (window.state.tasks.scratchCooldownEnd || 0)) { 
@@ -2645,7 +2620,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             document.getElementById('btn-next-scratch').style.display = 'inline-block'; 
                             document.getElementById('scratch-status').innerText = "Ad cooldown. Try Next Card."; 
                         } else { 
-                            window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to claim.");
                             window.state.tasks.scratchAttempts--; 
                             document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts) + "/5"; 
                             document.getElementById('btn-next-scratch').style.display = 'inline-block'; 
@@ -2686,6 +2660,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     window.doTapTask = function() {
+        if(!window.checkInternet()) return;
         if(isTimeLocked) {
             return window.showToast("Securing Time...");
         }
@@ -2709,7 +2684,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if(status === 'success' || status === 'cooldown') {
                     window.executeTap();
                 } else {
-                    window.showToast("⚠️ Ad blocked! Disable AdBlocker.");
+                    window.showToast("Ad failed. Keep tapping!");
                 }
             });
         } else {
@@ -2760,6 +2735,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     window.startShuffleTask = function() {
+        if(!window.checkInternet()) return;
         if(isTimeLocked) {
             return window.showToast("Securing Time...");
         }
@@ -2833,7 +2809,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         window.saveState(); 
                         window.resetShuffleUI(); 
                     } else { 
-                        window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to earn.");
                         window.state.shuffle.shufflesLeft++; // Revert Shuffle
                         window.state.shuffle.totalShuffles--; 
                         document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; 
@@ -2872,6 +2847,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const prizeMap = [100, 75, 50, 20, 10, 5]; 
     
     window.spinWheel = function() {
+        if(!window.checkInternet()) return;
         if(isTimeLocked) return window.showToast("Securing Time...");
         
         if(window.getTrueTime() < (window.state.spin.spinNextTime || 0)) {
@@ -2911,7 +2887,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if(status === 'success' || status === 'cooldown') {
                         window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
                     } else {
-                        window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to earn.");
+                        // Failed to show ad
                     }
                 }), 500); 
             } else {
@@ -2923,7 +2899,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     window.applyReferralFirebase = async function(){
-        if(referralLock || !navigator.onLine || !window.state.user) return;
+        if(referralLock || !window.checkInternet() || !window.state.user) return;
         referralLock = true;
         
         try {
@@ -2961,14 +2937,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.submitWithdraw = async function(){
         if(typeof withdrawLock !== 'undefined' && withdrawLock) return; 
-        if(!navigator.onLine) return window.showToast("No internet!");
+        if(!window.checkInternet()) return;
         
         withdrawLock = true;
         setTimeout(()=> { withdrawLock = false; }, 5000); 
         
         try {
-            const coins = Math.floor(window.state.user.coins / 20000) * 20000;
-            if(coins < 20000) {
+            const requiredCoins = 20000;
+            if(window.state.user.coins < requiredCoins) {
                 return window.showToast("Min 20,000 coins required!");
             }
             
@@ -2983,27 +2959,28 @@ document.addEventListener("DOMContentLoaded", () => {
             const userRef = doc(window.db, "earnx_users", window.state.user.id);
             const currentCoins = (await getDoc(userRef)).data().coins || 0;
             
-            if(currentCoins < coins) {
+            if(currentCoins < requiredCoins) {
                 return window.showToast("Server Balance mismatch!");
             }
             
-            await updateDoc(userRef, { coins: currentCoins - coins });
+            // SECURITY FIX: Deduct exactly 20,000 instead of a multiplier
+            await updateDoc(userRef, { coins: currentCoins - requiredCoins });
             
             await addDoc(collection(window.db, "earnx_withdrawals"), { 
                 userId: window.state.user.id, 
-                coins: coins, 
+                coins: requiredCoins, 
                 email: email, 
                 payoutMethod: gcType,
                 status: "Pending", 
                 createdAt: serverTimestamp() 
             });
             
-            window.state.user.coins -= coins; 
-            window.logTransaction(`${gcType} Gift Card Req`, coins, "spend");
+            window.state.user.coins -= requiredCoins; 
+            window.logTransaction(`${gcType} Gift Card Req`, requiredCoins, "spend");
             window.saveState(); 
             
             window.state.withdrawals.push({
-                amount: (coins / 20000) * 100,
+                amount: 100, // 100 Rs
                 email: email,
                 payoutMethod: gcType,
                 date: window.getTrueTime(),
@@ -3160,7 +3137,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         } else {
             // 2. Direct WhatsApp Bypass if Native Share is missing
-            window.open( `whatsapp://send?text=${encodeURIComponent(shareText)}`;
+            window.location.href = `whatsapp://send?text=${encodeURIComponent(shareText)}`;
             
             // Backup code copy
             setTimeout(() => {
@@ -3183,12 +3160,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 2500); 
     });
     
-    // 🚀 CORDOVA UNITY ADS INITIALIZATION 🚀
+    // 🚀 CORDOVA UNITY ADS INITIALIZATION (SMART DETECT) 🚀
     document.addEventListener('deviceready', function () {
         if(window.unityads) {
             try {
-                window.unityads.init('6105265', true);
+                if (typeof window.unityads.initialize === 'function') {
+                    window.unityads.initialize('6105265', true);
+                } else if (typeof window.unityads.init === 'function') {
+                    window.unityads.init('6105265', true);
+                } else if (typeof window.unityads.setUp === 'function') {
+                    window.unityads.setUp('6105265');
+                } else {
+                    console.warn("Init Method missing. Available:", Object.keys(window.unityads));
+                }
                 console.log("Cordova Unity Engine Initialized!");
+                
+                // Show banner after 3 seconds to ensure engine is ready
+                setTimeout(() => {
+                    window.loadBannerAd();
+                }, 3000);
+
             } catch(e) {
                 console.error("Unity Init Error", e);
             }
