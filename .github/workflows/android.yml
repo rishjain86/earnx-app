@@ -49,7 +49,7 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: 🚀 INJECT OFFICIAL UNITY NATIVE SDK 🚀
+      - name: 🚀 INJECT OFFICIAL UNITY NATIVE SDK WITH PRE-LOAD 🚀
         run: |
           sed -i '/dependencies {/a \    implementation "com.unity3d.ads:unity-ads:4.12.1"' android/app/build.gradle
           
@@ -67,19 +67,41 @@ jobs:
           import com.unity3d.ads.UnityAdsShowOptions;
 
           public class MainActivity extends BridgeActivity {
-              private String unityGameID = "6105265";
-              
-              // 🔥 YAHAN CHANGE KIYA HAI: testMode = true kar diya 🔥
-              private Boolean testMode = true; 
+              private final String unityGameID = "6105265";
+              private final boolean testMode = true; // KEEP TRUE FOR TEST ADS
 
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
-                  UnityAds.initialize(getApplicationContext(), unityGameID, testMode, new IUnityAdsInitializationListener() {
+                  
+                  runOnUiThread(new Runnable() {
                       @Override
-                      public void onInitializationComplete() {}
+                      public void run() {
+                          UnityAds.initialize(getApplicationContext(), unityGameID, testMode, new IUnityAdsInitializationListener() {
+                              @Override
+                              public void onInitializationComplete() {
+                                  // 🔥 App khulte hi background mein ads load karna start karo 🔥
+                                  preloadAds();
+                              }
+                              @Override
+                              public void onInitializationFailed(UnityAds.UnityAdsInitializationError error, String message) {}
+                          });
+                      }
+                  });
+              }
+
+              private void preloadAds() {
+                  UnityAds.load("Rewarded_Android", new IUnityAdsLoadListener() {
                       @Override
-                      public void onInitializationFailed(UnityAds.UnityAdsInitializationError error, String message) {}
+                      public void onUnityAdsAdLoaded(String placementId) {}
+                      @Override
+                      public void onUnityAdsFailedToLoad(String placementId, UnityAds.UnityAdsLoadError error, String message) {}
+                  });
+                  UnityAds.load("Interstitial_Android", new IUnityAdsLoadListener() {
+                      @Override
+                      public void onUnityAdsAdLoaded(String placementId) {}
+                      @Override
+                      public void onUnityAdsFailedToLoad(String placementId, UnityAds.UnityAdsLoadError error, String message) {}
                   });
               }
 
@@ -92,49 +114,53 @@ jobs:
 
               private class UnityAdsJSInterface {
                   @JavascriptInterface
-                  public void showRewardedAd(String placementId) {
-                      runOnUiThread(() -> {
-                          UnityAds.load(placementId, new IUnityAdsLoadListener() {
-                              @Override
-                              public void onUnityAdsAdLoaded(String placementId) {
-                                  UnityAds.show(MainActivity.this, placementId, new UnityAdsShowOptions(), new IUnityAdsShowListener() {
-                                      @Override
-                                      public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {
-                                          runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('failed');", null));
-                                      }
-                                      @Override
-                                      public void onUnityAdsShowStart(String placementId) {}
-                                      @Override
-                                      public void onUnityAdsShowClick(String placementId) {}
-                                      @Override
-                                      public void onUnityAdsShowComplete(String placementId, UnityAds.UnityAdsShowCompletionState state) {
-                                          if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
-                                              runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('success');", null));
-                                          } else {
+                  public void showRewardedAd(final String placementId) {
+                      runOnUiThread(new Runnable() {
+                          @Override
+                          public void run() {
+                              // 🔥 Pehle se loaded ad ko direct show karo fast execution ke liye 🔥
+                              UnityAds.show(MainActivity.this, placementId, new UnityAdsShowOptions(), new IUnityAdsShowListener() {
+                                  @Override
+                                  public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {
+                                      // Agar ad cached nahi hai, toh fail hone par backup load chalao
+                                      UnityAds.load(placementId, new IUnityAdsLoadListener() {
+                                          @Override
+                                          public void onUnityAdsAdLoaded(String pId) {
+                                              UnityAds.show(MainActivity.this, pId, new UnityAdsShowOptions(), this);
+                                          }
+                                          @Override
+                                          public void onUnityAdsFailedToLoad(String pId, UnityAds.UnityAdsLoadError err, String msg) {
                                               runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('failed');", null));
                                           }
+                                      });
+                                  }
+                                  @Override
+                                  public void onUnityAdsShowStart(String placementId) {}
+                                  @Override
+                                  public void onUnityAdsShowClick(String placementId) {}
+                                  @Override
+                                  public void onUnityAdsShowComplete(String placementId, UnityAds.UnityAdsShowCompletionState state) {
+                                      // Next time ke liye background mein agla ad preload kar do
+                                      preloadAds();
+                                      if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
+                                          runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('success');", null));
+                                      } else {
+                                          runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('failed');", null));
                                       }
-                                  });
-                              }
-                              @Override
-                              public void onUnityAdsFailedToLoad(String placementId, UnityAds.UnityAdsLoadError error, String message) {
-                                  runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('failed');", null));
-                              }
-                          });
+                                  }
+                              });
+                          }
                       });
                   }
 
                   @JavascriptInterface
-                  public void showInterstitialAd(String placementId) {
-                      runOnUiThread(() -> {
-                          UnityAds.load(placementId, new IUnityAdsLoadListener() {
-                              @Override
-                              public void onUnityAdsAdLoaded(String placementId) {
-                                  UnityAds.show(MainActivity.this, placementId);
-                              }
-                              @Override
-                              public void onUnityAdsFailedToLoad(String placementId, UnityAds.UnityAdsLoadError error, String message) {}
-                          });
+                  public void showInterstitialAd(final String placementId) {
+                      runOnUiThread(new Runnable() {
+                          @Override
+                          public void run() {
+                              UnityAds.show(MainActivity.this, placementId);
+                              preloadAds(); // Next time ke liye reload
+                          }
                       });
                   }
               }
