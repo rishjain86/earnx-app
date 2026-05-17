@@ -45,10 +45,11 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Upgrade Gradle for Java 21
+      - name: Upgrade Gradle & AGP for Java 21 (Crucial Fix)
         run: |
           sed -i 's/gradle-[0-9\.]*-all\.zip/gradle-8.7-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties || true
           sed -i 's/gradle-[0-9\.]*-bin\.zip/gradle-8.7-bin.zip/g' android/gradle/wrapper/gradle-wrapper.properties || true
+          sed -i 's/com.android.tools.build:gradle:[0-9\.]*/com.android.tools.build:gradle:8.3.0/g' android/build.gradle || true
 
       - name: Deep Clean Default Android Assets
         run: |
