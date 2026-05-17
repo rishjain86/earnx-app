@@ -48,7 +48,7 @@
             position: relative;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-bottom: 130px; /* SPACE FOR BOTTOM NAV + BANNER AD + PADDING */
+            padding-bottom: 120px; 
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         
@@ -201,7 +201,7 @@
             font-size: 1.1rem;
         }
 
-        /* 🔥 FIXED TRANSPARENT SCROLL UI 🔥 */
+        /* 🔥 SCROLL TRANSPARENT FIX 🔥 */
         .bottom-area-wrapper {
             position: fixed;
             bottom: 0;
@@ -209,7 +209,7 @@
             transform: translateX(-50%);
             width: 100%;
             max-width: 480px;
-            background: var(--bg-dark); /* Solid background hides scroll content */
+            background: var(--bg-darker); /* Solid Dark background taaki scroll na dikhe */
             z-index: 1000;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
         }
@@ -218,7 +218,6 @@
             position: relative; 
             width: 100%; 
             background: var(--card-bg); 
-            border-top: 1px solid var(--card-border); 
             display: flex; 
             justify-content: space-around; 
             padding: 10px 0; 
@@ -2319,15 +2318,9 @@ window.checkInternet = function(){
 
     // 🔥 NATIVE UNITY ADS HELPER (INTERSTITIAL) 🔥
     window.showInterstitialAd = function() {
-        if(window.unityads) {
+        if(window.NativeUnity) {
             try {
-                if (typeof window.unityads.showInterstitialAd === 'function') {
-                    window.unityads.showInterstitialAd('Interstitial_Android');
-                } else if (typeof window.unityads.show === 'function') {
-                    window.unityads.show('Interstitial_Android');
-                } else if (typeof window.unityads.showVideoAd === 'function') {
-                    window.unityads.showVideoAd('Interstitial_Android');
-                }
+                window.NativeUnity.showInterstitialAd('Interstitial_Android');
             } catch(e) { console.log("Interstitial Error", e); }
         }
     }
@@ -2356,7 +2349,7 @@ window.checkInternet = function(){
             return;
         }
 
-        if (window.unityads) {
+        if (window.NativeUnity) {
             window.showToast("Loading Native Video Ad...");
             let adHandled = false;
 
@@ -2364,44 +2357,35 @@ window.checkInternet = function(){
             let adTimeout = setTimeout(() => {
                 if(!adHandled) {
                     adHandled = true; adTaskLock = false;
+                    window.currentAdCallback = null;
                     window.showToast("Ad server busy. Skipping safely.");
                     if(callback) callback('success'); // Task nahi rukega
                 }
             }, 8000);
 
-            const handleSuccess = function() {
+            window.currentAdCallback = function(status) {
                 if(!adHandled) {
                     clearTimeout(adTimeout); adHandled = true;
                     lastAdTime = window.getTrueTime(); adTaskLock = false;
-                    if(callback) callback('success');
-                }
-            };
-
-            const handleError = function(err) {
-                if(!adHandled) {
-                    clearTimeout(adTimeout); adHandled = true;
-                    lastAdTime = window.getTrueTime(); adTaskLock = false;
-                    console.log("Ad Error/Closed:", err);
                     
-                    // Graceful Fallback: Plugin error diya toh bhi user ko reward do taaki wo atke na!
-                    if(callback) callback('success'); 
+                    if(status === 'success') {
+                        if(callback) callback('success');
+                    } else {
+                        window.showToast("Ad failed or closed early.");
+                        if(callback) callback('failed');
+                    }
                 }
             };
 
             try {
-                if (typeof window.unityads.showRewardedVideo === 'function') {
-                    window.unityads.showRewardedVideo('Rewarded_Android', handleSuccess, handleError);
-                } else if (typeof window.unityads.showRewardedVideoAd === 'function') {
-                    window.unityads.showRewardedVideoAd('Rewarded_Android', handleSuccess, handleError);
-                } else if (typeof window.unityads.showVideoAd === 'function') {
-                    window.unityads.showVideoAd('Rewarded_Android', handleSuccess, handleError);
-                } else if (typeof window.unityads.show === 'function') {
-                    window.unityads.show('Rewarded_Android', handleSuccess, handleError);
-                } else {
-                    handleError("Method not found");
-                }
+                window.NativeUnity.showRewardedAd('Rewarded_Android');
             } catch(e) {
-                handleError(e);
+                if(!adHandled) {
+                    clearTimeout(adTimeout); adHandled = true;
+                    lastAdTime = window.getTrueTime(); adTaskLock = false;
+                    window.showToast("Ad Error.");
+                    if(callback) callback('success');
+                }
             }
         } else {
             window.showToast("Web Test: Native Ad Skipped.");
@@ -3172,19 +3156,16 @@ window.checkInternet = function(){
             }
         }, 2500); 
     });
-            // 🚀 APP INITIALIZATION 🚀
+    
+    // 🚀 NATIVE UNITY ADS CONNECTION 🚀
     document.addEventListener('deviceready', function () {
         console.log("App Ready! Cordova is loaded.");
+        // We no longer initialize via JS because the Java Native Code does it automatically!
         
-        // NATIVE INJECTION: Asli Unity SDK GitHub Actions ke zariye 
-        // Android Java (MainActivity.java) se automatically start ho jayega.
-        // Isiliye JS se initialize karne ki zaroorat nahi hai.
-        
-        /* // Old Fake Plugin logic (Commented Out)
-        if(window.unityads) {
-             console.log("Ignoring fake NPM plugin...");
-        }
-        */
+        // Show banner after 3 seconds to ensure engine is ready
+        setTimeout(() => {
+            window.loadBannerAd();
+        }, 3000);
     });
 
     window.addEventListener("popstate", (e) => {
