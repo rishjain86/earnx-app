@@ -35,6 +35,7 @@ let saving = false;
 let coinSaveTimeout;
 let appLoaded = false;
 let lastCoinRewardTime = 0;
+let adTaskLock = false; 
 
 let serverTimeOffset = 0;
 let isTimeLocked = true;
@@ -114,6 +115,23 @@ async function init() {
 
     window.updateUI();
     window.nav('login');
+
+    // INITIALIZE UNITY ADS
+    setTimeout(async () => {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
+            try {
+                await window.Capacitor.Plugins.UnityAds.initialize({
+                    gameId: '6105264',
+                    testMode: false
+                });
+                console.log("Unity Ads Initialized!");
+                // Load Banner 
+                window.Capacitor.Plugins.UnityAds.showBanner({ placementId: 'Banner_Android', position: 'BOTTOM_CENTER' }).catch(e=>console.log(e));
+            } catch (e) {
+                console.error("Unity Init Failed: ", e);
+            }
+        }
+    }, 1500);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -284,6 +302,8 @@ window.saveState = function() {
     window.updateUI(); saveCoinsToFirebaseDebounced();
 }
 
+// Interstitial logic on navigation
+let navClicks = 0;
 window.nav = function(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const target = document.getElementById(`screen-${screenId}`);
@@ -297,6 +317,12 @@ window.nav = function(screenId) {
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     const activeItem = document.querySelector(`.nav-item[data-target="${screenId}"]`);
     if(activeItem) activeItem.classList.add('active');
+
+    // Show Interstitial every 5th screen change
+    navClicks++;
+    if(navClicks % 5 === 0 && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
+        window.Capacitor.Plugins.UnityAds.showVideoAd({ placementId: 'Interstitial_Android' }).catch(e => {});
+    }
 }
 
 window.logout = function() {
@@ -407,25 +433,47 @@ function rewardCoins(amount, msg) {
     window.saveState(); window.showToast(`${amount} Coins Added`);
 }
 
-// 🚀 SHOW AD (MONETAG DIRECT LINK CODE)
+// 🚀 SHOW AD (UNITY NATIVE REWARDED CODE)
 window.showAd = async function(callback) {
-    if(isTimeLocked) return window.showToast("Please ensure correct phone time & active internet.");
+    if(isTimeLocked) {
+        window.showToast("Please ensure correct phone time.");
+        if(callback) callback('cooldown');
+        return;
+    }
     
     if(window.getTrueTime() - lastAdTime < 60000){
         window.showToast("Wait 1 min before next ad");
+        if(callback) callback('cooldown');
         return;
     }
 
-    window.showToast("Opening Ad... Watch for 5 seconds");
-    
-    // Ad Browser mein open karna
-    window.open("https://omg10.com/4/10957927", "_blank");
+    if(adTaskLock) return;
+    adTaskLock = true;
 
-    // Ad dekhne ke baad 7 seconds mein reward mil jayega
-    setTimeout(() => {
-        lastAdTime = window.getTrueTime();
-        if(callback) callback();
-    }, 7000);
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
+        window.showToast("Loading Video Ad...");
+        try {
+            await window.Capacitor.Plugins.UnityAds.showVideoAd({ placementId: 'Rewarded_Android' });
+            // Ad Watched Complete
+            lastAdTime = window.getTrueTime();
+            adTaskLock = false;
+            window.showToast("✅ Reward Added!");
+            if(callback) callback('success');
+        } catch(e) {
+            console.error("Ad Error/Closed: ", e);
+            adTaskLock = false;
+            window.showToast("Ad closed early or failed to load!");
+            if(callback) callback('closed');
+        }
+    } else {
+        // Fallback for web testing (agar laptop browser pe test kar rahe ho)
+        window.showToast("Web Testing: Ad Skipped.");
+        setTimeout(() => {
+            lastAdTime = window.getTrueTime();
+            adTaskLock = false;
+            if(callback) callback('success');
+        }, 1500);
+    }
 }
 
 window.dailyCheckIn = function() {
@@ -439,24 +487,30 @@ window.dailyCheckIn = function() {
 window.doWatchTask = function() {
     if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
     if(window.getTrueTime() - window.state.tasks.lastWatch < COOLDOWN_MS) return window.showToast("Wait for timer!");
-    showAd(() => { window.state.tasks.lastWatch = window.getTrueTime(); rewardCoins(100, "Watched Ad"); updateTimersUI(); });
+    showAd((status) => { 
+        if(status === 'success') {
+            window.state.tasks.lastWatch = window.getTrueTime(); rewardCoins(100, "Watched Ad"); updateTimersUI(); 
+        }
+    });
 }
 
 window.doStayTask = function() {
     if(isTimeLocked) return window.showToast("Securing Time... Please check internet & clock.");
     if(window.getTrueTime() - window.state.tasks.lastStay < COOLDOWN_MS) return window.showToast("Wait for timer!");
-    showAd(() => {
-        const sModal = document.getElementById('stay-modal'); const sTime = document.getElementById('stay-countdown');
-        if(!sModal || !sTime) return;
-        sModal.style.display = 'flex'; let timeLeft = 15; sTime.innerText = timeLeft;
-        const sInt = setInterval(() => {
-            timeLeft--; sTime.innerText = timeLeft;
-            if(timeLeft <= 0) {
-                clearInterval(sInt); sModal.style.display = 'none';
-                window.state.tasks.lastStay = window.getTrueTime();
-                rewardCoins(200, "Stay Task Complete"); updateTimersUI();
-            }
-        }, 1000);
+    showAd((status) => {
+        if(status === 'success') {
+            const sModal = document.getElementById('stay-modal'); const sTime = document.getElementById('stay-countdown');
+            if(!sModal || !sTime) return;
+            sModal.style.display = 'flex'; let timeLeft = 15; sTime.innerText = timeLeft;
+            const sInt = setInterval(() => {
+                timeLeft--; sTime.innerText = timeLeft;
+                if(timeLeft <= 0) {
+                    clearInterval(sInt); sModal.style.display = 'none';
+                    window.state.tasks.lastStay = window.getTrueTime();
+                    rewardCoins(200, "Stay Task Complete"); updateTimersUI();
+                }
+            }, 1000);
+        }
     });
 }
 
