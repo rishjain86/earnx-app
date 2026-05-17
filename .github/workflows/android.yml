@@ -172,4 +172,3 @@ jobs:
         with:
           name: EarnX-v8.0-Release
           path: android/app/build/outputs/apk/release/EarnX_v8.0_Release.apk
-          
