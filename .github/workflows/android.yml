@@ -40,9 +40,8 @@ jobs:
           cp sw.js www/ || true
           cp -r assets www/assets/ || true
 
-      - name: Generate Android Project
+      - name: Sync Android Project
         run: |
-          npx cap add android
           npx cap sync android
 
       - name: Upgrade Gradle & AGP for Java 21 (Crucial Fix)
@@ -89,3 +88,4 @@ jobs:
         with:
           name: EarnX-v8.0-Release
           path: android/app/build/outputs/apk/release/EarnX_v8.0_Release.apk
+          
