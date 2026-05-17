@@ -4,7 +4,7 @@
   "dependencies": {
     "@capacitor/android": "^5.0.0",
     "@capacitor/core": "^5.0.0",
-    "capacitor-unity-ads": "latest"
+    "@hughhy/capacitor-unity-ads": "latest"
   },
   "devDependencies": {
     "@capacitor/cli": "^5.0.0",
