@@ -179,6 +179,7 @@
             cursor: not-allowed; 
         }
 
+        /* SHOW PASSWORD TOGGLE CSS */
         .password-container {
             position: relative;
             width: 100%;
@@ -1795,8 +1796,10 @@
                 win = 1000; 
             }
 
-            window.rewardCoins(win, "FB TASK");
-
+            window.state.user.coins += win;
+            if(!window.state.user.lifetimeCoins) window.state.user.lifetimeCoins = 0;
+            window.state.user.lifetimeCoins += win;
+            
             if(!window.state.tasks.claimedPromos) {
                 window.state.tasks.claimedPromos = [];
             }
@@ -1805,6 +1808,7 @@
             window.state.tasks.lastFbId = fbId;
             window.state.tasks.lastInstaId = instaId;
             
+            window.logTransaction("FB TASK", win, "earn");
             window.saveState();
 
             document.getElementById('win-display').innerText = win;
@@ -1895,7 +1899,6 @@
         window.saveCoinsToFirebaseDebounced();
     }
 
-    let navClicks = 0;
     window.nav = function(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         
@@ -1925,11 +1928,6 @@
         
         if (screenId !== 'login' && screenId !== 'home') {
             history.pushState({ screen: screenId }, null, window.location.href);
-        }
-
-        navClicks++;
-        if(navClicks % 5 === 0 && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
-            window.Capacitor.Plugins.UnityAds.showVideoAd({ placementId: 'Interstitial_Android' }).catch(e => {});
         }
     }
 
@@ -2241,6 +2239,7 @@
     window.rewardCoins = async function(amount, msg) {
         if(rewardLock) return; 
         rewardLock = true;
+        
         setTimeout(()=> { rewardLock = false; }, 2000);
         
         if(!navigator.onLine) return window.showToast("No internet connection!");
@@ -2280,50 +2279,68 @@
         window.checkReferralUnlock();
     }
 
-    // 🔥 ULTRA-SMOOTH SOFT-FAIL AD LOGIC 🔥
+    // 🔥 X-RAY DEBUG AD SYSTEM (100% FREEZE-PROOF) 🔥
     window.showAd = async function(callback) {
         if(adTaskLock) return;
         adTaskLock = true;
 
-        // Agar 45 second se pehle dobara ad maangi, toh bina Unity ko puche chupchap coin de do.
-        // Isse app hang nahi hogi aur na hi user ko 'cooldown' error aayega.
-        if(window.getTrueTime() - lastAdTime < 45000){ 
-            adTaskLock = false;
-            if(callback) callback('success'); 
+        if(isTimeLocked) { 
+            window.showToast("Please ensure correct phone time."); 
+            adTaskLock = false; 
+            if(callback) callback('cooldown'); 
+            return;
+        }
+
+        // Bypassing normal cooldown for pure testing. Wait 5s minimum.
+        if(window.getTrueTime() - lastAdTime < 5000){ 
+            window.showToast("Wait 5 seconds..."); 
+            adTaskLock = false; 
+            if(callback) callback('cooldown'); 
             return;
         }
 
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
-            window.showToast("Loading Ad...");
+            window.showToast("Requesting Ad from Unity...");
             let adHandled = false;
 
-            // ⏱️ TIMEOUT FIX (Sirf 4 Second wait karega, nahi aaya toh aage badhayega)
+            // ⏱️ 8 Second Safety Net (App Freeze nahi hogi)
             let adTimeout = setTimeout(() => {
                 if(!adHandled) {
-                    adHandled = true; adTaskLock = false;
-                    lastAdTime = window.getTrueTime(); 
-                    if(callback) callback('success'); // Silently give reward without freezing
+                    adHandled = true; 
+                    adTaskLock = false; // Lock automatically khul jayega
+                    window.showToast("Unity Timeout: Ad didn't load in 8s.");
+                    if(callback) callback('success'); // User ko free coins mil jayenge taaki task na ruke
                 }
-            }, 4000);
+            }, 8000);
 
             try {
                 await window.Capacitor.Plugins.UnityAds.showVideoAd({ placementId: 'Rewarded_Android' });
                 if(!adHandled) {
-                    clearTimeout(adTimeout); adHandled = true;
-                    lastAdTime = window.getTrueTime(); adTaskLock = false;
+                    clearTimeout(adTimeout); 
+                    adHandled = true;
+                    lastAdTime = window.getTrueTime(); 
+                    adTaskLock = false; // Ad dekhne ke baad lock khul gaya
                     if(callback) callback('success'); 
                 }
             } catch(e) {
                 if(!adHandled) {
-                    clearTimeout(adTimeout); adHandled = true;
-                    lastAdTime = window.getTrueTime(); adTaskLock = false;
-                    if(callback) callback('success'); // Silently give reward even on error
+                    clearTimeout(adTimeout); 
+                    adHandled = true;
+                    lastAdTime = window.getTrueTime(); 
+                    adTaskLock = false; // Error aane par bhi lock khul gaya
+                    
+                    // ⚠️ YAHAN POPUP AAYEGA JO BATAEGA UNITY KYU ROKA HAI ⚠️
+                    let errorMsg = e.message ? e.message : JSON.stringify(e);
+                    alert("Unity Debug Error:\n" + errorMsg);
+                    
+                    if(callback) callback('success'); // User ko aage badhne do
                 }
             }
         } else {
-            // Browser Web Testing bypass
+            window.showToast("Web Testing: Ad Skipped.");
             setTimeout(() => {
-                lastAdTime = window.getTrueTime(); adTaskLock = false;
+                lastAdTime = window.getTrueTime(); 
+                adTaskLock = false;
                 if(callback) callback('success');
             }, 500);
         }
@@ -2410,9 +2427,22 @@
 
             if (attempts === 2 || attempts === 5) {
                 btn.innerText = "Loading Ad...";
-                window.showAd(() => {
-                    // Ad status kuch bhi ho, task poora hoga aur unfreeze rahega
-                    window.processMathSuccess(reward, attempts);
+                
+                window.showAd((status) => {
+                    if(status === 'success') {
+                        window.processMathSuccess(reward, attempts);
+                    } else if (status === 'cooldown') {
+                        window.state.tasks.mathAttempts--; 
+                        document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts) + "/5";
+                        btn.disabled = false;
+                        btn.innerText = "Submit Answer";
+                    } else { 
+                        window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to claim.");
+                        window.state.tasks.mathAttempts--; // Revert attempt
+                        document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts) + "/5";
+                        btn.disabled = false;
+                        btn.innerText = "Submit Answer";
+                    }
                 });
             } else {
                 btn.innerText = "Correct!";
@@ -2523,8 +2553,23 @@
                 let attempts = window.state.tasks.scratchAttempts;
 
                 if(attempts === 2 || attempts === 5) {
-                    window.showAd(() => {
-                        window.processScratchSuccess(attempts, window.currentScratchCoins);
+                    window.showToast("Loading Ad...");
+                    
+                    window.showAd((status) => {
+                        if(status === 'success') {
+                            window.processScratchSuccess(attempts, window.currentScratchCoins);
+                        } else if(status === 'cooldown') {
+                            window.state.tasks.scratchAttempts--; 
+                            document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts) + "/5"; 
+                            document.getElementById('btn-next-scratch').style.display = 'inline-block'; 
+                            document.getElementById('scratch-status').innerText = "Ad cooldown. Try Next Card."; 
+                        } else { 
+                            window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to claim.");
+                            window.state.tasks.scratchAttempts--; 
+                            document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts) + "/5"; 
+                            document.getElementById('btn-next-scratch').style.display = 'inline-block'; 
+                            document.getElementById('scratch-status').innerText = "Ad failed. Try Next Card."; 
+                        }
                     });
                 } else {
                     window.processScratchSuccess(attempts, window.currentScratchCoins);
@@ -2560,15 +2605,31 @@
 
 
     window.doTapTask = function() {
-        if(isTimeLocked) return window.showToast("Securing Time...");
+        if(isTimeLocked) {
+            return window.showToast("Securing Time...");
+        }
+        
         if(!window.state || !window.state.tasks) return;
+        
         if(window.state.tasks.tapCount >= 20) return;
-        if(window.getTrueTime() < (window.state.tasks.lastTap || 0) + COOLDOWN_TAP) return window.showToast("Wait for timer!");
-        if(window.getTrueTime() < (window.state.tasks.tapNextTime || 0)) return window.showToast("Wait 2 seconds between taps!");
+        
+        if(window.getTrueTime() < (window.state.tasks.lastTap || 0) + COOLDOWN_TAP) {
+            return window.showToast("Wait for timer!");
+        }
+        
+        if(window.getTrueTime() < (window.state.tasks.tapNextTime || 0)) {
+            return window.showToast("Wait 2 seconds between taps!");
+        }
 
         if((window.state.tasks.tapCount + 1) === 10){
-            window.showAd(() => { 
-                window.executeTap();
+            window.showToast("Loading Ad..."); 
+            
+            window.showAd((status) => { 
+                if(status === 'success' || status === 'cooldown') {
+                    window.executeTap();
+                } else {
+                    window.showToast("⚠️ Ad blocked! Disable AdBlocker.");
+                }
             });
         } else {
             window.executeTap();
@@ -2618,9 +2679,17 @@
     }
 
     window.startShuffleTask = function() {
-        if(isTimeLocked) return window.showToast("Securing Time...");
-        if(window.state.shuffle.shufflesLeft <= 0) return window.showToast("Limit Reached!");
-        if(window.getTrueTime() < (window.state.shuffle.shuffleNextTime || 0)) return window.showToast("Wait 10 seconds before next shuffle!");
+        if(isTimeLocked) {
+            return window.showToast("Securing Time...");
+        }
+        
+        if(window.state.shuffle.shufflesLeft <= 0) {
+            return window.showToast("Limit Reached!");
+        }
+        
+        if(window.getTrueTime() < (window.state.shuffle.shuffleNextTime || 0)) {
+            return window.showToast("Wait 10 seconds before next shuffle!");
+        }
 
         const btn = document.getElementById('shuffle-btn');
         const grid = document.getElementById('shuffle-card-container');
@@ -2671,8 +2740,25 @@
 
         if (window.state.shuffle.totalShuffles % 3 === 0 || window.state.shuffle.totalShuffles === 2 || window.state.shuffle.totalShuffles === 5) {
             setTimeout(() => {
-                window.showAd(() => {
-                    window.processShuffleReward(wonCoins);
+                window.showToast("Loading Ad...");
+                
+                window.showAd((status) => {
+                    if(status === 'success') {
+                        window.processShuffleReward(wonCoins);
+                    } else if (status === 'cooldown') {
+                        window.state.shuffle.shufflesLeft++; 
+                        window.state.shuffle.totalShuffles--; 
+                        document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; 
+                        window.saveState(); 
+                        window.resetShuffleUI(); 
+                    } else { 
+                        window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to earn.");
+                        window.state.shuffle.shufflesLeft++; // Revert Shuffle
+                        window.state.shuffle.totalShuffles--; 
+                        document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; 
+                        window.saveState(); 
+                        window.resetShuffleUI(); 
+                    }
                 });
             }, 800); 
         } else {
@@ -2684,8 +2770,10 @@
 
     window.processShuffleReward = function(coins) {
         window.rewardCoins(coins, "Shuffle Task");
+        
         window.state.shuffle.shuffleNextTime = window.getTrueTime() + 10000;
         window.checkBotSpeed();
+
         window.resetShuffleUI();
     }
 
@@ -2704,7 +2792,10 @@
     
     window.spinWheel = function() {
         if(isTimeLocked) return window.showToast("Securing Time...");
-        if(window.getTrueTime() < (window.state.spin.spinNextTime || 0)) return window.showToast("Wheel is resetting! Wait 20 seconds.");
+        
+        if(window.getTrueTime() < (window.state.spin.spinNextTime || 0)) {
+            return window.showToast("Wheel is resetting! Wait 20 seconds.");
+        }
 
         const btn = document.getElementById('btn-spin');
         if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0) return;
@@ -2713,7 +2804,9 @@
         window.state.spin.spinsLeft--; 
         window.state.spin.totalSpins++;
         
-        if(window.state.spin.spinsLeft === 4) window.state.spin.lastRefill = window.getTrueTime();
+        if(window.state.spin.spinsLeft === 4) {
+            window.state.spin.lastRefill = window.getTrueTime();
+        }
         window.saveState();
         
         const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6);
@@ -2733,8 +2826,12 @@
             window.checkBotSpeed();
 
             if(window.state.spin.totalSpins % 3 === 0) { 
-                setTimeout(() => window.showAd(()=>{ 
-                    window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
+                setTimeout(() => window.showAd((status)=>{ 
+                    if(status === 'success' || status === 'cooldown') {
+                        window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
+                    } else {
+                        window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to earn.");
+                    }
                 }), 500); 
             } else {
                 window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
@@ -2971,16 +3068,23 @@
         const code = window.state.user.refCode;
         const shareText = `Hey! Download the EarnX app and use my referral code: ${code} to get 100 Bonus Coins! 🚀`;
         
+        // 1. Standard Share Menu (Works in most modern WebViews)
         if (navigator.share) {
             navigator.share({
                 title: 'EarnX Rewards',
                 text: shareText
             }).catch(err => {
+                // User cancelled or error, fallback to copy
                 window.copyReferral();
             });
         } else {
+            // 2. Direct WhatsApp Bypass if Native Share is missing
             window.location.href = `whatsapp://send?text=${encodeURIComponent(shareText)}`;
-            setTimeout(() => { window.copyReferral(); }, 800);
+            
+            // Backup code copy
+            setTimeout(() => {
+                window.copyReferral();
+            }, 800);
         }
     }
 
