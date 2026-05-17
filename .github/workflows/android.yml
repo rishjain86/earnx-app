@@ -49,7 +49,7 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: 🚀 INJECT OFFICIAL UNITY NATIVE SDK WITH PRE-LOAD 🚀
+      - name: 🚀 INJECT OFFICIAL UNITY NATIVE SDK WITH COMPILATION FIX 🚀
         run: |
           sed -i '/dependencies {/a \    implementation "com.unity3d.ads:unity-ads:4.12.1"' android/app/build.gradle
           
@@ -80,7 +80,6 @@ jobs:
                           UnityAds.initialize(getApplicationContext(), unityGameID, testMode, new IUnityAdsInitializationListener() {
                               @Override
                               public void onInitializationComplete() {
-                                  // 🔥 App khulte hi background mein ads load karna start karo 🔥
                                   preloadAds();
                               }
                               @Override
@@ -118,29 +117,45 @@ jobs:
                       runOnUiThread(new Runnable() {
                           @Override
                           public void run() {
-                              // 🔥 Pehle se loaded ad ko direct show karo fast execution ke liye 🔥
                               UnityAds.show(MainActivity.this, placementId, new UnityAdsShowOptions(), new IUnityAdsShowListener() {
                                   @Override
-                                  public void onUnityAdsShowFailure(String placementId, UnityAds.UnityAdsShowError error, String message) {
-                                      // Agar ad cached nahi hai, toh fail hone par backup load chalao
-                                      UnityAds.load(placementId, new IUnityAdsLoadListener() {
+                                  public void onUnityAdsShowFailure(String pId, UnityAds.UnityAdsShowError error, String message) {
+                                      // Explicit inline fallback load if cache expired
+                                      UnityAds.load(pId, new IUnityAdsLoadListener() {
                                           @Override
-                                          public void onUnityAdsAdLoaded(String pId) {
-                                              UnityAds.show(MainActivity.this, pId, new UnityAdsShowOptions(), this);
+                                          public void onUnityAdsAdLoaded(String finalId) {
+                                              UnityAds.show(MainActivity.this, finalId, new UnityAdsShowOptions(), new IUnityAdsShowListener() {
+                                                  @Override
+                                                  public void onUnityAdsShowFailure(String id, UnityAds.UnityAdsShowError err, String msg) {
+                                                      runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('failed');", null));
+                                                  }
+                                                  @Override
+                                                  public void onUnityAdsShowStart(String id) {}
+                                                  @Override
+                                                  public void onUnityAdsShowClick(String id) {}
+                                                  @Override
+                                                  public void onUnityAdsShowComplete(String id, UnityAds.UnityAdsShowCompletionState state) {
+                                                      preloadAds();
+                                                      if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
+                                                          runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('success');", null));
+                                                      } else {
+                                                          runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('failed');", null));
+                                                      }
+                                                  }
+                                              });
                                           }
                                           @Override
-                                          public void onUnityAdsFailedToLoad(String pId, UnityAds.UnityAdsLoadError err, String msg) {
+                                          public void onUnityAdsFailedToLoad(String finalId, UnityAds.UnityAdsLoadError err, String msg) {
                                               runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('failed');", null));
                                           }
                                       });
                                   }
                                   @Override
-                                  public void onUnityAdsShowStart(String placementId) {}
+                                  public void onUnityAdsShowStart(String pId) {}
                                   @Override
-                                  public void onUnityAdsShowClick(String placementId) {}
+                                  public void onUnityAdsShowClick(String pId) {}
                                   @Override
-                                  public void onUnityAdsShowComplete(String placementId, UnityAds.UnityAdsShowCompletionState state) {
-                                      // Next time ke liye background mein agla ad preload kar do
+                                  public void onUnityAdsShowComplete(String pId, UnityAds.UnityAdsShowCompletionState state) {
                                       preloadAds();
                                       if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
                                           runOnUiThread(() -> bridge.getWebView().evaluateJavascript("javascript:window.onNativeAdComplete('success');", null));
@@ -159,7 +174,7 @@ jobs:
                           @Override
                           public void run() {
                               UnityAds.show(MainActivity.this, placementId);
-                              preloadAds(); // Next time ke liye reload
+                              preloadAds();
                           }
                       });
                   }
