@@ -1921,6 +1921,8 @@
         window.saveCoinsToFirebaseDebounced();
     }
 
+    // 🔥 MODIFIED NAV FUNCTION WITH INTERSTITIAL ADS 🔥
+    let navClicks = 0;
     window.nav = function(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         
@@ -1950,6 +1952,12 @@
         
         if (screenId !== 'login' && screenId !== 'home') {
             history.pushState({ screen: screenId }, null, window.location.href);
+        }
+
+        // Show Interstitial every 5th screen change
+        navClicks++;
+        if(navClicks % 5 === 0 && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
+            window.Capacitor.Plugins.UnityAds.showVideoAd({ placementId: 'Interstitial_Android' }).catch(e => {});
         }
     }
 
@@ -2293,60 +2301,45 @@
         window.checkReferralUnlock();
     }
 
-    // 🔥 UPDATED SHOW AD WITH TIMER LOGIC 🔥
-    window.showAd = function(callback) {
+    // 🔥 UPDATED SHOW AD (NATIVE UNITY VIDEO ADS) 🔥
+    window.showAd = async function(callback) {
         if(isTimeLocked) { 
             window.showToast("Please ensure correct phone time."); 
-            return callback('cooldown'); 
+            if(callback) callback('cooldown'); 
+            return;
         }
         
         if(window.getTrueTime() - lastAdTime < 60000){ 
             window.showToast("Wait 1 min before next ad"); 
-            return callback('cooldown'); 
+            if(callback) callback('cooldown'); 
+            return;
         }
 
         if(adTaskLock) return;
         adTaskLock = true;
 
-        const adUrl = "https://omg10.com/4/10957927"; // Aapka Monetag Link
-        const overlay = document.getElementById('ad-verification-overlay');
-        const display = document.getElementById('ad-timer-display');
-        let timeLeft = 15;
-
-        window.showToast("Loading Sponsor Link...");
-
-        // 1. Browser kholo
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
-            window.Capacitor.Plugins.Browser.open({ url: adUrl });
-        } else {
-            window.open(adUrl, '_blank');
-        }
-
-        // 2. Timer Overlay Dikhao
-        overlay.style.display = 'flex';
-        display.innerText = timeLeft;
-
-        const countdown = setInterval(() => {
-            timeLeft--;
-            display.innerText = timeLeft;
-
-            if (timeLeft <= 0) {
-                clearInterval(countdown);
-                overlay.style.display = 'none';
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
+            window.showToast("Loading Video Ad...");
+            try {
+                await window.Capacitor.Plugins.UnityAds.showVideoAd({ placementId: 'Rewarded_Android' });
                 lastAdTime = window.getTrueTime();
                 adTaskLock = false;
                 window.showToast("✅ Ad Verified! Reward Added.");
-                callback('success'); // Timer khatam hone par hi reward unlock hoga
+                if(callback) callback('success'); 
+            } catch(e) {
+                console.error("Ad Error/Closed: ", e);
+                adTaskLock = false;
+                window.showToast("Ad closed early or failed to load!");
+                if(callback) callback('closed'); 
             }
-        }, 1000);
-
-        // Optional Backup: App minimize check
-        document.addEventListener('visibilitychange', function handleVis() {
-            if (document.visibilityState === 'visible' && timeLeft > 0 && overlay.style.display === 'flex') {
-                window.showToast("⚠️ Don't close early! Verification pending.");
-                document.removeEventListener('visibilitychange', handleVis);
-            }
-        });
+        } else {
+            window.showToast("Web Testing: Ad Skipped.");
+            setTimeout(() => {
+                lastAdTime = window.getTrueTime();
+                adTaskLock = false;
+                if(callback) callback('success');
+            }, 1500);
+        }
     }
 
     window.dailyCheckIn = function() {
@@ -3110,6 +3103,27 @@
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) {
             window.Capacitor.Plugins.SplashScreen.hide();
         }
+
+        // 🚀 UNITY ADS INITIALIZATION & BANNER SETUP 🚀
+        setTimeout(async () => {
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
+                try {
+                    await window.Capacitor.Plugins.UnityAds.initialize({
+                        gameId: '6105264',
+                        testMode: false
+                    });
+                    console.log("Unity Ads Initialized Successfully!");
+                    
+                    window.Capacitor.Plugins.UnityAds.showBanner({ 
+                        placementId: 'Banner_Android', 
+                        position: 'BOTTOM_CENTER' 
+                    }).catch(e => console.log("Banner Not Supported"));
+
+                } catch (e) {
+                    console.error("Unity Initialize Error: ", e);
+                }
+            }
+        }, 2000);
         
         setTimeout(function() {
             let splash = document.getElementById('custom-splash');
