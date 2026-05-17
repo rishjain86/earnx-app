@@ -45,6 +45,11 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: Upgrade Gradle for Java 21
+        run: |
+          sed -i 's/gradle-[0-9\.]*-all\.zip/gradle-8.7-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties || true
+          sed -i 's/gradle-[0-9\.]*-bin\.zip/gradle-8.7-bin.zip/g' android/gradle/wrapper/gradle-wrapper.properties || true
+
       - name: Deep Clean Default Android Assets
         run: |
           find android/app/src/main/res -name "ic_launcher*" -delete
@@ -53,7 +58,6 @@ jobs:
 
       - name: Generate App Icons & Splash
         run: |
-          # Yahan se extra flags hata diye hain, ye default assets folder se auto-detect kar lega
           npx capacitor-assets generate --android
 
       - name: Update App Name & Version
@@ -66,7 +70,6 @@ jobs:
 
       - name: Setup Release Signing
         run: |
-          # Release build ko auto-sign karne ka trick
           sed -i 's/release {/release {\n            signingConfig signingConfigs.debug/g' android/app/build.gradle || true
 
       - name: Build Release APK
