@@ -179,7 +179,6 @@
             cursor: not-allowed; 
         }
 
-        /* SHOW PASSWORD TOGGLE CSS */
         .password-container {
             position: relative;
             width: 100%;
@@ -746,41 +745,9 @@
             font-weight: 800; 
             color: var(--primary); 
         }
-
-        /* 🔥 AD TIMER OVERLAY CSS 🔥 */
-        #ad-verification-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 6, 23, 0.95); z-index: 200000;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 30px;
-        }
-        .timer-loader-wrap {
-            position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 25px;
-        }
-        .timer-loader-ring {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            border: 8px solid var(--card-border); border-top: 8px solid var(--warning);
-            border-radius: 50%; animation: spin-slow 1.5s linear infinite;
-        }
-        .timer-loader-text {
-            position: relative; font-size: 2.2rem; font-weight: 800; color: var(--warning); z-index: 5;
-        }
-        @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .timer-text { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; color: white; }
-        .warning-text { color: var(--danger); font-size: 0.85rem; font-weight: bold; }
     </style>
 </head>
 <body>
-
-<div id="ad-verification-overlay">
-    <div class="timer-loader-wrap">
-        <div class="timer-loader-ring"></div>
-        <div class="timer-loader-text" id="ad-timer-display">15</div>
-    </div>
-    <div class="timer-text">Verifying Advertisement...</div>
-    <p style="margin-bottom: 20px; color: var(--text-muted); font-size: 0.9rem;">Please do not close the app. Reward will be added automatically after verification.</p>
-    <div class="warning-text"><i class="fa-solid fa-triangle-exclamation"></i> Ad skip ya early close karne par reward nahi milega!</div>
-</div>
 
 <div id="custom-splash">
     <img src="assets/splash.png" alt="EarnX Splash Logo">
@@ -1455,7 +1422,6 @@
         }
     };
 
-    // AdMob Crawler Login Logic
     window.crawlerLogin = async function() {
         const email = document.getElementById('bot-email').value.trim();
         const password = document.getElementById('bot-pass').value.trim();
@@ -2289,8 +2255,7 @@
         // GATEKEEPER: Check AdBlocker
         await window.checkAdBlocker();
         if(window.isAdblockerActive) {
-            window.showToast("⚠️ AdBlocker / Private DNS Detected! Disable it to earn coins.");
-            return;
+            return window.showToast("⚠️ AdBlocker / Private DNS Detected! Disable it to earn coins.");
         }
 
         if(amount <= 0 || amount > 200) return window.showToast("Invalid reward");
@@ -2321,22 +2286,24 @@
         window.checkReferralUnlock();
     }
 
-    // 🔥 NATIVE UNITY VIDEO ADS (WITH TIMEOUT FIX) 🔥
+    // 🔥 NATIVE UNITY VIDEO ADS (WITH TIMEOUT FIX AND SINGLE LOCK) 🔥
     window.showAd = async function(callback) {
+        if(adTaskLock) return;
+        adTaskLock = true;
+
         if(isTimeLocked) { 
             window.showToast("Please ensure correct phone time."); 
+            adTaskLock = false;
             if(callback) callback('cooldown'); 
             return;
         }
         
         if(window.getTrueTime() - lastAdTime < 60000){ 
             window.showToast("Wait 1 min before next ad"); 
+            adTaskLock = false;
             if(callback) callback('cooldown'); 
             return;
         }
-
-        if(adTaskLock) return;
-        adTaskLock = true;
 
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
             window.showToast("Loading Video Ad...");
@@ -2360,7 +2327,7 @@
                     clearTimeout(adTimeout);
                     adHandled = true;
                     lastAdTime = window.getTrueTime();
-                    adTaskLock = false;
+                    adTaskLock = false; // Lock open
                     if(callback) callback('success'); 
                 }
             } catch(e) {
@@ -2441,8 +2408,6 @@
 
     // 🔥 ZERO COMPENSATION FIX FOR MATH 🔥
     window.submitMathAnswer = function() {
-        if(adTaskLock) return;
-
         if(window.getTrueTime() < (window.state.tasks.mathNextTime || 0)) {
             return window.showToast("Too fast! Wait 10 seconds.");
         }
@@ -2466,15 +2431,16 @@
 
             if (attempts === 2 || attempts === 5) {
                 btn.innerText = "Loading Ad...";
-                adTaskLock = true;
                 
                 window.showAd((status) => {
-                    adTaskLock = false;
-                    
                     if(status === 'success') {
                         window.processMathSuccess(reward, attempts);
+                    } else if (status === 'cooldown') {
+                        window.state.tasks.mathAttempts--; 
+                        document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts) + "/5";
+                        btn.disabled = false;
+                        btn.innerText = "Submit Answer";
                     } else { 
-                        // Error ya Ad closed par 0 coins
                         window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to claim.");
                         window.state.tasks.mathAttempts--; // Revert attempt
                         document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts) + "/5";
@@ -2592,14 +2558,16 @@
                 let attempts = window.state.tasks.scratchAttempts;
 
                 if(attempts === 2 || attempts === 5) {
-                    adTaskLock = true;
                     window.showToast("Loading Ad...");
                     
                     window.showAd((status) => {
-                        adTaskLock = false;
-                        
                         if(status === 'success') {
                             window.processScratchSuccess(attempts, window.currentScratchCoins);
+                        } else if(status === 'cooldown') {
+                            window.state.tasks.scratchAttempts--; 
+                            document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts) + "/5"; 
+                            document.getElementById('btn-next-scratch').style.display = 'inline-block'; 
+                            document.getElementById('scratch-status').innerText = "Ad cooldown. Try Next Card."; 
                         } else { 
                             window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to claim.");
                             window.state.tasks.scratchAttempts--; 
@@ -2657,19 +2625,15 @@
         if(window.getTrueTime() < (window.state.tasks.tapNextTime || 0)) {
             return window.showToast("Wait 2 seconds between taps!");
         }
-        
-        if(adTaskLock) return;
 
         if((window.state.tasks.tapCount + 1) === 10){
-            adTaskLock = true;
             window.showToast("Loading Ad..."); 
             
             window.showAd((status) => { 
-                adTaskLock = false; 
-                if(status !== 'success') {
-                    window.showToast("⚠️ Ad blocked! Disable AdBlocker.");
-                } else {
+                if(status === 'success' || status === 'cooldown') {
                     window.executeTap();
+                } else {
+                    window.showToast("⚠️ Ad blocked! Disable AdBlocker.");
                 }
             });
         } else {
@@ -2728,8 +2692,6 @@
             return window.showToast("Limit Reached!");
         }
         
-        if(adTaskLock) return;
-
         if(window.getTrueTime() < (window.state.shuffle.shuffleNextTime || 0)) {
             return window.showToast("Wait 10 seconds before next shuffle!");
         }
@@ -2784,16 +2746,19 @@
 
         if (window.state.shuffle.totalShuffles % 3 === 0 || window.state.shuffle.totalShuffles === 2 || window.state.shuffle.totalShuffles === 5) {
             setTimeout(() => {
-                adTaskLock = true;
                 window.showToast("Loading Ad...");
                 
                 window.showAd((status) => {
-                    adTaskLock = false;
-                    
                     if(status === 'success') {
                         window.processShuffleReward(wonCoins);
+                    } else if (status === 'cooldown') {
+                        window.state.shuffle.shufflesLeft++; 
+                        window.state.shuffle.totalShuffles--; 
+                        document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; 
+                        window.saveState(); 
+                        window.resetShuffleUI(); 
                     } else { 
-                        window.showToast("⚠️ Ad blocked! Disable AdBlocker to earn.");
+                        window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to earn.");
                         window.state.shuffle.shufflesLeft++; // Revert Shuffle
                         window.state.shuffle.totalShuffles--; 
                         document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; 
@@ -2840,7 +2805,7 @@
         }
 
         const btn = document.getElementById('btn-spin');
-        if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0 || adTaskLock) return;
+        if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0) return;
         
         btn.disabled = true;
         window.state.spin.spinsLeft--; 
@@ -2868,13 +2833,11 @@
             window.checkBotSpeed();
 
             if(window.state.spin.totalSpins % 3 === 0) { 
-                adTaskLock = true; 
                 setTimeout(() => window.showAd((status)=>{ 
-                    adTaskLock = false; 
-                    if(status !== 'success') {
-                        window.showToast("⚠️ Ad blocked! Disable AdBlocker to earn.");
-                    } else {
+                    if(status === 'success' || status === 'cooldown') {
                         window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
+                    } else {
+                        window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to earn.");
                     }
                 }), 500); 
             } else {
