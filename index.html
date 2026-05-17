@@ -3093,24 +3093,21 @@
             window.Capacitor.Plugins.SplashScreen.hide();
         }
 
-        // 🚀 UNITY ADS INITIALIZATION & BANNER SETUP 🚀
+        // 🚀 UNITY ADS INITIALIZATION (With Error Log) 🚀
         setTimeout(async () => {
             if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
                 try {
                     await window.Capacitor.Plugins.UnityAds.initialize({
-                        gameId: '6105265', // Corrected Android ID
-                        testMode: true    // Test Mode ON
+                        gameId: '6105265', 
+                        testMode: true
                     });
-                    console.log("Unity Ads Initialized Successfully!");
-                    
-                    window.Capacitor.Plugins.UnityAds.showBanner({ 
-                        placementId: 'Banner_Android', 
-                        position: 'BOTTOM_CENTER' 
-                    }).catch(e => console.log("Banner Not Supported"));
-
+                    console.log("Unity Ads Initialized!");
+                    window.showToast("✅ Unity System Ready!");
                 } catch (e) {
-                    console.error("Unity Initialize Error: ", e);
+                    alert("Unity Init Error: " + (e.message || JSON.stringify(e)));
                 }
+            } else {
+                console.log("Unity Plugin NOT found in App!");
             }
         }, 2000);
         
