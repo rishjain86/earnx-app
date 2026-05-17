@@ -817,7 +817,7 @@
 
     <div id="screen-login" class="screen active">
         <div style="text-align: center; margin-top: 60px; margin-bottom: 40px;">
-            <img src="assets/icon.png" alt="EarnX Logo" class="app-logo">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="EarnX Logo" class="app-logo">
             <h1 style="font-size: 2.5rem;">EarnX</h1>
             <p>Your ultimate rewards platform.</p>
         </div>
@@ -827,7 +827,7 @@
             <p class="mb-2" style="font-size: 0.85rem;">Secure access for your EarnX account.</p>
             
             <div id="web-login-section">
-                <button class="btn btn-google" onclick="window.loginWithGoogle()"><i class="fa-brands fa-google"></i> Login with Google</button>
+                
                 
                 <div id="crawler-login-box" style="margin-top: 25px; padding: 15px; border: 1px dashed var(--primary); border-radius: 8px;">
                     <p style="font-size: 0.8rem; color: var(--warning); margin-bottom: 10px; font-weight: bold;">For AdMob Reviewer Only</p>
@@ -1440,19 +1440,8 @@
     });
 
     window.loginWithGoogle = async function(){
-        if(loginLoading) return;
-        loginLoading = true;
-        const provider = new GoogleAuthProvider();
-        try {
-            const result = await signInWithPopup(auth, provider);
-            await window.handleSuccessfulLogin(result.user);
-        } catch(err) {
-            console.error(err);
-            if (err.code !== 'auth/popup-closed-by-user') {
-                window.showToast("Login Error. Try again.");
-            }
-            loginLoading = false;
-        }
+        window.showToast("Google Login disabled in WebView. Use Email Login.");
+        return;
     };
 
     window.crawlerLogin = async function() {
@@ -1592,7 +1581,13 @@
     
     window.openSocial = function(url) {
         window.hasClickedSocial = true;
-        window.location.href = url;
+
+        if(!navigator.onLine){
+            window.showToast("No internet connection");
+            return;
+        }
+
+        window.open(url, '_blank');
     }
 
     window.maskEmail = function(email) {
@@ -1725,7 +1720,63 @@
         window.nav('login');
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    
+window.checkInternet = function(){
+    if(!navigator.onLine){
+        window.showToast("No internet connection");
+        return false;
+    }
+    return true;
+};
+
+window.showAd = function(callback){
+
+    if(!navigator.onLine){
+        callback('failed');
+        return;
+    }
+
+    if(!window.unityads){
+        callback('success');
+        return;
+    }
+
+    try{
+
+        if(typeof unityads.showRewardedVideoAd === 'function'){
+
+            unityads.showRewardedVideoAd(
+
+                'Rewarded_Android',
+
+                function(){
+                    callback('success');
+                },
+
+                function(err){
+                    console.log(err);
+                    callback('failed');
+                }
+
+            );
+
+        } else {
+
+            callback('success');
+
+        }
+
+    } catch(e){
+
+        console.log(e);
+        callback('failed');
+
+    }
+
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
         init();
         window.renderShuffleCards();
 
@@ -3109,7 +3160,7 @@
             });
         } else {
             // 2. Direct WhatsApp Bypass if Native Share is missing
-            window.location.href = `whatsapp://send?text=${encodeURIComponent(shareText)}`;
+            window.open( `whatsapp://send?text=${encodeURIComponent(shareText)}`;
             
             // Backup code copy
             setTimeout(() => {
