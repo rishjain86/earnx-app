@@ -3172,19 +3172,21 @@ window.checkInternet = function(){
             }
         }, 2500); 
     });
-    
-    // 🚀 CORDOVA UNITY ADS INITIALIZATION (SMART DETECT) 🚀
+        // 🚀 CORDOVA UNITY ADS INITIALIZATION (SMART DETECT WITH ALERTS) 🚀
     document.addEventListener('deviceready', function () {
         if(window.unityads) {
             try {
                 if (typeof window.unityads.initialize === 'function') {
                     window.unityads.initialize('6105265', true);
+                    alert("Unity Ready: 'initialize' method chala! 🚀");
                 } else if (typeof window.unityads.init === 'function') {
                     window.unityads.init('6105265', true);
+                    alert("Unity Ready: 'init' method chala! 🚀");
                 } else if (typeof window.unityads.setUp === 'function') {
                     window.unityads.setUp('6105265');
+                    alert("Unity Ready: 'setUp' method chala! 🚀");
                 } else {
-                    console.warn("Init Method missing. Available:", Object.keys(window.unityads));
+                    alert("Plugin toh hai, par start karne ka method nahi mila! Available: " + Object.keys(window.unityads).join(", "));
                 }
                 console.log("Cordova Unity Engine Initialized!");
                 
@@ -3194,10 +3196,14 @@ window.checkInternet = function(){
                 }, 3000);
 
             } catch(e) {
+                alert("Unity Start Error: " + e.message);
                 console.error("Unity Init Error", e);
             }
+        } else {
+            alert("WARNING: Unity Plugin app mein aaya hi nahi! (window.unityads is undefined)");
         }
     });
+
 
     window.addEventListener("popstate", (e) => {
         const homeScreen = document.getElementById('screen-home');
