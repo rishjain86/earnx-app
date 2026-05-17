@@ -1522,14 +1522,11 @@
     let serverTimeOffset = 0;
     let isTimeLocked = true; 
     
-    // 🔥 NEW: ADBLOCKER STATE
     window.isAdblockerActive = false;
 
-    // --- SECURITY 1: ADBLOCKER DETECTION LOGIC ---
     window.checkAdBlocker = async function() {
         if(!navigator.onLine) return false;
         try {
-            // Ping Google Ads domain (blocked by 99% of AdBlockers/Private DNS)
             await fetch('https://googleads.g.doubleclick.net/pagead/ads', { mode: 'no-cors', cache: 'no-store' });
             window.isAdblockerActive = false;
         } catch(e) {
@@ -1538,7 +1535,6 @@
         return window.isAdblockerActive;
     }
 
-    // --- SECURITY 2: SCRIPT KILLER LOGIC ---
     window.taskTimestamps = [];
     window.checkBotSpeed = async function() {
         const now = window.getTrueTime();
@@ -1558,7 +1554,6 @@
         }
         return false;
     };
-    // ---------------------------------------
 
     window.hasClickedSocial = false;
     
@@ -2242,11 +2237,10 @@
         }
     }
 
-    // 🔥 UPDATED REWARD COINS (WITH ADBLOCKER SECURITY)
+    // 🔥 REWARD COINS (WITH ADBLOCKER SECURITY) 🔥
     window.rewardCoins = async function(amount, msg) {
         if(rewardLock) return; 
         rewardLock = true;
-        
         setTimeout(()=> { rewardLock = false; }, 2000);
         
         if(!navigator.onLine) return window.showToast("No internet connection!");
@@ -2286,66 +2280,52 @@
         window.checkReferralUnlock();
     }
 
-    // 🔥 NATIVE UNITY VIDEO ADS (WITH TIMEOUT FIX AND SINGLE LOCK) 🔥
+    // 🔥 ULTRA-SMOOTH SOFT-FAIL AD LOGIC 🔥
     window.showAd = async function(callback) {
         if(adTaskLock) return;
         adTaskLock = true;
 
-        if(isTimeLocked) { 
-            window.showToast("Please ensure correct phone time."); 
+        // Agar 45 second se pehle dobara ad maangi, toh bina Unity ko puche chupchap coin de do.
+        // Isse app hang nahi hogi aur na hi user ko 'cooldown' error aayega.
+        if(window.getTrueTime() - lastAdTime < 45000){ 
             adTaskLock = false;
-            if(callback) callback('cooldown'); 
-            return;
-        }
-        
-        if(window.getTrueTime() - lastAdTime < 60000){ 
-            window.showToast("Wait 1 min before next ad"); 
-            adTaskLock = false;
-            if(callback) callback('cooldown'); 
+            if(callback) callback('success'); 
             return;
         }
 
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.UnityAds) {
-            window.showToast("Loading Video Ad...");
-            
+            window.showToast("Loading Ad...");
             let adHandled = false;
 
-            // ⏱️ TIMEOUT FIX (8 Second Rule)
+            // ⏱️ TIMEOUT FIX (Sirf 4 Second wait karega, nahi aaya toh aage badhayega)
             let adTimeout = setTimeout(() => {
                 if(!adHandled) {
-                    adHandled = true;
-                    adTaskLock = false; // Lock open
-                    window.showToast("Ad server busy. Please try again.");
-                    if(callback) callback('error'); 
+                    adHandled = true; adTaskLock = false;
+                    lastAdTime = window.getTrueTime(); 
+                    if(callback) callback('success'); // Silently give reward without freezing
                 }
-            }, 8000);
+            }, 4000);
 
             try {
                 await window.Capacitor.Plugins.UnityAds.showVideoAd({ placementId: 'Rewarded_Android' });
-                
                 if(!adHandled) {
-                    clearTimeout(adTimeout);
-                    adHandled = true;
-                    lastAdTime = window.getTrueTime();
-                    adTaskLock = false; // Lock open
+                    clearTimeout(adTimeout); adHandled = true;
+                    lastAdTime = window.getTrueTime(); adTaskLock = false;
                     if(callback) callback('success'); 
                 }
             } catch(e) {
                 if(!adHandled) {
-                    clearTimeout(adTimeout);
-                    adHandled = true;
-                    console.error("Ad Error/Closed: ", e);
-                    adTaskLock = false; // Lock open
-                    if(callback) callback('closed'); 
+                    clearTimeout(adTimeout); adHandled = true;
+                    lastAdTime = window.getTrueTime(); adTaskLock = false;
+                    if(callback) callback('success'); // Silently give reward even on error
                 }
             }
         } else {
-            window.showToast("Web Testing: Ad Skipped.");
+            // Browser Web Testing bypass
             setTimeout(() => {
-                lastAdTime = window.getTrueTime();
-                adTaskLock = false;
+                lastAdTime = window.getTrueTime(); adTaskLock = false;
                 if(callback) callback('success');
-            }, 1500);
+            }, 500);
         }
     }
 
@@ -2406,7 +2386,6 @@
         document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts || 0) + "/5";
     }
 
-    // 🔥 ZERO COMPENSATION FIX FOR MATH 🔥
     window.submitMathAnswer = function() {
         if(window.getTrueTime() < (window.state.tasks.mathNextTime || 0)) {
             return window.showToast("Too fast! Wait 10 seconds.");
@@ -2431,22 +2410,9 @@
 
             if (attempts === 2 || attempts === 5) {
                 btn.innerText = "Loading Ad...";
-                
-                window.showAd((status) => {
-                    if(status === 'success') {
-                        window.processMathSuccess(reward, attempts);
-                    } else if (status === 'cooldown') {
-                        window.state.tasks.mathAttempts--; 
-                        document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts) + "/5";
-                        btn.disabled = false;
-                        btn.innerText = "Submit Answer";
-                    } else { 
-                        window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to claim.");
-                        window.state.tasks.mathAttempts--; // Revert attempt
-                        document.getElementById('math-attempts-display').innerText = (window.state.tasks.mathAttempts) + "/5";
-                        btn.disabled = false;
-                        btn.innerText = "Submit Answer";
-                    }
+                window.showAd(() => {
+                    // Ad status kuch bhi ho, task poora hoga aur unfreeze rahega
+                    window.processMathSuccess(reward, attempts);
                 });
             } else {
                 btn.innerText = "Correct!";
@@ -2536,7 +2502,6 @@
             checkPercent();
         }
 
-        // 🔥 ZERO COMPENSATION FIX FOR SCRATCH 🔥
         function checkPercent() {
             const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
             let transparentPixels = 0;
@@ -2558,23 +2523,8 @@
                 let attempts = window.state.tasks.scratchAttempts;
 
                 if(attempts === 2 || attempts === 5) {
-                    window.showToast("Loading Ad...");
-                    
-                    window.showAd((status) => {
-                        if(status === 'success') {
-                            window.processScratchSuccess(attempts, window.currentScratchCoins);
-                        } else if(status === 'cooldown') {
-                            window.state.tasks.scratchAttempts--; 
-                            document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts) + "/5"; 
-                            document.getElementById('btn-next-scratch').style.display = 'inline-block'; 
-                            document.getElementById('scratch-status').innerText = "Ad cooldown. Try Next Card."; 
-                        } else { 
-                            window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to claim.");
-                            window.state.tasks.scratchAttempts--; 
-                            document.getElementById('scratch-attempts-display').innerText = (window.state.tasks.scratchAttempts) + "/5"; 
-                            document.getElementById('btn-next-scratch').style.display = 'inline-block'; 
-                            document.getElementById('scratch-status').innerText = "Ad failed. Try Next Card."; 
-                        }
+                    window.showAd(() => {
+                        window.processScratchSuccess(attempts, window.currentScratchCoins);
                     });
                 } else {
                     window.processScratchSuccess(attempts, window.currentScratchCoins);
@@ -2610,31 +2560,15 @@
 
 
     window.doTapTask = function() {
-        if(isTimeLocked) {
-            return window.showToast("Securing Time...");
-        }
-        
+        if(isTimeLocked) return window.showToast("Securing Time...");
         if(!window.state || !window.state.tasks) return;
-        
         if(window.state.tasks.tapCount >= 20) return;
-        
-        if(window.getTrueTime() < (window.state.tasks.lastTap || 0) + COOLDOWN_TAP) {
-            return window.showToast("Wait for timer!");
-        }
-        
-        if(window.getTrueTime() < (window.state.tasks.tapNextTime || 0)) {
-            return window.showToast("Wait 2 seconds between taps!");
-        }
+        if(window.getTrueTime() < (window.state.tasks.lastTap || 0) + COOLDOWN_TAP) return window.showToast("Wait for timer!");
+        if(window.getTrueTime() < (window.state.tasks.tapNextTime || 0)) return window.showToast("Wait 2 seconds between taps!");
 
         if((window.state.tasks.tapCount + 1) === 10){
-            window.showToast("Loading Ad..."); 
-            
-            window.showAd((status) => { 
-                if(status === 'success' || status === 'cooldown') {
-                    window.executeTap();
-                } else {
-                    window.showToast("⚠️ Ad blocked! Disable AdBlocker.");
-                }
+            window.showAd(() => { 
+                window.executeTap();
             });
         } else {
             window.executeTap();
@@ -2684,17 +2618,9 @@
     }
 
     window.startShuffleTask = function() {
-        if(isTimeLocked) {
-            return window.showToast("Securing Time...");
-        }
-        
-        if(window.state.shuffle.shufflesLeft <= 0) {
-            return window.showToast("Limit Reached!");
-        }
-        
-        if(window.getTrueTime() < (window.state.shuffle.shuffleNextTime || 0)) {
-            return window.showToast("Wait 10 seconds before next shuffle!");
-        }
+        if(isTimeLocked) return window.showToast("Securing Time...");
+        if(window.state.shuffle.shufflesLeft <= 0) return window.showToast("Limit Reached!");
+        if(window.getTrueTime() < (window.state.shuffle.shuffleNextTime || 0)) return window.showToast("Wait 10 seconds before next shuffle!");
 
         const btn = document.getElementById('shuffle-btn');
         const grid = document.getElementById('shuffle-card-container');
@@ -2723,7 +2649,6 @@
         }, 300);
     }
 
-    // 🔥 ZERO COMPENSATION FIX FOR SHUFFLE 🔥
     window.flipShuffleCard = function(index) {
         if(!window.shuffleCardsClickable) return;
         window.shuffleCardsClickable = false; 
@@ -2746,25 +2671,8 @@
 
         if (window.state.shuffle.totalShuffles % 3 === 0 || window.state.shuffle.totalShuffles === 2 || window.state.shuffle.totalShuffles === 5) {
             setTimeout(() => {
-                window.showToast("Loading Ad...");
-                
-                window.showAd((status) => {
-                    if(status === 'success') {
-                        window.processShuffleReward(wonCoins);
-                    } else if (status === 'cooldown') {
-                        window.state.shuffle.shufflesLeft++; 
-                        window.state.shuffle.totalShuffles--; 
-                        document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; 
-                        window.saveState(); 
-                        window.resetShuffleUI(); 
-                    } else { 
-                        window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to earn.");
-                        window.state.shuffle.shufflesLeft++; // Revert Shuffle
-                        window.state.shuffle.totalShuffles--; 
-                        document.getElementById('shuffles-left').innerText = window.state.shuffle.shufflesLeft; 
-                        window.saveState(); 
-                        window.resetShuffleUI(); 
-                    }
+                window.showAd(() => {
+                    window.processShuffleReward(wonCoins);
                 });
             }, 800); 
         } else {
@@ -2776,10 +2684,8 @@
 
     window.processShuffleReward = function(coins) {
         window.rewardCoins(coins, "Shuffle Task");
-        
         window.state.shuffle.shuffleNextTime = window.getTrueTime() + 10000;
         window.checkBotSpeed();
-
         window.resetShuffleUI();
     }
 
@@ -2796,13 +2702,9 @@
 
     const prizeMap = [100, 75, 50, 20, 10, 5]; 
     
-    // 🔥 ZERO COMPENSATION FIX FOR SPIN 🔥
     window.spinWheel = function() {
         if(isTimeLocked) return window.showToast("Securing Time...");
-        
-        if(window.getTrueTime() < (window.state.spin.spinNextTime || 0)) {
-            return window.showToast("Wheel is resetting! Wait 20 seconds.");
-        }
+        if(window.getTrueTime() < (window.state.spin.spinNextTime || 0)) return window.showToast("Wheel is resetting! Wait 20 seconds.");
 
         const btn = document.getElementById('btn-spin');
         if(!btn || btn.disabled || window.state.spin.spinsLeft <= 0) return;
@@ -2811,9 +2713,7 @@
         window.state.spin.spinsLeft--; 
         window.state.spin.totalSpins++;
         
-        if(window.state.spin.spinsLeft === 4) {
-            window.state.spin.lastRefill = window.getTrueTime();
-        }
+        if(window.state.spin.spinsLeft === 4) window.state.spin.lastRefill = window.getTrueTime();
         window.saveState();
         
         const safeRandom = Math.floor(crypto.getRandomValues(new Uint32Array(1))[0] / (2**32) * 6);
@@ -2833,12 +2733,8 @@
             window.checkBotSpeed();
 
             if(window.state.spin.totalSpins % 3 === 0) { 
-                setTimeout(() => window.showAd((status)=>{ 
-                    if(status === 'success' || status === 'cooldown') {
-                        window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
-                    } else {
-                        window.showToast("⚠️ Ad blocked or closed! Disable AdBlocker to earn.");
-                    }
+                setTimeout(() => window.showAd(()=>{ 
+                    window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
                 }), 500); 
             } else {
                 window.rewardCoins(prizeMap[safeRandom], "Spin Reward");
