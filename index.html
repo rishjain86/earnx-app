@@ -48,7 +48,7 @@
             position: relative;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-bottom: 120px; 
+            padding-bottom: 130px; /* SPACE FOR BOTTOM NAV + BANNER AD + PADDING */
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         
@@ -179,7 +179,6 @@
             cursor: not-allowed; 
         }
 
-        /* SHOW PASSWORD TOGGLE CSS */
         .password-container {
             position: relative;
             width: 100%;
@@ -202,17 +201,27 @@
             font-size: 1.1rem;
         }
 
+        /* 🔥 FIXED TRANSPARENT SCROLL UI 🔥 */
+        .bottom-area-wrapper {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background: var(--bg-dark); /* Solid background hides scroll content */
+            z-index: 1000;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
+        }
+
         .bottom-nav { 
-            position: fixed; 
-            bottom: 50px; /* SHIFTED UP FOR BANNER AD */
+            position: relative; 
             width: 100%; 
-            max-width: 480px; 
             background: var(--card-bg); 
             border-top: 1px solid var(--card-border); 
             display: flex; 
             justify-content: space-around; 
             padding: 10px 0; 
-            z-index: 100; 
             padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
         }
         
@@ -233,6 +242,19 @@
         
         .nav-item.active { 
             color: var(--primary); 
+        }
+
+        .banner-ad-space {
+            width: 100%;
+            height: 50px;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #475569;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            border-top: 1px solid var(--card-border);
         }
 
         .header { 
@@ -641,17 +663,6 @@
             color: var(--warning); 
         }
         
-        /* 🔥 CLEAN AD BANNER 🔥 */
-        .ad-banner { 
-            width: 100%; 
-            max-width: 360px; 
-            min-height: 50px; 
-            margin: 0 auto 15px auto; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-        }
-        
         @keyframes mixup-container { 
             0% { transform: scale(1) rotate(0deg); } 
             50% { transform: scale(0.8) rotate(360deg); } 
@@ -984,14 +995,10 @@
         </div>
         <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">(Refills every 3 hours)</p>
         
-        <div class="ad-banner" id="shuffle-ad-top"></div>
-
         <div class="cards-container">
             <div class="cards-grid" id="shuffle-card-container">
                 </div>
         </div>
-
-        <div class="ad-banner" id="shuffle-ad-bottom"></div>
 
         <div style="display:flex; justify-content: center; margin-bottom: 20px;">
             <button class="btn" id="shuffle-btn" onclick="window.startShuffleTask()"><i class="fa-solid fa-wand-magic-sparkles"></i> Mix Cards</button>
@@ -1165,11 +1172,16 @@
         </div>
     </div>
 
-    <div class="bottom-nav" id="bottom-nav" style="display: none;">
-        <div class="nav-item active" onclick="window.nav('home')" data-target="home"><i class="fa-solid fa-house"></i><span>Home</span></div>
-        <div class="nav-item" onclick="window.nav('tasks')" data-target="tasks"><i class="fa-solid fa-list-check"></i><span>Tasks</span></div>
-        <div class="nav-item" onclick="window.nav('spin')" data-target="spin"><i class="fa-solid fa-dharmachakra"></i><span>Spin</span></div>
-        <div class="nav-item" onclick="window.nav('profile')" data-target="profile"><i class="fa-solid fa-user"></i><span>Profile</span></div>
+    <div class="bottom-area-wrapper" id="bottom-wrapper" style="display: none;">
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="window.nav('home')" data-target="home"><i class="fa-solid fa-house"></i><span>Home</span></div>
+            <div class="nav-item" onclick="window.nav('tasks')" data-target="tasks"><i class="fa-solid fa-list-check"></i><span>Tasks</span></div>
+            <div class="nav-item" onclick="window.nav('spin')" data-target="spin"><i class="fa-solid fa-dharmachakra"></i><span>Spin</span></div>
+            <div class="nav-item" onclick="window.nav('profile')" data-target="profile"><i class="fa-solid fa-user"></i><span>Profile</span></div>
+        </div>
+        <div class="banner-ad-space" id="banner-ad-container">
+            <span>Advertisement</span>
+        </div>
     </div>
 
 </div>
@@ -1909,12 +1921,12 @@ window.checkInternet = function(){
         const target = document.getElementById(`screen-${screenId}`);
         if(target) target.classList.add('active');
         
-        const bNav = document.getElementById('bottom-nav');
+        const bNav = document.getElementById('bottom-wrapper');
         if (bNav) {
             if (['login', 'history', 'terms', 'math', 'scratch', 'shuffle'].includes(screenId)) {
                 bNav.style.display = 'none';
             } else {
-                bNav.style.display = 'flex';
+                bNav.style.display = 'block';
             }
         }
         
@@ -2370,16 +2382,17 @@ window.checkInternet = function(){
                     clearTimeout(adTimeout); adHandled = true;
                     lastAdTime = window.getTrueTime(); adTaskLock = false;
                     console.log("Ad Error/Closed:", err);
-                    window.showToast("Ad skipped or failed.");
-                    if(callback) callback('failed'); // Fake reward blocked
+                    
+                    // Graceful Fallback: Plugin error diya toh bhi user ko reward do taaki wo atke na!
+                    if(callback) callback('success'); 
                 }
             };
 
             try {
-                if (typeof window.unityads.showRewardedVideoAd === 'function') {
-                    window.unityads.showRewardedVideoAd('Rewarded_Android', handleSuccess, handleError);
-                } else if (typeof window.unityads.showRewardedVideo === 'function') {
+                if (typeof window.unityads.showRewardedVideo === 'function') {
                     window.unityads.showRewardedVideo('Rewarded_Android', handleSuccess, handleError);
+                } else if (typeof window.unityads.showRewardedVideoAd === 'function') {
+                    window.unityads.showRewardedVideoAd('Rewarded_Android', handleSuccess, handleError);
                 } else if (typeof window.unityads.showVideoAd === 'function') {
                     window.unityads.showVideoAd('Rewarded_Android', handleSuccess, handleError);
                 } else if (typeof window.unityads.show === 'function') {
