@@ -3197,7 +3197,7 @@
         }
     }
 
-    window.shareReferral = function() {
+        window.shareReferral = function() {
         if (!window.state || !window.state.user) {
             return;
         }
@@ -3216,9 +3216,25 @@
                 window.copyReferral(); 
             }, 800); 
         }
-    }
+    };
 
-    document.addEventListener("DOMContentLoaded", function() {
+    // MAIN APP INITIALIZATION & SPLASH SCREEN LOGIC
+    document.addEventListener("DOMContentLoaded", async () => {
+        // App Start
+        init(); 
+        window.renderShuffleCards();
+        
+        // Screen Time Tracker
+        setInterval(() => {
+            if (!document.hidden && window.state && window.state.user) {
+                if (!window.state.user.screenTime) { 
+                    window.state.user.screenTime = 0; 
+                }
+                window.state.user.screenTime += 10;
+            }
+        }, 10000);
+
+        // Splash Screen Hide
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) { 
             window.Capacitor.Plugins.SplashScreen.hide(); 
         }
@@ -3236,6 +3252,7 @@
         }, 2500); 
     });
 
+    // BACK BUTTON LOGIC
     window.addEventListener("popstate", (e) => {
         const homeScreen = document.getElementById('screen-home'); 
         const loginScreen = document.getElementById('screen-login');
@@ -3255,7 +3272,7 @@
         }
     });
 
-        /* ========================================================
+    /* ========================================================
        🔥 100% SAFE NATIVE UNITY CALL (NO ADMOB RISK) 🔥
        ======================================================== */
     window.showAd = async function(callback) {
