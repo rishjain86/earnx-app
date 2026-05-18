@@ -26,14 +26,12 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
 
-      - name: Remove Fake Cordova Plugins
-        run: |
-          npm uninstall cordova-plugin-unityads @awesome-cordova-plugins/core || true
-
       - name: Install Dependencies
         run: |
+          npm uninstall cordova-plugin-unityads @awesome-cordova-plugins/core || true
           npm install --legacy-peer-deps
           npm install @capacitor/assets --save-dev --legacy-peer-deps
+          npm install @capacitor-community/admob --save --legacy-peer-deps
 
       - name: Prepare Web Folder
         run: |
@@ -48,6 +46,11 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+
+      - name: Inject AdMob App ID & Unity Adapter
+        run: |
+          sed -i 's|</application>|    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-6519206650027176~9554070354"/>\n    </application>|g' android/app/src/main/AndroidManifest.xml
+          sed -i 's/dependencies {/dependencies {\n    implementation "com.google.ads.mediation:unity:4.12.1.0"/g' android/app/build.gradle
 
       - name: Upgrade Gradle & AGP for Java 21
         run: |
@@ -85,12 +88,12 @@ jobs:
 
       - name: Rename APK for Release
         run: |
-          mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/EarnX_v8.0_Release.apk || true
-          mv android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/EarnX_v8.0_Release.apk || true
+          mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/EarnX_v8.0_AdMob.apk || true
+          mv android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/EarnX_v8.0_AdMob.apk || true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: EarnX-v8.0-Release
-          path: android/app/build/outputs/apk/release/EarnX_v8.0_Release.apk
+          name: EarnX-v8.0-AdMob
+          path: android/app/build/outputs/apk/release/EarnX_v8.0_AdMob.apk
           
