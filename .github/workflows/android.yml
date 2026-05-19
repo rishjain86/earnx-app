@@ -47,6 +47,21 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: Bulletproof Manifest Fix
+        run: |
+          node -e "
+          const fs = require('fs');
+          const path = 'android/app/src/main/AndroidManifest.xml';
+          let xml = fs.readFileSync(path, 'utf8');
+          if(!xml.includes('xmlns:tools')) {
+            xml = xml.replace('<manifest', '<manifest xmlns:tools=\"http://schemas.android.com/tools\"');
+          }
+          if(!xml.includes('tools:replace=\"android:appComponentFactory\"')) {
+            xml = xml.replace('<application', '<application tools:replace=\"android:appComponentFactory\" android:appComponentFactory=\"androidx.core.app.CoreComponentFactory\"');
+          }
+          fs.writeFileSync(path, xml);
+          "
+
       - name: Upgrade Gradle & AGP for Java 21
         run: |
           sed -i 's/gradle-[0-9\.]*-all\.zip/gradle-8.7-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties || true
@@ -70,10 +85,6 @@ jobs:
           sed -i 's/versionName "[0-9.]*"/versionName "8.0"/g' android/app/build.gradle || true
           sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 34/g' android/variables.gradle || true
           sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 34/g' android/variables.gradle || true
-
-      - name: Auto-Fix AndroidX Manifest Merge
-        run: |
-          npx jetifier
 
       - name: Setup Release Signing
         run: |
