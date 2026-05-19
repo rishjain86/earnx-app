@@ -71,10 +71,9 @@ jobs:
           sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 34/g' android/variables.gradle || true
           sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 34/g' android/variables.gradle || true
 
-      - name: Fix Manifest Merger Error (Yandex Bypass)
+      - name: Auto-Fix AndroidX Manifest Merge
         run: |
-          sed -i 's/xmlns:android=/xmlns:tools="http:\/\/schemas.android.com\/tools" xmlns:android=/g' android/app/src/main/AndroidManifest.xml || true
-          sed -i 's/<application/<application android:appComponentFactory="androidx.core.app.CoreComponentFactory" tools:replace="android:appComponentFactory"/g' android/app/src/main/AndroidManifest.xml || true
+          npx jetifier
 
       - name: Setup Release Signing
         run: |
