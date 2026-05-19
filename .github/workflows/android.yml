@@ -15,38 +15,44 @@ jobs:
       - uses: actions/setup-java@v3
         with: {distribution: 'zulu', java-version: '21'}
 
-      - name: Setup Environment
+      - name: Prepare Workspace
         run: |
           mkdir -p www
-          if [ ! -f index.html ]; then touch index.html; fi
+          # Agar index.html nahi hai toh dummy file banao, warna build fail hoga
+          if [ ! -f index.html ]; then echo "<html><body>App</body></html>" > index.html; fi
           cp index.html www/
           npm install --legacy-peer-deps
 
-      - name: Capacitor Sync
+      - name: Initialize Android
         run: |
           npx cap add android || true
           npx cap sync android
 
-      - name: Update Gradle & Add Yandex SDK
+      - name: Fix Configuration (Crucial Step)
         run: |
-          # 1. Update Gradle Wrapper to 8.7
-          sed -i 's/gradle-[0-9\.]*-all\.zip/gradle-8.7-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
+          # 1. Force Gradle 8.7 for Java 21 support
+          echo "distributionBase=GRADLE_USER_HOME" > android/gradle/wrapper/gradle-wrapper.properties
+          echo "distributionPath=wrapper/dists" >> android/gradle/wrapper/gradle-wrapper.properties
+          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip" >> android/gradle/wrapper/gradle-wrapper.properties
           
-          # 2. Add Yandex SDK & Repositories to build.gradle
+          # 2. Add Repositories and Yandex SDK to app-level build.gradle
           sed -i '/dependencies {/a \    implementation "com.yandex.android:mobileads:8.0.0"' android/app/build.gradle
+          
+          # 3. Add Maven Central to project-level build.gradle
           sed -i '/repositories {/a \        mavenCentral()' android/build.gradle
           
-          # 3. Internet Permission
+          # 4. Manifest Cleanup
           sed -i '/<\/manifest>/i <uses-permission android:name="android.permission.INTERNET"/>\n<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>' android/app/src/main/AndroidManifest.xml
 
       - name: Build Release APK
         run: |
           cd android
           chmod +x ./gradlew
-          ./gradlew assembleRelease
+          # Clean build to avoid cache corruption
+          ./gradlew clean assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: EarnX-Yandex-Native-Build
+          name: EarnX-Final-Native-Build
           path: android/app/build/outputs/apk/release/app-release-unsigned.apk
