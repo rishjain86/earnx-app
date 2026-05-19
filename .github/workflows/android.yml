@@ -13,46 +13,39 @@ jobs:
       - uses: actions/setup-node@v3
         with: {node-version: '18'}
       - uses: actions/setup-java@v3
-        with: {distribution: 'zulu', java-version: '21'}
+        with: {distribution: 'zulu', java-version: '17'} # 17 is most stable for Capacitor
 
-      - name: Prepare Workspace
+      - name: Install & Sync
         run: |
           mkdir -p www
-          # Agar index.html nahi hai toh dummy file banao, warna build fail hoga
-          if [ ! -f index.html ]; then echo "<html><body>App</body></html>" > index.html; fi
-          cp index.html www/
+          [ -f index.html ] && cp index.html www/
           npm install --legacy-peer-deps
-
-      - name: Initialize Android
-        run: |
+          # Plugin install karo
+          npm install https://github.com/maximnara/cordova-plugin-yandex-ads
           npx cap add android || true
           npx cap sync android
 
-      - name: Fix Configuration (Crucial Step)
+      - name: Configure Gradle for AndroidX
         run: |
-          # 1. Force Gradle 8.7 for Java 21 support
-          echo "distributionBase=GRADLE_USER_HOME" > android/gradle/wrapper/gradle-wrapper.properties
-          echo "distributionPath=wrapper/dists" >> android/gradle/wrapper/gradle-wrapper.properties
-          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip" >> android/gradle/wrapper/gradle-wrapper.properties
+          # 1. Gradle 8.7 setup
+          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip" > android/gradle/wrapper/gradle-wrapper.properties
           
-          # 2. Add Repositories and Yandex SDK to app-level build.gradle
-          sed -i '/dependencies {/a \    implementation "com.yandex.android:mobileads:8.0.0"' android/app/build.gradle
+          # 2. Force AndroidX (Crucial for Resolving Errors)
+          echo "android.useAndroidX=true" >> android/gradle.properties
+          echo "android.enableJetifier=true" >> android/gradle.properties
           
-          # 3. Add Maven Central to project-level build.gradle
-          sed -i '/repositories {/a \        mavenCentral()' android/build.gradle
-          
-          # 4. Manifest Cleanup
-          sed -i '/<\/manifest>/i <uses-permission android:name="android.permission.INTERNET"/>\n<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>' android/app/src/main/AndroidManifest.xml
+          # 3. Increase memory for build
+          echo "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8" >> android/gradle.properties
 
-      - name: Build Release APK
+      - name: Build Release
         run: |
           cd android
           chmod +x ./gradlew
-          # Clean build to avoid cache corruption
           ./gradlew clean assembleRelease
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: EarnX-Final-Native-Build
+          name: EarnX-Final-Release
           path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+          
