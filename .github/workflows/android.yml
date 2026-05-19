@@ -70,6 +70,11 @@ jobs:
           sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 34/g' android/variables.gradle || true
           sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 34/g' android/variables.gradle || true
 
+      - name: Fix Manifest Merger Error (Yandex Bypass)
+        run: |
+          sed -i 's/xmlns:android=/xmlns:tools="http:\/\/schemas.android.com\/tools" xmlns:android=/g' android/app/src/main/AndroidManifest.xml || true
+          sed -i 's/<application/<application tools:replace="android:appComponentFactory"/g' android/app/src/main/AndroidManifest.xml || true
+
       - name: Setup Release Signing
         run: |
           sed -i 's/release {/release {\n            signingConfig signingConfigs.debug/g' android/app/build.gradle || true
@@ -90,4 +95,3 @@ jobs:
         with:
           name: EarnX-v8.0-Safe
           path: android/app/build/outputs/apk/release/EarnX_v8.0.apk
-          
