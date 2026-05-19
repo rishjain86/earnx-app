@@ -30,6 +30,7 @@ jobs:
         run: |
           npm uninstall cordova-plugin-unityads @awesome-cordova-plugins/core || true
           npm install --legacy-peer-deps
+          npm install cordova-plugin-androidx-adapter --save || true
           npm install @capacitor/assets --save-dev --legacy-peer-deps
 
       - name: Prepare Web Folder
@@ -73,7 +74,7 @@ jobs:
       - name: Fix Manifest Merger Error (Yandex Bypass)
         run: |
           sed -i 's/xmlns:android=/xmlns:tools="http:\/\/schemas.android.com\/tools" xmlns:android=/g' android/app/src/main/AndroidManifest.xml || true
-          sed -i 's/<application/<application tools:replace="android:appComponentFactory"/g' android/app/src/main/AndroidManifest.xml || true
+          sed -i 's/<application/<application android:appComponentFactory="androidx.core.app.CoreComponentFactory" tools:replace="android:appComponentFactory"/g' android/app/src/main/AndroidManifest.xml || true
 
       - name: Setup Release Signing
         run: |
