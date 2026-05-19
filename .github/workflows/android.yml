@@ -15,27 +15,29 @@ jobs:
       - uses: actions/setup-java@v3
         with: {distribution: 'zulu', java-version: '21'}
 
-      - name: Create Web Assets
+      - name: Setup Environment
         run: |
           mkdir -p www
-          cp index.html www/ 2>/dev/null || echo "No index.html"
-          cp -r assets www/assets/ 2>/dev/null || echo "No assets"
-          echo '{"name":"app"}' > www/manifest.json
+          if [ ! -f index.html ]; then touch index.html; fi
+          cp index.html www/
+          npm install --legacy-peer-deps
 
-      - name: Install Dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Generate Android Project
+      - name: Capacitor Sync
         run: |
-          npx cap add android
+          npx cap add android || true
           npx cap sync android
 
-      - name: Inject Yandex Native SDK (No Plugin)
+      - name: Update Gradle & Add Yandex SDK
         run: |
-          # Plugin install nahi karenge, sirf SDK dependency dalenge build.gradle mein
-          echo "dependencies { implementation 'com.yandex.android:mobileads:7.0.0' }" >> android/app/build.gradle
-          # Internet permission
-          sed -i '/<\/manifest>/i <uses-permission android:name="android.permission.INTERNET"/>' android/app/src/main/AndroidManifest.xml
+          # 1. Update Gradle Wrapper to 8.7
+          sed -i 's/gradle-[0-9\.]*-all\.zip/gradle-8.7-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties
+          
+          # 2. Add Yandex SDK & Repositories to build.gradle
+          sed -i '/dependencies {/a \    implementation "com.yandex.android:mobileads:8.0.0"' android/app/build.gradle
+          sed -i '/repositories {/a \        mavenCentral()' android/build.gradle
+          
+          # 3. Internet Permission
+          sed -i '/<\/manifest>/i <uses-permission android:name="android.permission.INTERNET"/>\n<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>' android/app/src/main/AndroidManifest.xml
 
       - name: Build Release APK
         run: |
@@ -46,5 +48,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: EarnX-Final-Working
+          name: EarnX-Yandex-Native-Build
           path: android/app/build/outputs/apk/release/app-release-unsigned.apk
