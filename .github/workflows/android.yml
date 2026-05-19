@@ -2,61 +2,40 @@ name: Build Android APK
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with: {node-version: '18'}
+      - uses: actions/setup-java@v3
+        with: {distribution: 'zulu', java-version: '21'}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '21'
+      - name: Create Web Assets
+        run: |
+          mkdir -p www
+          cp index.html www/ 2>/dev/null || echo "No index.html"
+          cp -r assets www/assets/ 2>/dev/null || echo "No assets"
+          echo '{"name":"app"}' > www/manifest.json
 
       - name: Install Dependencies
-        run: |
-          npm install --legacy-peer-deps
-          # Yandex Plugin Install
-          npm install https://github.com/maximnara/cordova-plugin-yandex-ads --save
+        run: npm install --legacy-peer-deps
 
       - name: Generate Android Project
         run: |
           npx cap add android
           npx cap sync android
 
-      - name: Force AndroidX & Conflict Cleanup
+      - name: Inject Yandex Native SDK (No Plugin)
         run: |
-          # 1. Jetifier apply karo taaki purani Support Libs, AndroidX mein convert ho jayein
-          npm install -g jetifier
-          npx jetify
-          
-          # 2. AndroidX properties enable karo
-          echo "android.useAndroidX=true" >> android/gradle.properties
-          echo "android.enableJetifier=true" >> android/gradle.properties
-          
-          # 3. Conflict wale legacy tags hatao
-          sed -i '/android.support/d' android/app/src/main/AndroidManifest.xml || true
-          
-          # 4. Yandex Plugin ke liye Gradle version fix
-          sed -i 's/gradle-[0-9\.]*-all\.zip/gradle-8.7-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties || true
-          sed -i 's/com.android.tools.build:gradle:[0-9\.]*/com.android.tools.build:gradle:8.3.0/g' android/build.gradle || true
-
-      - name: Generate App Icons & Splash
-        run: |
-          npx capacitor-assets generate --android
+          # Plugin install nahi karenge, sirf SDK dependency dalenge build.gradle mein
+          echo "dependencies { implementation 'com.yandex.android:mobileads:7.0.0' }" >> android/app/build.gradle
+          # Internet permission
+          sed -i '/<\/manifest>/i <uses-permission android:name="android.permission.INTERNET"/>' android/app/src/main/AndroidManifest.xml
 
       - name: Build Release APK
         run: |
@@ -64,13 +43,8 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleRelease
 
-      - name: Rename & Upload APK
-        run: |
-          mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/EarnX_v8.0.apk || true
-          mv android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/EarnX_v8.0.apk || true
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: EarnX-Final-Yandex-Build
-          path: android/app/build/outputs/apk/release/EarnX_v8.0.apk
+          name: EarnX-Final-Working
+          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
