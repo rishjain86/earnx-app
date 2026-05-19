@@ -3197,7 +3197,7 @@
         }
     }
 
-        window.shareReferral = function() {
+    window.shareReferral = function() {
         if (!window.state || !window.state.user) {
             return;
         }
@@ -3239,6 +3239,21 @@
             window.Capacitor.Plugins.SplashScreen.hide(); 
         }
         
+        // 🔥 SAFE YANDEX ADS INITIALIZATION 🔥
+        setTimeout(() => {
+            if (window.YandexAds) {
+                try {
+                    window.YandexAds.init({
+                        interstitialBlockId: 'R-M-19301521-1',
+                        rewardedBlockId: 'R-M-19301521-2'
+                    });
+                    console.log("Yandex Ads Initialized Safely Engine Active");
+                } catch (e) {
+                    console.log("Yandex init error catch: ", e);
+                }
+            }
+        }, 1000);
+
         setTimeout(function() { 
             let splash = document.getElementById('custom-splash'); 
             
@@ -3273,7 +3288,7 @@
     });
 
     /* ========================================================
-       🔥 100% SAFE NATIVE UNITY CALL (NO ADMOB RISK) 🔥
+       🔥 NEW HIGH-CPM YANDEX NATIVE ENGINE DRIVER 🔥
        ======================================================== */
     window.showAd = async function(callback) {
         if (!navigator.onLine) { 
@@ -3298,30 +3313,75 @@
             return; 
         }
 
-        window.showToast("Requesting Unity Ad...");
+        window.showToast("Requesting Premium Advertisement...");
 
-        // Failsafe timer (3.5s) so app never freezes if Unity returns "No Fill"
+        // Safety Trigger: 5 seconds timeout to bypass if fill rate drops or network lags
         let adHasBeenHandled = false;
         let failSafeTimeout = setTimeout(() => {
-            if(!adHasBeenHandled) {
+            if (!adHasBeenHandled) {
                 adHasBeenHandled = true;
                 adTaskLock = false;
                 lastAdTime = window.getTrueTime();
-                console.log("Unity No Fill - Bypassing to keep app running");
+                console.log("Yandex Timeout Failsafe Triggered");
                 if (callback) callback('success'); 
             }
-        }, 3500);
+        }, 5000);
 
-        // Calling your original safe custom Java Bridge
-        try {
-            if (window.UnityAdsBridge && window.UnityAdsBridge.showRewardedAd) {
-                window.UnityAdsBridge.showRewardedAd();
-                // Jab tak Unity support ads chalu nahi karta, failsafe user ko bina freeze kiye aage badha dega
-            } else {
-                // Agar bridge connect nahi hua, toh bhi failsafe app ko hang nahi hone dega
+        // Native Yandex SDK Caller Trigger
+        if (window.YandexAds) {
+            try {
+                // Primary Request: Load and trigger High-CPM Rewarded Video
+                window.YandexAds.loadRewardedVideo();
+                
+                // Event Listeners for Reward completion
+                const rewardSuccessHandler = () => {
+                    if (!adHasBeenHandled) {
+                        clearTimeout(failSafeTimeout);
+                        adHasBeenHandled = true;
+                        adTaskLock = false;
+                        lastAdTime = window.getTrueTime();
+                        if (callback) callback('success');
+                    }
+                    window.removeEventListener('yandexAdsRewardedVideoLoaded', rewardSuccessHandler);
+                };
+                window.addEventListener('yandexAdsRewardedVideoLoaded', async () => {
+                    await window.YandexAds.showRewardedVideo();
+                });
+                window.addEventListener('yandexAdsRewardedVideoEnded', rewardSuccessHandler);
+
+                // Fail-safe inside try block: if rewarded fails, load backup interstitial
+                window.addEventListener('yandexAdsRewardedVideoFailedToLoad', () => {
+                    console.log("Rewarded failed, falling back to Interstitial");
+                    window.YandexAds.loadInterstitial();
+                });
+                
+                window.addEventListener('yandexAdsInterstitialLoaded', async () => {
+                    await window.YandexAds.showInterstitial();
+                });
+                window.addEventListener('yandexAdsInterstitialDismissed', () => {
+                    if (!adHasBeenHandled) {
+                        clearTimeout(failSafeTimeout);
+                        adHasBeenHandled = true;
+                        adTaskLock = false;
+                        lastAdTime = window.getTrueTime();
+                        if (callback) callback('success');
+                    }
+                });
+
+            } catch (err) {
+                console.log("Yandex SDK Native Error, falling back to browser simulator: ", err);
             }
-        } catch (e) {
-            console.log("Bridge error, waiting for failsafe.");
+        } else {
+            // Browser Development Environment Fallback simulation
+            setTimeout(() => {
+                if (!adHasBeenHandled) {
+                    clearTimeout(failSafeTimeout);
+                    adHasBeenHandled = true;
+                    adTaskLock = false;
+                    lastAdTime = window.getTrueTime();
+                    if (callback) callback('success'); 
+                }
+            }, 1500);
         }
     };
 </script>
