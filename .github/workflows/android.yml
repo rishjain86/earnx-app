@@ -11,20 +11,13 @@ jobs:
       - uses: actions/setup-java@v3
         with: { distribution: 'zulu', java-version: '17' }
 
-      - name: Prepare Assets
+      - name: Build
         run: |
-          # 1. Root se files ko www folder mein copy karo (Capacitor yahi dhoondhta hai)
-          mkdir -p www
-          cp -r . www/ || true
-          # Hatao jo zaroori nahi hai (node_modules, android, .git)
-          rm -rf www/node_modules www/android www/.git www/.github
-          
-      - name: Build Android
-        run: |
-          # 2. Sync ab fail nahi hoga kyunki www folder ab files se bhara hai
+          npm install
+          # Capacitor ko bina 'www' folder ke sync hone do
           npx cap sync android
           
-          # 3. Build (Direct path se)
+          # Direct Gradle build
           ./android/gradlew assembleRelease -p android
 
       - name: Upload
