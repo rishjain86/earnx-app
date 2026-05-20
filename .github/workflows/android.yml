@@ -11,18 +11,18 @@ jobs:
       - uses: actions/setup-java@v3
         with: { distribution: 'zulu', java-version: '17' }
 
-      - name: Compile
+      - name: Build
         run: |
           npm install --legacy-peer-deps
           mkdir -p www
           cp index.html script.js style.css www/ 2>/dev/null || true
           
-          # Delete existing to prevent lock
+          # Clean and Sync
           rm -rf android
           npx cap add android
           npx cap sync android
 
-          # Create Plugin
+          # Plugin Creation
           mkdir -p android/app/src/main/java/com/earnx/app/
           echo 'package com.earnx.app;
           import com.getcapacitor.Plugin;
@@ -34,9 +34,23 @@ jobs:
               public void loadRewarded(PluginCall call) { call.resolve(); }
           }' > android/app/src/main/java/com/earnx/app/YandexAdsPlugin.java
 
-          # Direct Gradle Append
-          echo "dependencies { implementation 'com.yandex.android:mobileads:7.5.0' }" >> android/app/build.gradle
-          
+          # Gradle Overwrite (Isse file dhoondhne ki zarurat nahi, ye file create kar dega)
+          cat <<EOF > android/app/build.gradle
+          apply plugin: 'com.android.application'
+          android {
+              compileSdkVersion 34
+              defaultConfig {
+                  applicationId "com.earnx.app"
+                  minSdkVersion 24
+                  targetSdkVersion 34
+              }
+          }
+          dependencies {
+              implementation 'com.yandex.android:mobileads:7.5.0'
+              implementation project(':capacitor-android')
+          }
+          EOF
+
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease
