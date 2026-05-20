@@ -11,26 +11,25 @@ jobs:
       - uses: actions/setup-java@v3
         with: { distribution: 'zulu', java-version: '17' }
 
-      - name: Create Web Build
+      - name: Build Web
         run: |
           npm install --legacy-peer-deps
-          # Hum ek dum naya 'www' folder bana rahe hain aur usme files copy kar rahe hain
           mkdir -p www
-          cp index.html www/
+          cp index.html www/ 2>/dev/null || true
           cp script.js www/ 2>/dev/null || true
           cp style.css www/ 2>/dev/null || true
           if [ -d "assets" ]; then cp -r assets www/; fi
-          # Capacitor ko batane ke liye ki 'index.html' mil gaya hai
-          ls -la www/ 
 
-      - name: Sync and Build
+      - name: Sync
+        run: npx cap sync android
+
+      - name: Final Build
         run: |
-          # 'rm -rf android' hata diya hai taaki purani configs bane rahein
-          npx cap sync android
+          # Pehle check karo ki file kahan hai
+          ls -R android/
           
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease
+          # Ab seedha full path use karke build karo
+          ./android/gradlew assembleRelease -p android
 
       - name: Upload
         uses: actions/upload-artifact@v4
