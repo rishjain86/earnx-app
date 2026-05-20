@@ -2,94 +2,84 @@ name: Build Android APK
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: Setup Java
-        uses: actions/setup-java@v3
+      - uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '21'
+          java-version: '17'
 
       - name: Install Dependencies
         run: |
           npm install --legacy-peer-deps
-          npm install @capacitor/assets --save-dev --legacy-peer-deps
+          npm install cordova-plugin-androidx-adapter --save
 
-      - name: Prepare Web Folder
+      - name: Sync & Prepare
         run: |
-          mkdir -p www
-          cp index.html www/ || true
-          cp script.js www/ || true
-          cp style.css www/ || true
-          cp sw.js www/ || true
-          cp -r assets www/assets/ || true
-
-      - name: Sync Android Project
-        run: |
+          rm -rf android
+          npx cap add android
           npx cap sync android
 
-      - name: Inject Yandex Mobile Ads SDK
+      - name: Add Custom Yandex Plugin
         run: |
-          sed -i "/dependencies {/a \    implementation 'com.yandex.android:mobileads:7.5.0'" android/app/build.gradle || true
+          mkdir -p android/app/src/main/java/com/earnx/app/
+          echo 'package com.earnx.app;
+          import android.app.Activity;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.JSObject;
+          import com.yandex.mobile.ads.common.AdRequest;
+          import com.yandex.mobile.ads.common.Reward;
+          import com.yandex.mobile.ads.rewarded.RewardedAd;
+          import com.yandex.mobile.ads.rewarded.RewardedAdEventListener;
+          @CapacitorPlugin(name = "YandexAds")
+          public class YandexAdsPlugin extends Plugin {
+              private RewardedAd rewardedAd;
+              @com.getcapacitor.PluginMethod
+              public void loadRewarded(PluginCall call) {
+                  Activity activity = getActivity();
+                  rewardedAd = new RewardedAd(activity);
+                  rewardedAd.setAdUnitId("R-M-19301521-2");
+                  AdRequest adRequest = new AdRequest.Builder().build();
+                  rewardedAd.setRewardedAdEventListener(new RewardedAdEventListener() {
+                      public void onAdLoaded() { rewardedAd.show(); }
+                      public void onRewarded(Reward reward) { JSObject ret = new JSObject(); ret.put("success", true); notifyListeners("rewarded", ret); }
+                      public void onAdFailedToLoad(com.yandex.mobile.ads.common.AdRequestError e) { JSObject ret = new JSObject(); ret.put("success", false); notifyListeners("rewarded", ret); }
+                  });
+                  rewardedAd.loadAd(adRequest);
+                  call.resolve();
+              }
+          }' > android/app/src/main/java/com/earnx/app/YandexAdsPlugin.java
 
-      - name: Upgrade Gradle, AGP & SDK Version
+      - name: Fix Manifest & Gradle
         run: |
-          sed -i 's/gradle-[0-9\.]*-all\.zip/gradle-8.7-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties || true
-          sed -i 's/gradle-[0-9\.]*-bin\.zip/gradle-8.7-bin.zip/g' android/gradle/wrapper/gradle-wrapper.properties || true
-          sed -i 's/com.android.tools.build:gradle:[0-9\.]*/com.android.tools.build:gradle:8.3.0/g' android/build.gradle || true
-          sed -i 's/minSdkVersion = [0-9]*/minSdkVersion = 24/g' android/variables.gradle || true
-          sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 34/g' android/variables.gradle || true
-          sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 34/g' android/variables.gradle || true
+          sed -i 's/minSdkVersion = [0-9]*/minSdkVersion = 24/g' android/variables.gradle
+          sed -i 's/dependencies {/dependencies {\n    implementation "com.yandex.android:mobileads:7.5.0"/' android/app/build.gradle
+          # Fix for Manifest Merger
+          sed -i 's|<application|<application tools:replace="android:appComponentFactory" android:appComponentFactory="androidx.core.app.CoreComponentFactory"|' android/app/src/main/AndroidManifest.xml
+          sed -i 's|<manifest|<manifest xmlns:tools="http://schemas.android.com/tools"|' android/app/src/main/AndroidManifest.xml
+          npx jetifier
 
-      - name: Deep Clean Default Android Assets
-        run: |
-          find android/app/src/main/res -name "ic_launcher*" -delete
-          find android/app/src/main/res -name "ic_launcher_round*" -delete
-          rm -rf android/app/src/main/res/mipmap-anydpi-v26/* || true
-
-      - name: Generate App Icons & Splash
-        run: |
-          npx capacitor-assets generate --android
-
-      - name: Update App Name & Version
-        run: |
-          sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">EarnX<\/string>/g' android/app/src/main/res/values/strings.xml || true
-          sed -i 's/versionCode [0-9]*/versionCode 8/g' android/app/build.gradle || true
-          sed -i 's/versionName "[0-9.]*"/versionName "8.0"/g' android/app/build.gradle || true
-
-      - name: Setup Release Signing
-        run: |
-          sed -i 's/release {/release {\n            signingConfig signingConfigs.debug/g' android/app/build.gradle || true
-
-      - name: Build Release APK
+      - name: Build APK
         run: |
           cd android
-          chmod +x ./gradlew
+          chmod +x gradlew
           ./gradlew assembleRelease
 
-      - name: Rename APK for Release
-        run: |
-          mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/EarnX_v8.0.apk || true
-          mv android/app/build/outputs/apk/release/app-release-unsigned.apk android/app/build/outputs/apk/release/EarnX_v8.0.apk || true
-
-      - name: Upload APK
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: EarnX-v8.0-Safe
-          path: android/app/build/outputs/apk/release/EarnX_v8.0.apk
+          name: EarnX-Final
+          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
