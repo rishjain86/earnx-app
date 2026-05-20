@@ -28,9 +28,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm uninstall cordova-plugin-unityads @awesome-cordova-plugins/core || true
           npm install --legacy-peer-deps
-          npm install cordova-plugin-androidx-adapter --save || true
           npm install @capacitor/assets --save-dev --legacy-peer-deps
 
       - name: Prepare Web Folder
@@ -46,11 +44,18 @@ jobs:
         run: |
           npx cap sync android
 
-      - name: Upgrade Gradle & AGP for Java 21
+      - name: Inject Yandex Mobile Ads SDK
+        run: |
+          sed -i "/dependencies {/a \    implementation 'com.yandex.android:mobileads:7.5.0'" android/app/build.gradle || true
+
+      - name: Upgrade Gradle, AGP & SDK Version
         run: |
           sed -i 's/gradle-[0-9\.]*-all\.zip/gradle-8.7-all.zip/g' android/gradle/wrapper/gradle-wrapper.properties || true
           sed -i 's/gradle-[0-9\.]*-bin\.zip/gradle-8.7-bin.zip/g' android/gradle/wrapper/gradle-wrapper.properties || true
           sed -i 's/com.android.tools.build:gradle:[0-9\.]*/com.android.tools.build:gradle:8.3.0/g' android/build.gradle || true
+          sed -i 's/minSdkVersion = [0-9]*/minSdkVersion = 24/g' android/variables.gradle || true
+          sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 34/g' android/variables.gradle || true
+          sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 34/g' android/variables.gradle || true
 
       - name: Deep Clean Default Android Assets
         run: |
@@ -67,14 +72,6 @@ jobs:
           sed -i 's/<string name="app_name">.*<\/string>/<string name="app_name">EarnX<\/string>/g' android/app/src/main/res/values/strings.xml || true
           sed -i 's/versionCode [0-9]*/versionCode 8/g' android/app/build.gradle || true
           sed -i 's/versionName "[0-9.]*"/versionName "8.0"/g' android/app/build.gradle || true
-          sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 34/g' android/variables.gradle || true
-          sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 34/g' android/variables.gradle || true
-
-      - name: Fix Manifest Merger Error
-        run: |
-          sed -i 's/xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android"/xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android" xmlns:tools="http:\/\/schemas.android.com\/tools"/g' android/app/src/main/AndroidManifest.xml || true
-          sed -i 's/<application/<application tools:replace="android:appComponentFactory" android:appComponentFactory="androidx.core.app.CoreComponentFactory"/g' android/app/src/main/AndroidManifest.xml || true
-          npx jetifier
 
       - name: Setup Release Signing
         run: |
