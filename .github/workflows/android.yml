@@ -25,17 +25,14 @@ jobs:
           if [ -f "style.css" ]; then cp style.css www/; fi
           if [ -d "assets" ]; then cp -r assets www/; fi
 
-      - name: 2. Create Android Project
-        run: |
-          npm install @capacitor/android
-          # 'sync' ki jagah 'add' use kar rahe hain taaki android folder ban jaye
-          npx cap add android
+      - name: 2. Capacitor Sync
+        run: npx cap sync android
 
-      - name: 3. Build APK
+      - name: 3. Build APK (Direct Gradle)
         run: |
           cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease
+          # Missing gradlew file ki zarurat nahi, system ka gradle use karenge
+          gradle assembleRelease
 
       - name: 4. Upload Final APK
         uses: actions/upload-artifact@v4
