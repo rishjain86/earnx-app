@@ -25,14 +25,22 @@ jobs:
           if [ -f "style.css" ]; then cp style.css www/; fi
           if [ -d "assets" ]; then cp -r assets www/; fi
 
-      - name: 2. Capacitor Sync
-        run: npx cap sync android
+      - name: 2. Fresh Android Generate
+        run: |
+          # Pehle purana/broken folder uda do
+          rm -rf android
+          
+          # Ab fresh folder aur files generate karo
+          npm install @capacitor/android
+          npx cap add android
+          npx cap sync android
 
-      - name: 3. Build APK (Direct Gradle)
+      - name: 3. Build APK
         run: |
           cd android
-          # Missing gradlew file ki zarurat nahi, system ka gradle use karenge
-          gradle assembleRelease
+          # Ab gradlew 100% milega kyunki humne abhi fresh generate kiya hai
+          chmod +x gradlew
+          ./gradlew assembleRelease
 
       - name: 4. Upload Final APK
         uses: actions/upload-artifact@v4
