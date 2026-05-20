@@ -33,18 +33,20 @@ jobs:
               public void loadRewarded(PluginCall call) { call.resolve(); }
           }' > android/app/src/main/java/com/earnx/app/YandexAdsPlugin.java
 
-          # Gradle Overwrite with 8.0.0 and Lint Fix
+          # Gradle Overwrite (NAMESPACE ADDED HERE)
           cat <<EOF > android/app/build.gradle
           apply plugin: 'com.android.application'
           android {
+              namespace 'com.earnx.app'
               compileSdkVersion 34
               defaultConfig {
                   applicationId "com.earnx.app"
                   minSdkVersion 24
                   targetSdkVersion 34
+                  versionCode 1
+                  versionName "1.0"
               }
               lintOptions {
-                  checkReleaseBuilds false
                   abortOnError false
               }
           }
