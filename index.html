@@ -3290,7 +3290,7 @@
     /* ========================================================
        🔥 NEW HIGH-CPM YANDEX NATIVE ENGINE DRIVER 🔥
        ======================================================== */
-    window.showAd = async function(callback) {
+        window.showAd = async function(callback) {
         if (!navigator.onLine) { 
             if (callback) callback('failed'); 
             return; 
@@ -3315,7 +3315,6 @@
 
         window.showToast("Requesting Premium Advertisement...");
 
-        // Safety Trigger: 5 seconds timeout to bypass if fill rate drops or network lags
         let adHasBeenHandled = false;
         let failSafeTimeout = setTimeout(() => {
             if (!adHasBeenHandled) {
@@ -3327,52 +3326,34 @@
             }
         }, 5000);
 
-        // Native Yandex SDK Caller Trigger
-        if (window.YandexAds) {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.YandexAds) {
             try {
-                // Primary Request: Load and trigger High-CPM Rewarded Video
-                window.YandexAds.loadRewardedVideo();
-                
-                // Event Listeners for Reward completion
-                const rewardSuccessHandler = () => {
+                let listener = await window.Capacitor.Plugins.YandexAds.addListener('rewarded', (info) => {
                     if (!adHasBeenHandled) {
                         clearTimeout(failSafeTimeout);
                         adHasBeenHandled = true;
                         adTaskLock = false;
                         lastAdTime = window.getTrueTime();
-                        if (callback) callback('success');
-                    }
-                    window.removeEventListener('yandexAdsRewardedVideoLoaded', rewardSuccessHandler);
-                };
-                window.addEventListener('yandexAdsRewardedVideoLoaded', async () => {
-                    await window.YandexAds.showRewardedVideo();
-                });
-                window.addEventListener('yandexAdsRewardedVideoEnded', rewardSuccessHandler);
-
-                // Fail-safe inside try block: if rewarded fails, load backup interstitial
-                window.addEventListener('yandexAdsRewardedVideoFailedToLoad', () => {
-                    console.log("Rewarded failed, falling back to Interstitial");
-                    window.YandexAds.loadInterstitial();
-                });
-                
-                window.addEventListener('yandexAdsInterstitialLoaded', async () => {
-                    await window.YandexAds.showInterstitial();
-                });
-                window.addEventListener('yandexAdsInterstitialDismissed', () => {
-                    if (!adHasBeenHandled) {
-                        clearTimeout(failSafeTimeout);
-                        adHasBeenHandled = true;
-                        adTaskLock = false;
-                        lastAdTime = window.getTrueTime();
-                        if (callback) callback('success');
+                        listener.remove();
+                        if (info.success) {
+                            if (callback) callback('success');
+                        } else {
+                            if (callback) callback('failed');
+                        }
                     }
                 });
 
+                await window.Capacitor.Plugins.YandexAds.loadRewarded();
             } catch (err) {
-                console.log("Yandex SDK Native Error, falling back to browser simulator: ", err);
+                console.log("Yandex SDK Native Error: ", err);
+                if (!adHasBeenHandled) {
+                    clearTimeout(failSafeTimeout);
+                    adHasBeenHandled = true;
+                    adTaskLock = false;
+                    if (callback) callback('failed');
+                }
             }
         } else {
-            // Browser Development Environment Fallback simulation
             setTimeout(() => {
                 if (!adHasBeenHandled) {
                     clearTimeout(failSafeTimeout);
