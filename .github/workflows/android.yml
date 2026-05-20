@@ -16,24 +16,20 @@ jobs:
         uses: actions/setup-java@v3
         with: { distribution: 'zulu', java-version: '17' }
 
-      - name: 1. The Brahmastra (Setup www folder)
+      - name: 1. Setup www folder
         run: |
           npm install
-          
-          # Ek fresh 'www' folder create karna
           mkdir -p www
-          
-          # Sirf zaroori files copy karna (Koi loop nahi)
           cp index.html www/
           if [ -f "script.js" ]; then cp script.js www/; fi
           if [ -f "style.css" ]; then cp style.css www/; fi
           if [ -d "assets" ]; then cp -r assets www/; fi
-          
-          echo "WWW folder ready. Files inside:"
-          ls -la www/
 
-      - name: 2. Capacitor Sync
-        run: npx cap sync android
+      - name: 2. Create Android Project
+        run: |
+          npm install @capacitor/android
+          # 'sync' ki jagah 'add' use kar rahe hain taaki android folder ban jaye
+          npx cap add android
 
       - name: 3. Build APK
         run: |
