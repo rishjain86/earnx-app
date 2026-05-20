@@ -14,60 +14,11 @@ jobs:
       - name: Build
         run: |
           npm install --legacy-peer-deps
-          mkdir -p www
-          cp index.html script.js style.css www/ 2>/dev/null || true
-          
-          rm -rf android
-          npx cap add android
+          # Sirf basic sync, koi folder delete nahi
           npx cap sync android
 
-          # Plugin Creation
-          mkdir -p android/app/src/main/java/com/earnx/app/
-          echo 'package com.earnx.app;
-          import com.getcapacitor.Plugin;
-          import com.getcapacitor.annotation.CapacitorPlugin;
-          import com.getcapacitor.PluginCall;
-          @CapacitorPlugin(name = "YandexAds")
-          public class YandexAdsPlugin extends Plugin {
-              @com.getcapacitor.PluginMethod
-              public void loadRewarded(PluginCall call) { call.resolve(); }
-          }' > android/app/src/main/java/com/earnx/app/YandexAdsPlugin.java
-
-          # OVERWRITE MANIFEST to remove SplashScreen
-          cat <<EOF > android/app/src/main/AndroidManifest.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.earnx.app">
-              <application android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:label="EarnX" android:theme="@android:style/Theme.NoTitleBar">
-                  <activity android:name=".MainActivity" android:configChanges="orientation|keyboardHidden|screenSize" android:label="EarnX" android:theme="@android:style/Theme.NoTitleBar">
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN" />
-                          <category android:name="android.intent.category.LAUNCHER" />
-                      </intent-filter>
-                  </activity>
-              </application>
-          </manifest>
-          EOF
-
-          # Gradle Overwrite
-          cat <<EOF > android/app/build.gradle
-          apply plugin: 'com.android.application'
-          android {
-              namespace 'com.earnx.app'
-              compileSdkVersion 34
-              defaultConfig {
-                  applicationId "com.earnx.app"
-                  minSdkVersion 24
-                  targetSdkVersion 34
-                  versionCode 1
-                  versionName "1.0"
-              }
-              lintOptions { abortOnError false }
-          }
-          dependencies {
-              implementation 'com.yandex.android:mobileads:8.0.0'
-              implementation project(':capacitor-android')
-          }
-          EOF
+          # Yandex ka implementation line bas ek baar add karo
+          echo "dependencies { implementation 'com.yandex.android:mobileads:8.0.0' }" >> android/app/build.gradle
 
           cd android
           chmod +x gradlew
@@ -78,3 +29,4 @@ jobs:
         with:
           name: EarnX-Final
           path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+          
