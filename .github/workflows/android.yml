@@ -42,8 +42,10 @@ jobs:
           cp sw.js www/ || true
           cp -r assets www/assets/ || true
 
-      - name: Sync Android Project
+      - name: Force Generate Android Project
         run: |
+          rm -rf android
+          npx cap add android
           npx cap sync android
 
       - name: Upgrade Gradle & AGP for Java 21
