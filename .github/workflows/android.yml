@@ -11,24 +11,20 @@ jobs:
       - uses: actions/setup-java@v3
         with: { distribution: 'zulu', java-version: '17' }
 
-      - name: Build Web
+      - name: Prepare Assets
         run: |
-          npm install --legacy-peer-deps
+          # 1. Root se files ko www folder mein copy karo (Capacitor yahi dhoondhta hai)
           mkdir -p www
-          cp index.html www/ 2>/dev/null || true
-          cp script.js www/ 2>/dev/null || true
-          cp style.css www/ 2>/dev/null || true
-          if [ -d "assets" ]; then cp -r assets www/; fi
-
-      - name: Sync
-        run: npx cap sync android
-
-      - name: Final Build
-        run: |
-          # Pehle check karo ki file kahan hai
-          ls -R android/
+          cp -r . www/ || true
+          # Hatao jo zaroori nahi hai (node_modules, android, .git)
+          rm -rf www/node_modules www/android www/.git www/.github
           
-          # Ab seedha full path use karke build karo
+      - name: Build Android
+        run: |
+          # 2. Sync ab fail nahi hoga kyunki www folder ab files se bhara hai
+          npx cap sync android
+          
+          # 3. Build (Direct path se)
           ./android/gradlew assembleRelease -p android
 
       - name: Upload
