@@ -21,7 +21,7 @@ jobs:
           npx cap add android
           npx cap sync android
 
-          # 1. Plugin Creation
+          # Plugin Creation
           mkdir -p android/app/src/main/java/com/earnx/app/
           echo 'package com.earnx.app;
           import com.getcapacitor.Plugin;
@@ -33,10 +33,22 @@ jobs:
               public void loadRewarded(PluginCall call) { call.resolve(); }
           }' > android/app/src/main/java/com/earnx/app/YandexAdsPlugin.java
 
-          # 2. Fix Manifest Theme Error (Replaces SplashScreen with AppTheme)
-          sed -i 's|android:theme="@style/Theme.SplashScreen"|android:theme="@style/AppTheme"|g' android/app/src/main/AndroidManifest.xml || true
+          # OVERWRITE MANIFEST to remove SplashScreen
+          cat <<EOF > android/app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.earnx.app">
+              <application android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:label="EarnX" android:theme="@android:style/Theme.NoTitleBar">
+                  <activity android:name=".MainActivity" android:configChanges="orientation|keyboardHidden|screenSize" android:label="EarnX" android:theme="@android:style/Theme.NoTitleBar">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
 
-          # 3. Gradle Overwrite
+          # Gradle Overwrite
           cat <<EOF > android/app/build.gradle
           apply plugin: 'com.android.application'
           android {
