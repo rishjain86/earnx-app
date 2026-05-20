@@ -42,10 +42,8 @@ jobs:
           cp sw.js www/ || true
           cp -r assets www/assets/ || true
 
-      - name: Force Generate Android Project
+      - name: Sync Android Project
         run: |
-          rm -rf android
-          npx cap add android
           npx cap sync android
 
       - name: Upgrade Gradle & AGP for Java 21
@@ -72,8 +70,10 @@ jobs:
           sed -i 's/targetSdkVersion = [0-9]*/targetSdkVersion = 34/g' android/variables.gradle || true
           sed -i 's/compileSdkVersion = [0-9]*/compileSdkVersion = 34/g' android/variables.gradle || true
 
-      - name: Auto-Fix AndroidX Manifest Merge
+      - name: Fix Manifest Merger Error
         run: |
+          sed -i 's/xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android"/xmlns:android="http:\/\/schemas.android.com\/apk\/res\/android" xmlns:tools="http:\/\/schemas.android.com\/tools"/g' android/app/src/main/AndroidManifest.xml || true
+          sed -i 's/<application/<application tools:replace="android:appComponentFactory" android:appComponentFactory="androidx.core.app.CoreComponentFactory"/g' android/app/src/main/AndroidManifest.xml || true
           npx jetifier
 
       - name: Setup Release Signing
