@@ -1,66 +1,61 @@
 name: Build Android APK
+
 on:
-  push:
-    branches: [main, master]
-  workflow_dispatch:
+push:
+workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+build:
+runs-on: ubuntu-latest
 
-      - name: Install & Build Web
-        run: |
-          npm install --legacy-peer-deps
-          mkdir -p www
-          cp index.html www/ 2>/dev/null || true
-          cp script.js www/ 2>/dev/null || true
-          if [ -f style.css ]; then cp style.css www/; fi
-          if [ -d assets ]; then cp -r assets www/; fi
+steps:
+  - name: Checkout
+    uses: actions/checkout@v3
 
-      - name: Patch Native Plugin
-        run: |
-          mkdir -p android/app/src/main/java/com/earnx/app/
-          echo 'package com.earnx.app;
-          import android.app.Activity;
-          import com.getcapacitor.Plugin;
-          import com.getcapacitor.annotation.CapacitorPlugin;
-          import com.getcapacitor.PluginCall;
-          import com.getcapacitor.JSObject;
-          import com.yandex.mobile.ads.common.AdRequest;
-          import com.yandex.mobile.ads.rewarded.RewardedAd;
-          import com.yandex.mobile.ads.rewarded.RewardedAdLoadListener;
-          import com.yandex.mobile.ads.rewarded.RewardedAdEventListener;
-          @CapacitorPlugin(name = "YandexAds")
-          public class YandexAdsPlugin extends Plugin {
-              private RewardedAd rewardedAd;
-              @com.getcapacitor.PluginMethod
-              public void loadRewarded(PluginCall call) {
-                  rewardedAd = new RewardedAd(getActivity());
-                  rewardedAd.setAdUnitId("R-M-19301521-2");
-                  rewardedAd.loadAd(new AdRequest.Builder().build());
-                  call.resolve();
-              }
-          }' > android/app/src/main/java/com/earnx/app/YandexAdsPlugin.java
+  - name: Setup Node
+    uses: actions/setup-node@v3
+    with:
+      node-version: 18
 
-      - name: Build APK
-        run: |
-          cd android
-          # Ensure dependencies are linked
-          sed -i "/dependencies {/a \    implementation 'com.yandex.android:mobileads:7.5.0'" app/build.gradle
-          chmod +x gradlew
-          ./gradlew assembleRelease
+  - name: Setup Java 17
+    uses: actions/setup-java@v3
+    with:
+      distribution: zulu
+      java-version: 17
 
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: EarnX-Final
-          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+  - name: Install Dependencies
+    run: npm install --legacy-peer-deps
+
+  - name: Build Android
+    run: |
+      export JAVA_HOME=$JAVA_HOME_17_X64
+      export PATH=$JAVA_HOME/bin:$PATH
+
+      rm -rf android
+
+      npx cap add android
+      npx cap sync android
+
+      # Add Yandex SDK dependency safely
+      sed -i "/dependencies {/a \    implementation 'com.yandex.android:mobileads:7.5.0'" android/app/build.gradle
+
+      # Fix SDK versions
+      sed -i 's/minSdkVersion = .*/minSdkVersion = 24/' android/variables.gradle
+      sed -i 's/compileSdkVersion = .*/compileSdkVersion = 34/' android/variables.gradle
+      sed -i 's/targetSdkVersion = .*/targetSdkVersion = 34/' android/variables.gradle
+
+      # Add internet permissions
+      sed -i '/<manifest/a \<uses-permission android:name="android.permission.INTERNET"\/>\n\<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"\/>' android/app/src/main/AndroidManifest.xml
+
+      cd android
+
+      chmod +x gradlew
+
+      ./gradlew clean
+      ./gradlew assembleRelease --stacktrace
+
+  - name: Upload APK
+    uses: actions/upload-artifact@v4
+    with:
+      name: EarnX-Yandex-Build
+      path: android/app/build/outputs/apk/release/app-release-unsigned.apk
