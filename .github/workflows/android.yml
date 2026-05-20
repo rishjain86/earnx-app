@@ -23,9 +23,17 @@ jobs:
       - name: Install Dependencies
         run: |
           npm install --legacy-peer-deps
-          npm install cordova-plugin-androidx-adapter --save
 
-      - name: Sync & Prepare
+      - name: Create Web Assets
+        run: |
+          mkdir -p www
+          cp index.html www/ 2>/dev/null || true
+          cp script.js www/ 2>/dev/null || true
+          cp style.css www/ 2>/dev/null || true
+          # Agar koi assets folder hai toh use bhi copy karo
+          if [ -d "assets" ]; then cp -r assets www/assets/; fi
+
+      - name: Sync Android
         run: |
           rm -rf android
           npx cap add android
@@ -63,14 +71,11 @@ jobs:
               }
           }' > android/app/src/main/java/com/earnx/app/YandexAdsPlugin.java
 
-      - name: Fix Manifest & Gradle
+      - name: Final Patch
         run: |
           sed -i 's/minSdkVersion = [0-9]*/minSdkVersion = 24/g' android/variables.gradle
-          sed -i 's/dependencies {/dependencies {\n    implementation "com.yandex.android:mobileads:7.5.0"/' android/app/build.gradle
-          # Fix for Manifest Merger
-          sed -i 's|<application|<application tools:replace="android:appComponentFactory" android:appComponentFactory="androidx.core.app.CoreComponentFactory"|' android/app/src/main/AndroidManifest.xml
-          sed -i 's|<manifest|<manifest xmlns:tools="http://schemas.android.com/tools"|' android/app/src/main/AndroidManifest.xml
-          npx jetifier
+          sed -i "/dependencies {/a \    implementation 'com.yandex.android:mobileads:7.5.0'" android/app/build.gradle
+          sed -i 's|android:appComponentFactory="android.support.v4.app.CoreComponentFactory"||g' android/app/src/main/AndroidManifest.xml || true
 
       - name: Build APK
         run: |
