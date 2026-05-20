@@ -11,15 +11,23 @@ jobs:
       - uses: actions/setup-java@v3
         with: { distribution: 'zulu', java-version: '17' }
 
-      - name: Build
+      - name: Create Web Build
         run: |
           npm install --legacy-peer-deps
-          # Sirf basic sync, koi folder delete nahi
+          # Hum ek dum naya 'www' folder bana rahe hain aur usme files copy kar rahe hain
+          mkdir -p www
+          cp index.html www/
+          cp script.js www/ 2>/dev/null || true
+          cp style.css www/ 2>/dev/null || true
+          if [ -d "assets" ]; then cp -r assets www/; fi
+          # Capacitor ko batane ke liye ki 'index.html' mil gaya hai
+          ls -la www/ 
+
+      - name: Sync and Build
+        run: |
+          # 'rm -rf android' hata diya hai taaki purani configs bane rahein
           npx cap sync android
-
-          # Yandex ka implementation line bas ek baar add karo
-          echo "dependencies { implementation 'com.yandex.android:mobileads:8.0.0' }" >> android/app/build.gradle
-
+          
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease
@@ -29,4 +37,3 @@ jobs:
         with:
           name: EarnX-Final
           path: android/app/build/outputs/apk/release/app-release-unsigned.apk
-          
