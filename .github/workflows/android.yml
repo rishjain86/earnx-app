@@ -17,8 +17,9 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Build Web Assets
+      - name: Full Build Process
         run: |
+          # 1. Prepare Web Assets
           npm install --legacy-peer-deps
           mkdir -p www
           cp index.html www/ 2>/dev/null || true
@@ -26,20 +27,11 @@ jobs:
           if [ -f style.css ]; then cp style.css www/; fi
           if [ -d assets ]; then cp -r assets www/; fi
 
-      - name: Prepare Android Project
-        run: |
-          # Pehle check karo ki android folder hai ya nahi
-          if [ ! -d "android" ]; then
-            npx cap add android
-          fi
+          # 2. Setup Android
+          npx cap add android || true
           npx cap sync android
 
-      - name: Inject Yandex & Plugin
-        run: |
-          # Yandex Dependency
-          sed -i "/dependencies {/a \    implementation 'com.yandex.android:mobileads:7.5.0'" android/app/build.gradle
-          
-          # Plugin Creation
+          # 3. Create Plugin and Inject Dependencies
           mkdir -p android/app/src/main/java/com/earnx/app/
           echo 'package com.earnx.app;
           import com.getcapacitor.Plugin;
@@ -51,8 +43,10 @@ jobs:
               public void loadRewarded(PluginCall call) { call.resolve(); }
           }' > android/app/src/main/java/com/earnx/app/YandexAdsPlugin.java
 
-      - name: Final Build
-        run: |
+          # Inject Yandex into the generated gradle file
+          sed -i "/dependencies {/a \    implementation 'com.yandex.android:mobileads:7.5.0'" android/app/build.gradle
+
+          # 4. Build
           cd android
           chmod +x gradlew
           ./gradlew assembleRelease
