@@ -5,6 +5,7 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.JSObject;
+
 import com.yandex.mobile.ads.common.AdRequest;
 import com.yandex.mobile.ads.common.Reward;
 import com.yandex.mobile.ads.rewarded.RewardedAd;
@@ -37,7 +38,12 @@ public class YandexAdsPlugin extends Plugin {
             }
 
             @Override
-            public void onAdFailedToLoad(com.yandex.mobile.ads.common.AdRequestError adRequestError) {}
+            public void onAdFailedToLoad(com.yandex.mobile.ads.common.AdRequestError adRequestError) {
+                JSObject ret = new JSObject();
+                ret.put("success", false);
+                notifyListeners("rewarded", ret);
+            }
+
             @Override
             public void onAdShown() {}
             @Override
