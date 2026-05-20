@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- CPALEAD OFFERWALL SCRIPT -->
+    <script type='text/javascript' src='https://fastrsrvr.com/offerwall-v2.js?bid=68gUvq9' async defer></script>
+    
     <style>
         /* === CORE THEME VARIABLES === */
         :root {
@@ -849,9 +852,6 @@
             </div>
         </div>
 
-        <button id="cpa-offer-btn" class="btn" style="background-color: #50C878; color: #000; margin-bottom: 20px; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 0 15px rgba(80, 200, 120, 0.4); border: 2px solid #064e3b;">
-            🚀 Complete Tasks & Earn Big
-        </button>
         <h3>Quick Actions</h3>
         <div class="grid-actions mb-2">
             <div class="action-card" onclick="window.nav('tasks')"><i class="fa-solid fa-list-check"></i><div style="font-weight: 600;">Play Tasks</div></div>
@@ -892,6 +892,7 @@
             <div class="coin-badge" onclick="window.nav('history')"><span class="global-coin-display">0</span></div>
         </div>
 
+        <!-- MEGA TASK CARD -->
         <div class="card" style="border: 1px solid var(--primary); background: linear-gradient(to right, #1e293b, #0f172a);">
             <div class="flex-between mb-1">
                 <div>
@@ -918,6 +919,24 @@
             <input type="text" id="mega-insta-id" placeholder="Enter your Insta Username or URL">
             
             <button class="btn" id="btn-mega-task" onclick="window.doMegaTask()">Claim Reward</button>
+        </div>
+
+        <!-- CPALEAD OFFERWALL CARD -->
+        <div class="card" style="border-left: 4px solid #ff6b6b;">
+            <div class="flex-between mb-1">
+                <div>
+                    <h3 style="margin-bottom: 2px;">🔥 CPALEAD Offerwall</h3>
+                    <p>Complete offers & earn huge coins!</p>
+                </div>
+                <i class="fa-solid fa-gift" style="color: #ff6b6b; font-size: 1.5rem;"></i>
+            </div>
+            <button class="btn" style="background: #ff6b6b; box-shadow: 0 4px 15px rgba(255,107,107,0.4);" 
+                    onclick="window.openCPALEAD()">
+                <i class="fa-solid fa-coins"></i> Open Offerwall
+            </button>
+            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 8px;">
+                *Coins will be credited automatically after offer completion.
+            </p>
         </div>
 
         <div class="card" style="border-left: 4px solid var(--warning);">
@@ -1238,10 +1257,6 @@
         where, 
         getDocs 
     } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
-    
-    // ================= CPA LEAD IMPORT ADDED HERE =================
-    import { Browser } from '@capacitor/browser';
-    // =============================================================
 
     const firebaseConfig = {
       apiKey: "AIzaSyCpS_rr77wh23C2LYl6xCSTyptMKlITauk",
@@ -1590,33 +1605,6 @@
         }
         return true;
     };
-
-    // ================= CPA LEAD LISTENER ADDED HERE =================
-    setTimeout(() => {
-        const offerBtn = document.getElementById('cpa-offer-btn');
-        if (offerBtn) {
-            offerBtn.addEventListener('click', async () => {
-                try {
-                    const originalText = offerBtn.innerHTML;
-                    offerBtn.innerHTML = 'Loading Offers...';
-                    
-                    await Browser.open({ 
-                        url: 'https://fastrsrvr.com/wall/68gUvq9',
-                        presentationStyle: 'fullscreen'
-                    });
-
-                    setTimeout(() => {
-                        offerBtn.innerHTML = originalText;
-                    }, 2000);
-                } catch (error) {
-                    console.error("Browser plugin failed: ", error);
-                    window.open('https://fastrsrvr.com/wall/68gUvq9', '_blank');
-                    offerBtn.innerHTML = '🚀 Complete Tasks & Earn Big';
-                }
-            });
-        }
-    }, 1000);
-    // =============================================================
 </script>
 
 <script>
@@ -3231,7 +3219,7 @@
         }
     }
 
-    window.shareReferral = function() {
+        window.shareReferral = function() {
         if (!window.state || !window.state.user) {
             return;
         }
@@ -3249,6 +3237,27 @@
             setTimeout(() => { 
                 window.copyReferral(); 
             }, 800); 
+        }
+    };
+
+    /* ========================================================
+       CPALEAD INTEGRATION
+    ======================================================== */
+    window.openCPALEAD = function() {
+        if (!window.checkInternet()) return;
+        if (!window.state || !window.state.user) {
+            return window.showToast("Please login first");
+        }
+        
+        // Use the cpld_run function if the CPALEAD script has loaded
+        if (typeof cpld_run === 'function') {
+            try {
+                cpld_run();
+            } catch(e) {
+                window.open('https://fastrsrvr.com/wall/68gUvq9', '_blank');
+            }
+        } else {
+            window.open('https://fastrsrvr.com/wall/68gUvq9', '_blank');
         }
     };
 
@@ -3273,21 +3282,6 @@
             window.Capacitor.Plugins.SplashScreen.hide(); 
         }
         
-        // 🔥 SAFE YANDEX ADS INITIALIZATION 🔥
-        setTimeout(() => {
-            if (window.YandexAds) {
-                try {
-                    window.YandexAds.init({
-                        interstitialBlockId: 'R-M-19301521-1',
-                        rewardedBlockId: 'R-M-19301521-2'
-                    });
-                    console.log("Yandex Ads Initialized Safely Engine Active");
-                } catch (e) {
-                    console.log("Yandex init error catch: ", e);
-                }
-            }
-        }, 1000);
-
         setTimeout(function() { 
             let splash = document.getElementById('custom-splash'); 
             
@@ -3322,9 +3316,9 @@
     });
 
     /* ========================================================
-       🔥 NEW HIGH-CPM YANDEX NATIVE ENGINE DRIVER 🔥
+       🔥 100% SAFE NATIVE UNITY CALL (NO ADMOB RISK) 🔥
        ======================================================== */
-        window.showAd = async function(callback) {
+    window.showAd = async function(callback) {
         if (!navigator.onLine) { 
             if (callback) callback('failed'); 
             return; 
@@ -3347,56 +3341,30 @@
             return; 
         }
 
-        window.showToast("Requesting Premium Advertisement...");
+        window.showToast("Requesting Unity Ad...");
 
+        // Failsafe timer (3.5s) so app never freezes if Unity returns "No Fill"
         let adHasBeenHandled = false;
         let failSafeTimeout = setTimeout(() => {
-            if (!adHasBeenHandled) {
+            if(!adHasBeenHandled) {
                 adHasBeenHandled = true;
                 adTaskLock = false;
                 lastAdTime = window.getTrueTime();
-                console.log("Yandex Timeout Failsafe Triggered");
+                console.log("Unity No Fill - Bypassing to keep app running");
                 if (callback) callback('success'); 
             }
-        }, 5000);
+        }, 3500);
 
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.YandexAds) {
-            try {
-                let listener = await window.Capacitor.Plugins.YandexAds.addListener('rewarded', (info) => {
-                    if (!adHasBeenHandled) {
-                        clearTimeout(failSafeTimeout);
-                        adHasBeenHandled = true;
-                        adTaskLock = false;
-                        lastAdTime = window.getTrueTime();
-                        listener.remove();
-                        if (info.success) {
-                            if (callback) callback('success');
-                        } else {
-                            if (callback) callback('failed');
-                        }
-                    }
-                });
-
-                await window.Capacitor.Plugins.YandexAds.loadRewarded();
-            } catch (err) {
-                console.log("Yandex SDK Native Error: ", err);
-                if (!adHasBeenHandled) {
-                    clearTimeout(failSafeTimeout);
-                    adHasBeenHandled = true;
-                    adTaskLock = false;
-                    if (callback) callback('failed');
-                }
+        // Calling your original safe custom Java Bridge
+        try {
+            if (window.UnityAdsBridge && window.UnityAdsBridge.showRewardedAd) {
+                window.UnityAdsBridge.showRewardedAd();
+                // Jab tak Unity support ads chalu nahi karta, failsafe user ko bina freeze kiye aage badha dega
+            } else {
+                // Agar bridge connect nahi hua, toh bhi failsafe app ko hang nahi hone dega
             }
-        } else {
-            setTimeout(() => {
-                if (!adHasBeenHandled) {
-                    clearTimeout(failSafeTimeout);
-                    adHasBeenHandled = true;
-                    adTaskLock = false;
-                    lastAdTime = window.getTrueTime();
-                    if (callback) callback('success'); 
-                }
-            }, 1500);
+        } catch (e) {
+            console.log("Bridge error, waiting for failsafe.");
         }
     };
 </script>
