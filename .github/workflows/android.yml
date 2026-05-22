@@ -27,29 +27,84 @@ jobs:
 
       - name: 2. Fresh Android Generate & Set Icons
         run: |
-          # Pehle purana/broken folder uda do
           rm -rf android
-          
-          # Ab fresh folder aur plugins install karo
           npm install @capacitor/android @capacitor/splash-screen
           npx cap add android
-          
-          # 🚀 YE COMMAND ICON AUR SPLASH SCREEN GENERATE KAREGI 🚀
-          # Iske liye root folder mein assets/icon.png aur assets/splash.png hona zaroori hai
           npm run generate-icons
-          
           npx cap sync android
 
-      - name: 3. Build APK
+      - name: 2.5 Inject Start.io Code (Auto-Fix)
+        run: |
+          # build.gradle mein Start.io SDK add karna
+          sed -i "s/dependencies {/dependencies {\n    implementation 'com.startapp:inapp-sdk:5.1.0'/g" android/app/build.gradle
+          
+          # MainActivity.java ko Start.io Bridge ke sath replace karna
+          cat << 'EOF' > android/app/src/main/java/com/earnx/app/MainActivity.java
+          package com.earnx.app;
+          import android.os.Bundle;
+          import android.webkit.JavascriptInterface;
+          import com.getcapacitor.BridgeActivity;
+          import com.startapp.sdk.adsbase.StartAppAd;
+          import com.startapp.sdk.adsbase.StartAppSDK;
+          import com.startapp.sdk.adsbase.adlisteners.AdEventListener;
+          import com.startapp.sdk.adsbase.Ad;
+
+          public class MainActivity extends BridgeActivity {
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  
+                  // Start.io Initialization
+                  StartAppSDK.init(this, "153577922", true);
+                  StartAppAd.disableSplash();
+                  
+                  // JavaScript Bridge for HTML
+                  bridge.getWebView().addJavascriptInterface(new Object() {
+                      @JavascriptInterface
+                      public void showRewardedAd() {
+                          runOnUiThread(new Runnable() {
+                              @Override
+                              public void run() {
+                                  final StartAppAd rewardedVideo = new StartAppAd(MainActivity.this);
+                                  rewardedVideo.loadAd(StartAppAd.AdMode.REWARDED_VIDEO, new AdEventListener() {
+                                      @Override
+                                      public void onReceiveAd(Ad ad) {
+                                          rewardedVideo.showAd();
+                                      }
+                                      @Override
+                                      public void onFailedToReceiveAd(Ad ad) { }
+                                  });
+                              }
+                          });
+                      }
+                  }, "StartIoBridge");
+              }
+          }
+          EOF
+
+      - name: 3. Build Unsigned APK
         run: |
           cd android
-          # Ab gradlew 100% milega kyunki humne abhi fresh generate kiya hai
           chmod +x gradlew
           ./gradlew assembleRelease
 
-      - name: 4. Upload Final APK
+      - name: 3.5 Automatically Sign APK (V2/V3 Scheme)
+        run: |
+          # 1. On the fly Keystore generate karna
+          keytool -genkey -v -keystore earnx.jks -alias earnx_key -keyalg RSA -keysize 2048 -validity 10000 -storepass earnx123 -keypass earnx123 -dname "CN=EarnX, O=EarnX, C=IN"
+          
+          # 2. Android SDK se apksigner ka latest path dhoondhna
+          APKSIGNER_PATH=$(find $ANDROID_HOME/build-tools -name apksigner | sort -V | tail -n 1)
+          echo "Using apksigner from: $APKSIGNER_PATH"
+          
+          # 3. APK ko fully sign karna
+          $APKSIGNER_PATH sign --ks earnx.jks --ks-key-alias earnx_key --ks-pass pass:earnx123 --key-pass pass:earnx123 --out android/app/build/outputs/apk/release/app-release-signed.apk android/app/build/outputs/apk/release/app-release-unsigned.apk
+          
+          # 4. Verification check karna
+          $APKSIGNER_PATH verify android/app/build/outputs/apk/release/app-release-signed.apk
+
+      - name: 4. Upload Final Signed APK
         uses: actions/upload-artifact@v4
         with:
-          name: EarnX-Final-APK
-          path: android/app/build/outputs/apk/release/app-release-unsigned.apk
-          
+          name: EarnX-Signed-APK
+          path: android/app/build/outputs/apk/release/app-release-signed.apk
