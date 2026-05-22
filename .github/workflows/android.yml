@@ -25,14 +25,19 @@ jobs:
           if [ -f "style.css" ]; then cp style.css www/; fi
           if [ -d "assets" ]; then cp -r assets www/; fi
 
-      - name: 2. Fresh Android Generate
+      - name: 2. Fresh Android Generate & Set Icons
         run: |
           # Pehle purana/broken folder uda do
           rm -rf android
           
-          # Ab fresh folder aur files generate karo
-          npm install @capacitor/android
+          # Ab fresh folder aur plugins install karo
+          npm install @capacitor/android @capacitor/splash-screen
           npx cap add android
+          
+          # 🚀 YE COMMAND ICON AUR SPLASH SCREEN GENERATE KAREGI 🚀
+          # Iske liye root folder mein assets/icon.png aur assets/splash.png hona zaroori hai
+          npm run generate-icons
+          
           npx cap sync android
 
       - name: 3. Build APK
@@ -47,3 +52,4 @@ jobs:
         with:
           name: EarnX-Final-APK
           path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+          
