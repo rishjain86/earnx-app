@@ -33,7 +33,7 @@ jobs:
           npm run generate-icons
           npx cap sync android
 
-      - name: 2.5 Inject Start.io Code (Master Fix)
+      - name: 2.5 Inject Start.io Code (Real Ads Enabled)
         run: |
           sed -i "s/dependencies {/dependencies {\n    implementation 'com.startapp:inapp-sdk:5.1.0'/g" android/app/build.gradle
           
@@ -50,7 +50,6 @@ jobs:
           public class MainActivity extends BridgeActivity {
               private StartAppAd rewardedVideo;
 
-              // Public class banayi hai taaki Release APK isko delete na kare
               public class StartIoJSInterface {
                   @JavascriptInterface
                   public void showRewardedAd() {
@@ -59,7 +58,7 @@ jobs:
                           public void run() {
                               if (rewardedVideo != null && rewardedVideo.isReady()) {
                                   rewardedVideo.showAd();
-                                  loadNextAd(); // Ek ad dikhate hi dusra background mein load karo
+                                  loadNextAd();
                               } else {
                                   rewardedVideo = new StartAppAd(MainActivity.this);
                                   rewardedVideo.loadAd(StartAppAd.AdMode.REWARDED_VIDEO, new AdEventListener() {
@@ -83,13 +82,11 @@ jobs:
                   
                   // Start.io Initialization
                   StartAppSDK.init(this, "153577922", false);
-                  StartAppSDK.setTestAdsEnabled(true); // 🔴 TEST ADS ON HAIN
+                  StartAppSDK.setTestAdsEnabled(false); // 🟢 TEST ADS BAND KAR DIYE HAIN (REAL ADS ON)
                   StartAppAd.disableSplash();
                   
-                  // App khulte hi pehla ad load karke ready rakho
                   loadNextAd();
                   
-                  // Bridge setup
                   bridge.getWebView().addJavascriptInterface(new StartIoJSInterface(), "StartIoBridge");
               }
 
@@ -106,7 +103,7 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
 
-      - name: 3.5 Automatically Sign APK (V2/V3 Scheme)
+      - name: 3.5 Automatically Sign APK
         run: |
           keytool -genkey -v -keystore earnx.jks -alias earnx_key -keyalg RSA -keysize 2048 -validity 10000 -storepass earnx123 -keypass earnx123 -dname "CN=EarnX, O=EarnX, C=IN"
           APKSIGNER_PATH=$(find $ANDROID_HOME/build-tools -name apksigner | sort -V | tail -n 1)
