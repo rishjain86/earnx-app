@@ -999,6 +999,16 @@
         <button class="game-select-btn" onclick="window.openLevelMap('jumble')">🔀 Word Jumble</button>
         <button class="game-select-btn" onclick="window.openLevelMap('riddle')">💡 Riddle Words</button>
         <button class="game-select-btn" onclick="window.openLevelMap('missing')">🔠 Missing Letters</button>
+        
+        <div class="card" style="margin-top: 20px; text-align: left; background: rgba(0,0,0,0.3);">
+            <h4 style="color: var(--primary); margin-bottom: 10px;">📜 Game Rules & T&C</h4>
+            <ul style="font-size: 0.8rem; color: var(--text-muted); padding-left: 20px; line-height: 1.6;">
+                <li style="margin-bottom: 5px;">You must complete levels in sequence (Level 1, then 2, etc.).</li>
+                <li style="margin-bottom: 5px;">Every 5th level requires watching a short Video Ad to unlock the next block of levels.</li>
+                <li style="margin-bottom: 5px;">Correct answers reward 20 Coins. Replaying already completed levels does not give extra coins.</li>
+                <li>If you enter the wrong answer 3 times, a helpful hint will appear automatically to guide you.</li>
+            </ul>
+        </div>
     </div>
 
     <div id="screen-levelmap" class="screen">
@@ -1024,6 +1034,14 @@
             
             <button id="btn-submit-game" onclick="window.checkGameAnswer()" class="btn" style="width: 100%; margin-top: 20px; font-size: 18px;">Submit Answer</button>
             <p id="gameMessage" style="margin-top: 15px; font-weight: bold; font-size: 1.1rem;"></p>
+        </div>
+    </div>
+
+    <div id="hintModal" class="ad-modal-overlay" style="display: none; z-index: 205;">
+        <div class="ad-modal-content" style="border-color: var(--warning);">
+            <h3 style="color: var(--warning);">💡 Need a Hint?</h3>
+            <p id="hintModalText" style="margin-bottom: 20px; font-size: 1.1rem; letter-spacing: 2px;"></p>
+            <button onclick="document.getElementById('hintModal').style.display='none'" class="btn" style="background: var(--warning); color: black;">Got It!</button>
         </div>
     </div>
 
@@ -1869,6 +1887,37 @@
                 window.state.user.screenTime += 10;
             }
         }, 10000);
+
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) { 
+            window.Capacitor.Plugins.SplashScreen.hide(); 
+        }
+        
+        setTimeout(function() { 
+            let splash = document.getElementById('custom-splash'); 
+            if (splash) { 
+                splash.style.opacity = '0'; 
+                setTimeout(() => { splash.style.display = 'none'; }, 600); 
+            } 
+        }, 2500); 
+    });
+
+    window.addEventListener("popstate", (e) => {
+        const homeScreen = document.getElementById('screen-home'); 
+        const loginScreen = document.getElementById('screen-login');
+        
+        if (homeScreen && homeScreen.classList.contains('active')) { 
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) { 
+                window.Capacitor.Plugins.App.exitApp(); 
+            } else { 
+                history.back(); 
+            } 
+        } else if (loginScreen && loginScreen.classList.contains('active')) { 
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) { 
+                window.Capacitor.Plugins.App.exitApp(); 
+            } 
+        } else { 
+            window.nav('home'); 
+        }
     });
 
     window.launchCelebration = function() {
@@ -3309,6 +3358,7 @@
 <script>
     window.activeGameMode = '';
     window.currentPlayLevel = 1;
+    window.wrongAttempts = 0; // Tracks consecutive wrong answers
 
     // Structured unique word library mapping exactly [lengthIndex][wordIndex]
     // 10 blocks (3 letters up to 12 letters), each block contains exactly 5 premium words.
@@ -3372,30 +3422,32 @@
         let grid = document.getElementById('levelGrid');
         grid.innerHTML = '';
 
-        // Exact 50 levels loop
+        // Strict Sequential Logic applied here
         for (let i = 1; i <= 50; i++) {
             let btn = document.createElement('button');
             
             if (i <= completed) {
+                // Done. Locked from replaying for coins.
                 btn.className = 'level-btn completed';
                 btn.innerHTML = '<i class="fa-solid fa-check"></i>';
                 btn.disabled = true;
-            } else if (i <= unlockedMax) {
-                btn.className = 'level-btn unlocked';
-                btn.innerText = i;
-                btn.onclick = () => window.startGameLevel(i);
+            } else if (i === completed + 1) {
+                // ONLY the immediate next level is playable
+                if (i <= unlockedMax) {
+                    btn.className = 'level-btn unlocked';
+                    btn.innerText = i;
+                    btn.onclick = () => window.startGameLevel(i);
+                } else {
+                    // Requires Ad Unlock
+                    btn.className = 'level-btn locked';
+                    btn.innerText = '🔒';
+                    btn.onclick = () => { document.getElementById('adUnlockModal').style.display = 'flex'; };
+                }
             } else {
+                // Future levels block
                 btn.className = 'level-btn locked';
                 btn.innerText = '🔒';
-                if (i === unlockedMax + 1) {
-                    btn.onclick = () => {
-                        if (completed === unlockedMax) {
-                            document.getElementById('adUnlockModal').style.display = 'flex';
-                        } else {
-                            window.showToast("Complete previous levels first!");
-                        }
-                    };
-                }
+                btn.onclick = () => { window.showToast(`Please complete level ${completed + 1} first!`); };
             }
             grid.appendChild(btn);
         }
@@ -3406,13 +3458,13 @@
 
     window.startGameLevel = function(lvl) {
         window.currentPlayLevel = lvl;
+        window.wrongAttempts = 0; // Reset attempts on new level
         document.getElementById('currentLevelText').innerText = lvl;
         document.getElementById('gameInput').value = '';
         document.getElementById('gameMessage').innerText = '';
         
-        // Exact length indexing based on level groups
-        let lengthIndex = Math.floor((lvl - 1) / 5); // Groups 0-9
-        let wordIndex = (lvl - 1) % 5;              // Indices 0-4
+        let lengthIndex = Math.floor((lvl - 1) / 5); 
+        let wordIndex = (lvl - 1) % 5;              
         
         let word = window.gameWords[window.activeGameMode][lengthIndex][wordIndex]; 
         let displayWord = "";
@@ -3456,6 +3508,7 @@
         let btn = document.getElementById('btn-submit-game');
 
         if (userInput === correctAnswer) {
+            window.wrongAttempts = 0;
             msgBox.style.color = "#10b981";
             msgBox.innerText = "🎉 Correct! +20 Coins added.";
             btn.disabled = true;
@@ -3479,9 +3532,21 @@
                 }
             }, 1500);
         } else {
+            window.wrongAttempts++;
             msgBox.style.color = "#ef4444";
             msgBox.innerText = "❌ Incorrect. Try again!";
             document.getElementById('gameInput').value = '';
+            
+            // 3-Wrong Hint System Logic
+            if (window.wrongAttempts >= 3) {
+                let hintStr = correctAnswer.substring(0, 2) + "_".repeat(correctAnswer.length - 2);
+                hintStr = hintStr.split('').join(' '); // Creates formatting like "B R _ _ N"
+                
+                document.getElementById('hintModalText').innerText = "The word starts with: " + hintStr;
+                document.getElementById('hintModal').style.display = 'flex';
+                
+                window.wrongAttempts = 0; // Reset after showing hint
+            }
         }
     };
 
