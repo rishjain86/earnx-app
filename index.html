@@ -934,7 +934,7 @@
             <div class="flex-between mb-1">
                 <div>
                     <h3 style="margin-bottom: 2px;">🎮 Game Zone</h3>
-                    <p>Word Games (500 Levels). 20 Coins/lvl</p>
+                    <p>Word Games (50 Levels). 20 Coins/lvl</p>
                 </div>
                 <div style="background: rgba(16, 185, 129, 0.2); padding: 5px 10px; border-radius: 5px; font-weight: bold; color: var(--primary); font-size: 0.8rem;">HOT</div>
             </div>
@@ -994,7 +994,7 @@
             <i class="fa-solid fa-times" style="font-size: 1.5rem; cursor: pointer;" onclick="window.closeGameZone()"></i>
         </div>
         <div style="text-align: center; margin-bottom: 20px;">
-            <p>Play games to unlock 500 levels & earn unlimited coins!</p>
+            <p>Word size increases every 5 levels. Max 12 letters!</p>
         </div>
         <button class="game-select-btn" onclick="window.openLevelMap('jumble')">🔀 Word Jumble</button>
         <button class="game-select-btn" onclick="window.openLevelMap('riddle')">💡 Riddle Words</button>
@@ -1029,8 +1029,8 @@
 
     <div id="adUnlockModal" class="ad-modal-overlay" style="display: none;">
         <div class="ad-modal-content">
-            <h3>🔒 Levels Locked!</h3>
-            <p style="margin-bottom: 20px;">You have completed 5 levels. Watch a short advertisement to unlock the next 5 levels!</p>
+            <h3>🔒 Zone Locked!</h3>
+            <p style="margin-bottom: 20px;">Watch a short advertisement to unlock the next 5 levels with longer words!</p>
             <button id="unlockAdBtn" onclick="window.watchAdToUnlock()" class="btn" style="width: 100%; margin-bottom: 15px;">📺 Watch Video & Unlock</button>
             <button onclick="document.getElementById('adUnlockModal').style.display='none'" style="width: 100%; background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 12px; border-radius: 10px; font-weight: bold;">Maybe Later</button>
         </div>
@@ -1614,7 +1614,7 @@
         } catch(err) {
             if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-login-credentials') {
                 try {
-                    window.showToast("Creating new account...");
+                    window.showToast("Creating naya account...");
                     const result = await createUserWithEmailAndPassword(auth, email, password);
                     await window.handleSuccessfulLogin(result.user);
                 } catch(regErr) {
@@ -1869,10 +1869,6 @@
                 window.state.user.screenTime += 10;
             }
         }, 10000);
-
-        // 🔥 START.IO INITIALIZATION 🔥
-        // Native side handles Start.io SDK init via Maven integration (MainActivity.java).
-        // If you need to trigger a banner from JS, you can call window.StartIoBridge.showBanner() here if implemented.
     });
 
     window.launchCelebration = function() {
@@ -3244,7 +3240,7 @@
         }
     }
 
-        window.shareReferral = function() {
+    window.shareReferral = function() {
         if (!window.state || !window.state.user) {
             return;
         }
@@ -3265,63 +3261,6 @@
         }
     };
 
-    // MAIN APP INITIALIZATION & SPLASH SCREEN LOGIC
-    document.addEventListener("DOMContentLoaded", async () => {
-        // App Start
-        init(); 
-        window.renderShuffleCards();
-        
-        // Screen Time Tracker
-        setInterval(() => {
-            if (!document.hidden && window.state && window.state.user) {
-                if (!window.state.user.screenTime) { 
-                    window.state.user.screenTime = 0; 
-                }
-                window.state.user.screenTime += 10;
-            }
-        }, 10000);
-
-        // Splash Screen Hide
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) { 
-            window.Capacitor.Plugins.SplashScreen.hide(); 
-        }
-        
-        setTimeout(function() { 
-            let splash = document.getElementById('custom-splash'); 
-            
-            if (splash) { 
-                splash.style.opacity = '0'; 
-                
-                setTimeout(() => { 
-                    splash.style.display = 'none'; 
-                }, 600); 
-            } 
-        }, 2500); 
-    });
-
-    // BACK BUTTON LOGIC
-    window.addEventListener("popstate", (e) => {
-        const homeScreen = document.getElementById('screen-home'); 
-        const loginScreen = document.getElementById('screen-login');
-        
-        if (homeScreen && homeScreen.classList.contains('active')) { 
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) { 
-                window.Capacitor.Plugins.App.exitApp(); 
-            } else { 
-                history.back(); 
-            } 
-        } else if (loginScreen && loginScreen.classList.contains('active')) { 
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) { 
-                window.Capacitor.Plugins.App.exitApp(); 
-            } 
-        } else { 
-            window.nav('home'); 
-        }
-    });
-
-    /* ========================================================
-       🔥 100% SAFE NATIVE START.IO CALL 🔥
-       ======================================================== */
     window.showAd = async function(callback) {
         if (!navigator.onLine) { 
             if (callback) callback('failed'); 
@@ -3347,25 +3286,19 @@
 
         window.showToast("Loading Ad...");
 
-        // Failsafe timer (3.5s) so app never freezes if Start.io returns "No Fill"
         let adHasBeenHandled = false;
         let failSafeTimeout = setTimeout(() => {
             if(!adHasBeenHandled) {
                 adHasBeenHandled = true;
                 adTaskLock = false;
                 lastAdTime = window.getTrueTime();
-                console.log("Start.io No Fill - Bypassing to keep app running");
                 if (callback) callback('success'); 
             }
         }, 3500);
 
-        // Calling Start.io safe custom Java Bridge
         try {
             if (window.StartIoBridge && window.StartIoBridge.showRewardedAd) {
                 window.StartIoBridge.showRewardedAd();
-                // Native Java Side handles triggering Start.io ad and resetting locks
-            } else {
-                console.log("Start.io bridge not found, waiting for failsafe.");
             }
         } catch (e) {
             console.log("Bridge error, waiting for failsafe.");
@@ -3377,23 +3310,46 @@
     window.activeGameMode = '';
     window.currentPlayLevel = 1;
 
-    // Base Words List
-    const baseJumble = ["APPLE","TIGER","WATER","MONEY","BRAIN","CLOUD","EARTH","SMILE","MOUSE","PLANT","RIVER","CHAIR","WATCH","BREAD","TRAIN","HOUSE","LIGHT","NIGHT","DREAM","HEART","MUSIC","PHONE","GREEN","BIRD","STONE","FIRE","SNOW","STORY","CROWN","PEACE"];
-    const baseRiddle = ["LION","MOON","CLOCK","BOOK","SHADOW","KEY","EGG","TEAPOT","GUITAR","PIANO","UMBRELLA","PENCIL","PAPER","BOTTLE","CAMERA","JACKET","GLOVE","MIRROR","WINDOW","DOOR","TABLE","BED","LAMP","SHOES","SOCK","HAT","RING","BRUSH","SOAP","COMB"];
-    const baseMissing = ["BANANA","GRAPE","CHERRY","MANGO","ORANGE","LEMON","MELON","BERRY","PEACH","PLUM","KIWI","PAPAYA","GUAVA","DATE","FIG","LIME","COCO","NUT","PEAR","CHILI","ONION","GARLIC","GINGER","POTATO","TOMATO","CARROT","RADISH","TURNIP","BEAN","CORN"];
-
-    window.gameData = { jumble: [], riddle: [], missing: [] };
-
-    // Auto Generate 500 Unique Words System for each mode
-    for(let i = 0; i < 500; i++) {
-        let jSuffix = Math.floor(i / baseJumble.length) > 0 ? (Math.floor(i / baseJumble.length) + 1) : "";
-        let rSuffix = Math.floor(i / baseRiddle.length) > 0 ? (Math.floor(i / baseRiddle.length) + 1) : "";
-        let mSuffix = Math.floor(i / baseMissing.length) > 0 ? (Math.floor(i / baseMissing.length) + 1) : "";
-        
-        window.gameData.jumble.push(baseJumble[i % baseJumble.length] + jSuffix);
-        window.gameData.riddle.push(baseRiddle[i % baseRiddle.length] + rSuffix);
-        window.gameData.missing.push(baseMissing[i % baseMissing.length] + mSuffix);
-    }
+    // Structured unique word library mapping exactly [lengthIndex][wordIndex]
+    // 10 blocks (3 letters up to 12 letters), each block contains exactly 5 premium words.
+    window.gameWords = {
+        jumble: [
+            ["CAT", "DOG", "SUN", "BOX", "FLY"],                     // 3 Letters (Lvl 1-5)
+            ["FISH", "GOLD", "LAND", "WIND", "FIRE"],                // 4 Letters (Lvl 6-10)
+            ["WATER", "TIGER", "MONEY", "BRAIN", "CLOUD"],           // 5 Letters (Lvl 11-15)
+            ["MONKEY", "BANANA", "ROCKET", "PLANET", "SHADOW"],      // 6 Letters (Lvl 16-20)
+            ["DIAMOND", "CRYSTAL", "KINGDOM", "JOURNEY", "FREEDOM"], // 7 Letters (Lvl 21-25)
+            ["MOUNTAIN", "COMPUTER", "ELEPHANT", "FLAMINGO", "KANGAROO"], // 8 Letters (Lvl 26-30)
+            ["ASTRONAUT", "CHOCOLATE", "WONDERFUL", "BEAUTIFUL", "LIGHTNING"], // 9 Letters (Lvl 31-35)
+            ["TELEVISION", "UNIVERSITY", "SWEETHEART", "SKATEBOARD", "HELICOPTER"], // 10 Letters (Lvl 36-40)
+            ["ELECTRICITY", "IMAGINATION", "SUPERMARKET", "REFRIGERATOR", "MATHEMATICS"], // 11 Letters (Lvl 41-45)
+            ["ARCHITECTURE", "PHOTOGRAPHY", "THUNDERSTORM", "ENCYCLOPEDIA", "ORGANIZATION"] // 12 Letters (Lvl 46-50)
+        ],
+        riddle: [
+            ["FOX", "ANT", "ICE", "KEY", "PEN"],
+            ["LION", "MOON", "BOOK", "DOOR", "FROG"],
+            ["SHARK", "HOUSE", "CLOCK", "CHAIR", "WATCH"],
+            ["SPIDER", "BRIDGE", "CAMERA", "CASTLE", "GUITAR"],
+            ["RAINBOW", "FEATHER", "BALLOON", "COCONUT", "LEOPARD"],
+            ["SCISSORS", "TREASURE", "ENVELOPE", "FEATHERY", "AIRPLANE"],
+            ["PINEAPPLE", "DINOSAUR", "HEADPHONE", "TELEPHONE", "CROCODILE"],
+            ["MOTORCYCLE", "MICROSCOPE", "RESTAURANT", "WATERMELON", "BLACKBOARD"],
+            ["COOPERATIVE", "INDEPENDENT", "CELEBRATION", "CERTIFICATE", "TRANSMISSION"],
+            ["REPRODUCTION", "INTELLIGENCE", "SATISFACTION", "KALEIDOSCOPE", "APPRECIATION"]
+        ],
+        missing: [
+            ["BEE", "COW", "TOY", "CUP", "HAT"],
+            ["MILK", "ROSE", "TREE", "STAR", "SHIP"],
+            ["GRAPE", "MANGO", "LEMON", "PIZZA", "SHIRT"],
+            ["ORANGE", "CHERRY", "POTATO", "TOMATO", "CARROT"],
+            ["BURGER", "CHEESE", "CHICKEN", "GARLIC", "GINGER"],
+            ["BROCCOLI", "MUSHROOM", "SANDWICH", "BISCUIT", "PUDDING"],
+            ["SPAGHETTI", "CHOCOLATE", "CUCUMBER", "SWEETMEAT", "BLUEBERRY"],
+            ["STRAWBERRY", "CHEESECAKE", "PEPPERMINT", "MARMALADE", "MOZZARELLA"],
+            ["CAULIFLOWER", "MARSHMALLOW", "POMEGRANATE", "DRAGONFRUIT", "UNDERGROUND"],
+            ["CHEESEBURGER", "MARSHMALLOWS", "BLACKBERRIES", "SWEETPOTATO", "CONFECTIONER"]
+        ]
+    };
 
     window.openGameZone = function() {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -3416,21 +3372,19 @@
         let grid = document.getElementById('levelGrid');
         grid.innerHTML = '';
 
-        for (let i = 1; i <= 500; i++) {
+        // Exact 50 levels loop
+        for (let i = 1; i <= 50; i++) {
             let btn = document.createElement('button');
             
             if (i <= completed) {
-                // Completed Levels (Locked forever, Green Checkmark)
                 btn.className = 'level-btn completed';
                 btn.innerHTML = '<i class="fa-solid fa-check"></i>';
                 btn.disabled = true;
             } else if (i <= unlockedMax) {
-                // Playable Levels
                 btn.className = 'level-btn unlocked';
                 btn.innerText = i;
                 btn.onclick = () => window.startGameLevel(i);
             } else {
-                // Ad-Locked Levels
                 btn.className = 'level-btn locked';
                 btn.innerText = '🔒';
                 if (i === unlockedMax + 1) {
@@ -3456,13 +3410,15 @@
         document.getElementById('gameInput').value = '';
         document.getElementById('gameMessage').innerText = '';
         
-        let wordList = window.gameData[window.activeGameMode];
-        let word = wordList[lvl - 1]; 
+        // Exact length indexing based on level groups
+        let lengthIndex = Math.floor((lvl - 1) / 5); // Groups 0-9
+        let wordIndex = (lvl - 1) % 5;              // Indices 0-4
+        
+        let word = window.gameWords[window.activeGameMode][lengthIndex][wordIndex]; 
         let displayWord = "";
         
         if (window.activeGameMode === 'jumble') {
-            document.getElementById('gameHint').innerText = "Unscramble this word:";
-            // Shuffle logic
+            document.getElementById('gameHint').innerText = "Unscramble this " + word.length + " letter word:";
             let arr = word.split('');
             for(let i = arr.length - 1; i > 0; i--){
                 const j = Math.floor(Math.random() * (i + 1));
@@ -3470,10 +3426,10 @@
             }
             displayWord = arr.join('');
         } else if (window.activeGameMode === 'riddle') {
-            document.getElementById('gameHint').innerText = "Guess the hidden word:";
+            document.getElementById('gameHint').innerText = "Find the " + word.length + " letter hidden word:";
             displayWord = "_ ".repeat(word.length);
         } else if (window.activeGameMode === 'missing') {
-            document.getElementById('gameHint').innerText = "Fill the missing letters:";
+            document.getElementById('gameHint').innerText = "Fill the missing slots in this word:";
             let arr = word.split('');
             let m1 = Math.floor(Math.random() * arr.length);
             let m2 = (m1 + 1) % arr.length;
@@ -3504,10 +3460,8 @@
             msgBox.innerText = "🎉 Correct! +20 Coins added.";
             btn.disabled = true;
             
-            // Reusing existing SAFE coin logic
             window.rewardCoins(20, "Game Zone Level " + window.currentPlayLevel);
             
-            // Mark as Completed
             let completed = parseInt(localStorage.getItem('earnx_completed_' + window.activeGameMode) || 0);
             if (window.currentPlayLevel > completed) {
                 localStorage.setItem('earnx_completed_' + window.activeGameMode, window.currentPlayLevel);
@@ -3536,7 +3490,6 @@
         btn.innerText = "Loading Ad...";
         btn.disabled = true;
         
-        // Reusing existing SAFE Ad system
         window.showAd((status) => {
             let currentUnlocked = parseInt(localStorage.getItem('earnx_unlocked_' + window.activeGameMode) || 5);
             localStorage.setItem('earnx_unlocked_' + window.activeGameMode, currentUnlocked + 5);
