@@ -769,8 +769,9 @@
         .game-select-btn { width: 100%; padding: 20px; margin-bottom: 15px; background: #1e293b; border: 2px solid #10b981; color: white; font-size: 18px; border-radius: 15px; font-weight: bold; transition: 0.2s; cursor: pointer; }
         .game-select-btn:active { transform: scale(0.95); }
         .level-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; }
-        .level-btn { padding: 15px 0; border-radius: 10px; font-weight: bold; font-size: 16px; border: none; cursor: pointer; }
+        .level-btn { padding: 15px 0; border-radius: 10px; font-weight: bold; font-size: 16px; border: none; cursor: pointer; transition: 0.2s; }
         .level-btn.unlocked { background: #10b981; color: white; }
+        .level-btn.completed { background: #059669; color: white; opacity: 0.8; cursor: not-allowed; }
         .level-btn.locked { background: #334155; color: #9ca3af; }
         
         .ad-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 200; }
@@ -3370,26 +3371,29 @@
             console.log("Bridge error, waiting for failsafe.");
         }
     };
+</script>
 
-    /* ========================================================
-       🎮 NEW GAME ZONE LOGIC (ADDED SAFELY AT THE END)
-       ======================================================== */
+<script>
     window.activeGameMode = '';
     window.currentPlayLevel = 1;
 
-    // The core dictionary. Automatically loops so it never runs out of words for 500 levels.
-    window.gameDictionary = [
-        { word: "APPLE", hint: "A red or green fruit" },
-        { word: "TIGER", hint: "Striped wild animal" },
-        { word: "WATER", hint: "Clear liquid we drink" },
-        { word: "MONEY", hint: "Coins and banknotes" },
-        { word: "BRAIN", hint: "Organ inside your head" },
-        { word: "CLOUD", hint: "White fluffy thing in the sky" },
-        { word: "EARTH", hint: "The planet we live on" },
-        { word: "SMILE", hint: "Happy expression on face" },
-        { word: "MOUSE", hint: "Small computer device" },
-        { word: "PLANT", hint: "Grows in soil, has leaves" }
-    ];
+    // Base Words List
+    const baseJumble = ["APPLE","TIGER","WATER","MONEY","BRAIN","CLOUD","EARTH","SMILE","MOUSE","PLANT","RIVER","CHAIR","WATCH","BREAD","TRAIN","HOUSE","LIGHT","NIGHT","DREAM","HEART","MUSIC","PHONE","GREEN","BIRD","STONE","FIRE","SNOW","STORY","CROWN","PEACE"];
+    const baseRiddle = ["LION","MOON","CLOCK","BOOK","SHADOW","KEY","EGG","TEAPOT","GUITAR","PIANO","UMBRELLA","PENCIL","PAPER","BOTTLE","CAMERA","JACKET","GLOVE","MIRROR","WINDOW","DOOR","TABLE","BED","LAMP","SHOES","SOCK","HAT","RING","BRUSH","SOAP","COMB"];
+    const baseMissing = ["BANANA","GRAPE","CHERRY","MANGO","ORANGE","LEMON","MELON","BERRY","PEACH","PLUM","KIWI","PAPAYA","GUAVA","DATE","FIG","LIME","COCO","NUT","PEAR","CHILI","ONION","GARLIC","GINGER","POTATO","TOMATO","CARROT","RADISH","TURNIP","BEAN","CORN"];
+
+    window.gameData = { jumble: [], riddle: [], missing: [] };
+
+    // Auto Generate 500 Unique Words System for each mode
+    for(let i = 0; i < 500; i++) {
+        let jSuffix = Math.floor(i / baseJumble.length) > 0 ? (Math.floor(i / baseJumble.length) + 1) : "";
+        let rSuffix = Math.floor(i / baseRiddle.length) > 0 ? (Math.floor(i / baseRiddle.length) + 1) : "";
+        let mSuffix = Math.floor(i / baseMissing.length) > 0 ? (Math.floor(i / baseMissing.length) + 1) : "";
+        
+        window.gameData.jumble.push(baseJumble[i % baseJumble.length] + jSuffix);
+        window.gameData.riddle.push(baseRiddle[i % baseRiddle.length] + rSuffix);
+        window.gameData.missing.push(baseMissing[i % baseMissing.length] + mSuffix);
+    }
 
     window.openGameZone = function() {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -3406,21 +3410,37 @@
         let title = mode === 'jumble' ? "Word Jumble" : mode === 'riddle' ? "Riddle Words" : "Missing Letters";
         document.getElementById('levelMapTitle').innerText = title;
         
-        let unlockedMax = parseInt(localStorage.getItem('earnx_game_unlocked') || 5);
+        let completed = parseInt(localStorage.getItem('earnx_completed_' + mode) || 0);
+        let unlockedMax = parseInt(localStorage.getItem('earnx_unlocked_' + mode) || 5);
+        
         let grid = document.getElementById('levelGrid');
         grid.innerHTML = '';
 
         for (let i = 1; i <= 500; i++) {
             let btn = document.createElement('button');
-            if (i <= unlockedMax) {
+            
+            if (i <= completed) {
+                // Completed Levels (Locked forever, Green Checkmark)
+                btn.className = 'level-btn completed';
+                btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                btn.disabled = true;
+            } else if (i <= unlockedMax) {
+                // Playable Levels
                 btn.className = 'level-btn unlocked';
                 btn.innerText = i;
                 btn.onclick = () => window.startGameLevel(i);
             } else {
+                // Ad-Locked Levels
                 btn.className = 'level-btn locked';
                 btn.innerText = '🔒';
                 if (i === unlockedMax + 1) {
-                    btn.onclick = () => { document.getElementById('adUnlockModal').style.display = 'flex'; };
+                    btn.onclick = () => {
+                        if (completed === unlockedMax) {
+                            document.getElementById('adUnlockModal').style.display = 'flex';
+                        } else {
+                            window.showToast("Complete previous levels first!");
+                        }
+                    };
                 }
             }
             grid.appendChild(btn);
@@ -3436,18 +3456,25 @@
         document.getElementById('gameInput').value = '';
         document.getElementById('gameMessage').innerText = '';
         
-        let wordData = window.gameDictionary[(lvl - 1) % window.gameDictionary.length]; 
+        let wordList = window.gameData[window.activeGameMode];
+        let word = wordList[lvl - 1]; 
         let displayWord = "";
         
         if (window.activeGameMode === 'jumble') {
             document.getElementById('gameHint').innerText = "Unscramble this word:";
-            displayWord = wordData.word.split('').sort(() => Math.random() - 0.5).join('');
+            // Shuffle logic
+            let arr = word.split('');
+            for(let i = arr.length - 1; i > 0; i--){
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            displayWord = arr.join('');
         } else if (window.activeGameMode === 'riddle') {
-            document.getElementById('gameHint').innerText = "Hint: " + wordData.hint;
-            displayWord = "_ ".repeat(wordData.word.length);
+            document.getElementById('gameHint').innerText = "Guess the hidden word:";
+            displayWord = "_ ".repeat(word.length);
         } else if (window.activeGameMode === 'missing') {
             document.getElementById('gameHint').innerText = "Fill the missing letters:";
-            let arr = wordData.word.split('');
+            let arr = word.split('');
             let m1 = Math.floor(Math.random() * arr.length);
             let m2 = (m1 + 1) % arr.length;
             arr[m1] = "_";
@@ -3456,7 +3483,7 @@
         }
         
         document.getElementById('gameWordDisplay').innerText = displayWord;
-        document.getElementById('gameWordDisplay').dataset.answer = wordData.word;
+        document.getElementById('gameWordDisplay').dataset.answer = word;
         
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('screen-gameplay').classList.add('active');
@@ -3477,14 +3504,20 @@
             msgBox.innerText = "🎉 Correct! +20 Coins added.";
             btn.disabled = true;
             
-            // Reusing your exact safe coin adding logic
+            // Reusing existing SAFE coin logic
             window.rewardCoins(20, "Game Zone Level " + window.currentPlayLevel);
+            
+            // Mark as Completed
+            let completed = parseInt(localStorage.getItem('earnx_completed_' + window.activeGameMode) || 0);
+            if (window.currentPlayLevel > completed) {
+                localStorage.setItem('earnx_completed_' + window.activeGameMode, window.currentPlayLevel);
+            }
             
             setTimeout(() => {
                 btn.disabled = false;
                 window.openLevelMap(window.activeGameMode);
                 
-                let maxUnlocked = parseInt(localStorage.getItem('earnx_game_unlocked') || 5);
+                let maxUnlocked = parseInt(localStorage.getItem('earnx_unlocked_' + window.activeGameMode) || 5);
                 if (window.currentPlayLevel % 5 === 0 && window.currentPlayLevel === maxUnlocked) {
                     setTimeout(() => { 
                         document.getElementById('adUnlockModal').style.display = 'flex'; 
@@ -3503,10 +3536,10 @@
         btn.innerText = "Loading Ad...";
         btn.disabled = true;
         
-        // Reusing your exact ad system (triggers Start.io with 45s cooldown and 3.5s failsafe)
+        // Reusing existing SAFE Ad system
         window.showAd((status) => {
-            let currentUnlocked = parseInt(localStorage.getItem('earnx_game_unlocked') || 5);
-            localStorage.setItem('earnx_game_unlocked', currentUnlocked + 5);
+            let currentUnlocked = parseInt(localStorage.getItem('earnx_unlocked_' + window.activeGameMode) || 5);
+            localStorage.setItem('earnx_unlocked_' + window.activeGameMode, currentUnlocked + 5);
             
             btn.innerText = "📺 Watch Video & Unlock";
             btn.disabled = false;
