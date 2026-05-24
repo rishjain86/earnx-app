@@ -999,16 +999,6 @@
         <button class="game-select-btn" onclick="window.openLevelMap('jumble')">🔀 Word Jumble</button>
         <button class="game-select-btn" onclick="window.openLevelMap('riddle')">💡 Riddle Words</button>
         <button class="game-select-btn" onclick="window.openLevelMap('missing')">🔠 Missing Letters</button>
-        
-        <div class="card" style="margin-top: 20px; text-align: left; background: rgba(0,0,0,0.3);">
-            <h4 style="color: var(--primary); margin-bottom: 10px;">📜 Game Rules & T&C</h4>
-            <ul style="font-size: 0.8rem; color: var(--text-muted); padding-left: 20px; line-height: 1.6;">
-                <li style="margin-bottom: 5px;">You must complete levels in sequence (Level 1, then 2, etc.).</li>
-                <li style="margin-bottom: 5px;">Every 5th level requires watching a short Video Ad to unlock the next block of levels.</li>
-                <li style="margin-bottom: 5px;">Correct answers reward 20 Coins. Replaying already completed levels does not give extra coins.</li>
-                <li>If you enter the wrong answer 3 times, a helpful hint will appear automatically to guide you.</li>
-            </ul>
-        </div>
     </div>
 
     <div id="screen-levelmap" class="screen">
@@ -1034,14 +1024,6 @@
             
             <button id="btn-submit-game" onclick="window.checkGameAnswer()" class="btn" style="width: 100%; margin-top: 20px; font-size: 18px;">Submit Answer</button>
             <p id="gameMessage" style="margin-top: 15px; font-weight: bold; font-size: 1.1rem;"></p>
-        </div>
-    </div>
-
-    <div id="hintModal" class="ad-modal-overlay" style="display: none; z-index: 205;">
-        <div class="ad-modal-content" style="border-color: var(--warning);">
-            <h3 style="color: var(--warning);">💡 Need a Hint?</h3>
-            <p id="hintModalText" style="margin-bottom: 20px; font-size: 1.1rem; letter-spacing: 2px;"></p>
-            <button onclick="document.getElementById('hintModal').style.display='none'" class="btn" style="background: var(--warning); color: black;">Got It!</button>
         </div>
     </div>
 
@@ -1875,10 +1857,13 @@
         window.nav('login');
     }
 
+    // MAIN APP INITIALIZATION & SPLASH SCREEN LOGIC
     document.addEventListener("DOMContentLoaded", async () => {
+        // App Start
         init(); 
         window.renderShuffleCards();
         
+        // Screen Time Tracker
         setInterval(() => {
             if (!document.hidden && window.state && window.state.user) {
                 if (!window.state.user.screenTime) { 
@@ -1888,19 +1873,25 @@
             }
         }, 10000);
 
+        // Splash Screen Hide
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) { 
             window.Capacitor.Plugins.SplashScreen.hide(); 
         }
         
         setTimeout(function() { 
             let splash = document.getElementById('custom-splash'); 
+            
             if (splash) { 
                 splash.style.opacity = '0'; 
-                setTimeout(() => { splash.style.display = 'none'; }, 600); 
+                
+                setTimeout(() => { 
+                    splash.style.display = 'none'; 
+                }, 600); 
             } 
         }, 2500); 
     });
 
+    // BACK BUTTON LOGIC
     window.addEventListener("popstate", (e) => {
         const homeScreen = document.getElementById('screen-home'); 
         const loginScreen = document.getElementById('screen-login');
@@ -3358,46 +3349,44 @@
 <script>
     window.activeGameMode = '';
     window.currentPlayLevel = 1;
-    window.wrongAttempts = 0; // Tracks consecutive wrong answers
 
-    // Structured unique word library mapping exactly [lengthIndex][wordIndex]
-    // 10 blocks (3 letters up to 12 letters), each block contains exactly 5 premium words.
+    // Structured unique word library with Hints mapping exactly [lengthIndex][wordIndex]
     window.gameWords = {
         jumble: [
-            ["CAT", "DOG", "SUN", "BOX", "FLY"],                     // 3 Letters (Lvl 1-5)
-            ["FISH", "GOLD", "LAND", "WIND", "FIRE"],                // 4 Letters (Lvl 6-10)
-            ["WATER", "TIGER", "MONEY", "BRAIN", "CLOUD"],           // 5 Letters (Lvl 11-15)
-            ["MONKEY", "BANANA", "ROCKET", "PLANET", "SHADOW"],      // 6 Letters (Lvl 16-20)
-            ["DIAMOND", "CRYSTAL", "KINGDOM", "JOURNEY", "FREEDOM"], // 7 Letters (Lvl 21-25)
-            ["MOUNTAIN", "COMPUTER", "ELEPHANT", "FLAMINGO", "KANGAROO"], // 8 Letters (Lvl 26-30)
-            ["ASTRONAUT", "CHOCOLATE", "WONDERFUL", "BEAUTIFUL", "LIGHTNING"], // 9 Letters (Lvl 31-35)
-            ["TELEVISION", "UNIVERSITY", "SWEETHEART", "SKATEBOARD", "HELICOPTER"], // 10 Letters (Lvl 36-40)
-            ["ELECTRICITY", "IMAGINATION", "SUPERMARKET", "DEVELOPMENT", "MATHEMATICS"], // 11 Letters (Lvl 41-45)
-            ["ARCHITECTURE", "GRANDPARENTS", "THUNDERSTORM", "ENCYCLOPEDIA", "ORGANIZATION"] // 12 Letters (Lvl 46-50)
+            [{word: "CAT", hint: "Pet that says meow"}, {word: "DOG", hint: "Man's best friend"}, {word: "SUN", hint: "Hot star in the sky"}, {word: "BOX", hint: "Square container"}, {word: "FLY", hint: "Flying insect"}],
+            [{word: "FISH", hint: "Swims in water"}, {word: "GOLD", hint: "Yellow precious metal"}, {word: "LAND", hint: "Earth's surface"}, {word: "WIND", hint: "Moving air"}, {word: "FIRE", hint: "Hot flames"}],
+            [{word: "WATER", hint: "Drinkable clear liquid"}, {word: "TIGER", "hint": "Striped wild cat"}, {word: "MONEY", hint: "Cash or coins"}, {word: "BRAIN", hint: "Thinking organ"}, {word: "CLOUD", hint: "White fluffy thing in sky"}],
+            [{word: "MONKEY", hint: "Animal that eats bananas"}, {word: "BANANA", hint: "Yellow curved fruit"}, {word: "ROCKET", hint: "Space vehicle"}, {word: "PLANET", hint: "Earth is one"}, {word: "SHADOW", hint: "Dark shape from sunlight"}],
+            [{word: "DIAMOND", hint: "Precious clear stone"}, {word: "CRYSTAL", hint: "Clear shiny mineral"}, {word: "KINGDOM", hint: "Ruled by a king"}, {word: "JOURNEY", hint: "A long trip"}, {word: "FREEDOM", hint: "Liberty"}],
+            [{word: "MOUNTAIN", hint: "Very high hill"}, {word: "COMPUTER", hint: "Electronic calculating machine"}, {word: "ELEPHANT", hint: "Large animal with a trunk"}, {word: "FLAMINGO", hint: "Tall pink bird"}, {word: "KANGAROO", hint: "Jumping Australian animal"}],
+            [{word: "ASTRONAUT", hint: "Travels in space"}, {word: "CHOCOLATE", hint: "Sweet brown treat"}, {word: "WONDERFUL", hint: "Extremely good"}, {word: "BEAUTIFUL", hint: "Very pretty"}, {word: "LIGHTNING", hint: "Flash of light in a storm"}],
+            [{word: "TELEVISION", hint: "Screen to watch shows"}, {word: "UNIVERSITY", hint: "Place of higher education"}, {word: "SWEETHEART", hint: "Loved one"}, {word: "SKATEBOARD", hint: "Board with four wheels"}, {word: "HELICOPTER", hint: "Flying machine with rotors"}],
+            [{word: "ELECTRICITY", hint: "Power source for electronics"}, {word: "IMAGINATION", hint: "Mind's creativity"}, {word: "SUPERMARKET", hint: "Large grocery store"}, {word: "DEVELOPMENT", hint: "Process of growth"}, {word: "MATHEMATICS", hint: "Study of numbers"}],
+            [{word: "ARCHITECTURE", hint: "Design of buildings"}, {word: "GRANDPARENTS", hint: "Parents of your parents"}, {word: "THUNDERSTORM", hint: "Heavy rain with lightning"}, {word: "ENCYCLOPEDIA", hint: "Information book"}, {word: "ORGANIZATION", hint: "Structured group of people"}]
         ],
         riddle: [
-            ["FOX", "ANT", "ICE", "KEY", "PEN"],
-            ["LION", "MOON", "BOOK", "DOOR", "FROG"],
-            ["SHARK", "HOUSE", "CLOCK", "CHAIR", "WATCH"],
-            ["SPIDER", "BRIDGE", "CAMERA", "CASTLE", "GUITAR"],
-            ["RAINBOW", "FEATHER", "BALLOON", "COCONUT", "LEOPARD"],
-            ["SCISSORS", "TREASURE", "ENVELOPE", "FEATHERY", "AIRPLANE"],
-            ["PINEAPPLE", "ALLIGATOR", "HEADPHONE", "TELEPHONE", "CROCODILE"],
-            ["MOTORCYCLE", "MICROSCOPE", "RESTAURANT", "WATERMELON", "BLACKBOARD"],
-            ["COOPERATIVE", "INDEPENDENT", "CELEBRATION", "CERTIFICATE", "MEASUREMENT"],
-            ["REPRODUCTION", "INTELLIGENCE", "SATISFACTION", "KALEIDOSCOPE", "APPRECIATION"]
+            [{word: "FOX", hint: "Sly orange animal"}, {word: "ANT", hint: "Tiny strong insect"}, {word: "ICE", hint: "Frozen water"}, {word: "KEY", hint: "Opens a lock"}, {word: "PEN", hint: "Used for writing with ink"}],
+            [{word: "LION", hint: "King of the jungle"}, {word: "MOON", hint: "Shines at night"}, {word: "BOOK", hint: "Has pages and stories"}, {word: "DOOR", hint: "Entrance to a room"}, {word: "FROG", hint: "Jumping green amphibian"}],
+            [{word: "SHARK", hint: "Fierce ocean predator"}, {word: "HOUSE", hint: "A building you live in"}, {word: "CLOCK", hint: "Tells the time"}, {word: "CHAIR", hint: "Furniture you sit on"}, {word: "WATCH", hint: "Small clock for your wrist"}],
+            [{word: "SPIDER", hint: "Has eight legs"}, {word: "BRIDGE", hint: "Structure to cross a river"}, {word: "CAMERA", hint: "Takes photographs"}, {word: "CASTLE", hint: "Large fortress for royalty"}, {word: "GUITAR", hint: "Musical instrument with strings"}],
+            [{word: "RAINBOW", hint: "Colorful arc in the sky"}, {word: "FEATHER", hint: "Plumage from a bird"}, {word: "BALLOON", hint: "Filled with air or helium"}, {word: "COCONUT", hint: "Hard shell tropical fruit"}, {word: "LEOPARD", hint: "Spotted wildcat"}],
+            [{word: "SCISSORS", hint: "Tool used to cut paper"}, {word: "TREASURE", hint: "Hidden wealth or gold"}, {word: "ENVELOPE", hint: "Paper cover for a letter"}, {word: "AIRPLANE", hint: "Flies high in the sky"}, {word: "MAGICIAN", hint: "Performs magic tricks"}],
+            [{word: "PINEAPPLE", hint: "Spiky tropical fruit"}, {word: "ALLIGATOR", hint: "Large reptile with sharp teeth"}, {word: "HEADPHONE", hint: "Worn to listen to music"}, {word: "TELEPHONE", hint: "Device to call someone"}, {word: "CROCODILE", hint: "Large aquatic reptile"}],
+            [{word: "MOTORCYCLE", hint: "Two-wheeled motor vehicle"}, {word: "MICROSCOPE", hint: "Tool to see tiny things"}, {word: "RESTAURANT", hint: "Place where you pay to eat"}, {word: "WATERMELON", hint: "Large green fruit, red inside"}, {word: "BLACKBOARD", hint: "Write on it with chalk"}],
+            [{word: "COOPERATIVE", hint: "Working together"}, {word: "INDEPENDENT", hint: "Free from outside control"}, {word: "CELEBRATION", hint: "Festive party or event"}, {word: "CERTIFICATE", hint: "Official document of proof"}, {word: "MEASUREMENT", hint: "Determining size or length"}],
+            [{word: "REPRODUCTION", hint: "Making a copy or offspring"}, {word: "INTELLIGENCE", hint: "Mental ability to learn"}, {word: "SATISFACTION", hint: "Feeling of pleasure or fulfillment"}, {word: "KALEIDOSCOPE", hint: "Optical toy with changing patterns"}, {word: "APPRECIATION", hint: "Showing gratitude"}]
         ],
         missing: [
-            ["BEE", "COW", "TOY", "CUP", "HAT"],
-            ["MILK", "ROSE", "TREE", "STAR", "SHIP"],
-            ["GRAPE", "MANGO", "LEMON", "PIZZA", "SHIRT"],
-            ["ORANGE", "CHERRY", "POTATO", "TOMATO", "CARROT"],
-            ["AVOCADO", "BROWNIE", "CABBAGE", "SPINACH", "VANILLA"],
-            ["BROCCOLI", "MUSHROOM", "SANDWICH", "MACARONI", "PANCAKES"],
-            ["SPAGHETTI", "BLUEBERRY", "CUCUMBERS", "RASPBERRY", "CROISSANT"],
-            ["STRAWBERRY", "CHEESECAKE", "PEPPERMINT", "CANTALOUPE", "BLACKBERRY"],
-            ["CAULIFLOWER", "MARSHMALLOW", "POMEGRANATE", "DRAGONFRUIT", "BOYSENBERRY"],
-            ["CHEESEBURGER", "MARSHMALLOWS", "BLACKBERRIES", "PASSIONFRUIT", "CONFECTIONER"]
+            [{word: "BEE", hint: "Insect that makes honey"}, {word: "COW", hint: "Farm animal that gives milk"}, {word: "TOY", hint: "Object for a child to play with"}, {word: "CUP", hint: "Small container to drink from"}, {word: "HAT", hint: "Worn on the head"}],
+            [{word: "MILK", hint: "White dairy drink"}, {word: "ROSE", hint: "Romantic red flower"}, {word: "TREE", hint: "Tall plant with leaves"}, {word: "STAR", hint: "Twinkles in the night sky"}, {word: "SHIP", hint: "Large boat on the ocean"}],
+            [{word: "GRAPE", hint: "Small purple or green fruit"}, {word: "MANGO", hint: "Yellow summer tropical fruit"}, {word: "LEMON", hint: "Sour yellow citrus fruit"}, {word: "PIZZA", hint: "Italian round food with cheese"}, {word: "SHIRT", hint: "Clothing worn on upper body"}],
+            [{word: "ORANGE", hint: "Round citrus fruit"}, {word: "CHERRY", hint: "Small round red fruit"}, {word: "POTATO", hint: "Starchy root vegetable"}, {word: "TOMATO", hint: "Red vegetable used in salads"}, {word: "CARROT", hint: "Orange root vegetable"}],
+            [{word: "AVOCADO", hint: "Green pear-shaped fruit"}, {word: "BROWNIE", hint: "Chocolate baked treat"}, {word: "CABBAGE", hint: "Leafy green vegetable"}, {word: "SPINACH", hint: "Popeye's favorite green food"}, {word: "VANILLA", hint: "Flavoring from orchids"}],
+            [{word: "BROCCOLI", hint: "Green tree-like vegetable"}, {word: "MUSHROOM", hint: "Fungus eaten as food"}, {word: "SANDWICH", hint: "Food between two slices of bread"}, {word: "MACARONI", hint: "Pasta in the shape of tubes"}, {word: "PANCAKES", hint: "Flat breakfast cakes"}],
+            [{word: "SPAGHETTI", hint: "Long thin Italian pasta"}, {word: "BLUEBERRY", hint: "Small blue round fruit"}, {word: "CUCUMBERS", hint: "Long green salad vegetables"}, {word: "RASPBERRY", hint: "Red edible compound fruit"}, {word: "CROISSANT", hint: "Flaky French pastry"}],
+            [{word: "STRAWBERRY", hint: "Red fruit with seeds on outside"}, {word: "CHEESECAKE", hint: "Dessert made with cream cheese"}, {word: "PEPPERMINT", hint: "Strong mint flavor"}, {word: "CANTALOUPE", hint: "Melon with sweet orange flesh"}, {word: "BLACKBERRY", hint: "Dark edible compound fruit"}],
+            [{word: "CAULIFLOWER", hint: "White tree-like vegetable"}, {word: "MARSHMALLOW", hint: "Soft, sweet, white treat"}, {word: "POMEGRANATE", hint: "Fruit full of juicy red seeds"}, {word: "DRAGONFRUIT", hint: "Exotic pink fruit with green scales"}, {word: "BOYSENBERRY", hint: "Cross between raspberry and blackberry"}],
+            [{word: "CHEESEBURGER", hint: "Burger topped with cheese"}, {word: "MARSHMALLOWS", hint: "Plural form of soft white sweets"}, {word: "BLACKBERRIES", hint: "Plural form of dark compound fruits"}, {word: "PASSIONFRUIT", hint: "Tropical seedy fruit"}, {word: "CONFECTIONER", hint: "Someone who makes candy"}]
         ]
     };
 
@@ -3422,32 +3411,29 @@
         let grid = document.getElementById('levelGrid');
         grid.innerHTML = '';
 
-        // Strict Sequential Logic applied here
         for (let i = 1; i <= 50; i++) {
             let btn = document.createElement('button');
             
             if (i <= completed) {
-                // Done. Locked from replaying for coins.
                 btn.className = 'level-btn completed';
                 btn.innerHTML = '<i class="fa-solid fa-check"></i>';
                 btn.disabled = true;
-            } else if (i === completed + 1) {
-                // ONLY the immediate next level is playable
-                if (i <= unlockedMax) {
-                    btn.className = 'level-btn unlocked';
-                    btn.innerText = i;
-                    btn.onclick = () => window.startGameLevel(i);
-                } else {
-                    // Requires Ad Unlock
-                    btn.className = 'level-btn locked';
-                    btn.innerText = '🔒';
-                    btn.onclick = () => { document.getElementById('adUnlockModal').style.display = 'flex'; };
-                }
+            } else if (i <= unlockedMax) {
+                btn.className = 'level-btn unlocked';
+                btn.innerText = i;
+                btn.onclick = () => window.startGameLevel(i);
             } else {
-                // Future levels block
                 btn.className = 'level-btn locked';
                 btn.innerText = '🔒';
-                btn.onclick = () => { window.showToast(`Please complete level ${completed + 1} first!`); };
+                if (i === unlockedMax + 1) {
+                    btn.onclick = () => {
+                        if (completed === unlockedMax) {
+                            document.getElementById('adUnlockModal').style.display = 'flex';
+                        } else {
+                            window.showToast("Complete previous levels first!");
+                        }
+                    };
+                }
             }
             grid.appendChild(btn);
         }
@@ -3458,7 +3444,6 @@
 
     window.startGameLevel = function(lvl) {
         window.currentPlayLevel = lvl;
-        window.wrongAttempts = 0; // Reset attempts on new level
         document.getElementById('currentLevelText').innerText = lvl;
         document.getElementById('gameInput').value = '';
         document.getElementById('gameMessage').innerText = '';
@@ -3466,11 +3451,14 @@
         let lengthIndex = Math.floor((lvl - 1) / 5); 
         let wordIndex = (lvl - 1) % 5;              
         
-        let word = window.gameWords[window.activeGameMode][lengthIndex][wordIndex]; 
+        let wordData = window.gameWords[window.activeGameMode][lengthIndex][wordIndex]; 
+        let word = wordData.word;
+        let hint = wordData.hint;
         let displayWord = "";
         
+        document.getElementById('gameHint').innerText = "Hint: " + hint;
+        
         if (window.activeGameMode === 'jumble') {
-            document.getElementById('gameHint').innerText = "Unscramble this " + word.length + " letter word:";
             let arr = word.split('');
             for(let i = arr.length - 1; i > 0; i--){
                 const j = Math.floor(Math.random() * (i + 1));
@@ -3478,10 +3466,8 @@
             }
             displayWord = arr.join('');
         } else if (window.activeGameMode === 'riddle') {
-            document.getElementById('gameHint').innerText = "Find the " + word.length + " letter hidden word:";
             displayWord = "_ ".repeat(word.length);
         } else if (window.activeGameMode === 'missing') {
-            document.getElementById('gameHint').innerText = "Fill the missing slots in this word:";
             let arr = word.split('');
             let m1 = Math.floor(Math.random() * arr.length);
             let m2 = (m1 + 1) % arr.length;
@@ -3508,7 +3494,6 @@
         let btn = document.getElementById('btn-submit-game');
 
         if (userInput === correctAnswer) {
-            window.wrongAttempts = 0;
             msgBox.style.color = "#10b981";
             msgBox.innerText = "🎉 Correct! +20 Coins added.";
             btn.disabled = true;
@@ -3532,21 +3517,9 @@
                 }
             }, 1500);
         } else {
-            window.wrongAttempts++;
             msgBox.style.color = "#ef4444";
             msgBox.innerText = "❌ Incorrect. Try again!";
             document.getElementById('gameInput').value = '';
-            
-            // 3-Wrong Hint System Logic
-            if (window.wrongAttempts >= 3) {
-                let hintStr = correctAnswer.substring(0, 2) + "_".repeat(correctAnswer.length - 2);
-                hintStr = hintStr.split('').join(' '); // Creates formatting like "B R _ _ N"
-                
-                document.getElementById('hintModalText').innerText = "The word starts with: " + hintStr;
-                document.getElementById('hintModal').style.display = 'flex';
-                
-                window.wrongAttempts = 0; // Reset after showing hint
-            }
         }
     };
 
