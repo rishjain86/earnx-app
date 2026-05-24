@@ -33,7 +33,7 @@ jobs:
           npm run generate-icons
           npx cap sync android
 
-      - name: 2.5 Inject Start.io Code (Real Ads Enabled)
+      - name: 2.5 Inject Start.io Code (Correct App ID)
         run: |
           sed -i "s/dependencies {/dependencies {\n    implementation 'com.startapp:inapp-sdk:5.1.0'/g" android/app/build.gradle
           
@@ -80,9 +80,9 @@ jobs:
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   
-                  // Start.io Initialization
-                  StartAppSDK.init(this, "153577922", false);
-                  StartAppSDK.setTestAdsEnabled(false); // 🟢 TEST ADS BAND KAR DIYE HAIN (REAL ADS ON)
+                  // Start.io Initialization with CORRECT APP ID
+                  StartAppSDK.init(this, "204808781", false);
+                  StartAppSDK.setTestAdsEnabled(false); 
                   StartAppAd.disableSplash();
                   
                   loadNextAd();
