@@ -33,18 +33,18 @@ jobs:
           npm run generate-icons
           npx cap sync android
 
-      - name: 2.5 Inject InMobi Code (Absolute Bottom Banner Fix)
+      - name: 2.5 Inject InMobi Code (Solid Background Banner Fix)
         run: |
-          # 1. Add AD_ID Permission
+          # Add AD_ID Permission
           sed -i '/<application/i \    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>' android/app/src/main/AndroidManifest.xml
           
-          # 2. Allow Cleartext Traffic & Hardware Acceleration
+          # Allow Cleartext Traffic & Hardware Acceleration
           sed -i 's/<application/<application android:usesCleartextTraffic="true" android:hardwareAccelerated="true"/g' android/app/src/main/AndroidManifest.xml
           
-          # 3. Add InMobi SDK Dependencies
+          # Add InMobi SDK Dependencies
           sed -i "s/dependencies {/dependencies {\n    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:11.3.0'\n    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'/g" android/app/build.gradle
           
-          # 4. Create MainActivity.java with Layout Content Fix
+          # Create MainActivity.java
           cat << 'EOF' > android/app/src/main/java/com/earnx/app/MainActivity.java
           package com.earnx.app;
           
@@ -54,6 +54,7 @@ jobs:
           import android.widget.FrameLayout;
           import android.view.Gravity;
           import android.widget.Toast;
+          import android.graphics.Color; // Added for Background Color
           
           import com.getcapacitor.BridgeActivity;
           
@@ -71,6 +72,7 @@ jobs:
               private InMobiInterstitial rewardedAd;
               private InMobiInterstitial interstitialAd;
               private InMobiBanner bannerAd;
+              private FrameLayout bannerContainer; // New container for solid background
           
               public class InMobiJSInterface {
                   @JavascriptInterface
@@ -104,8 +106,9 @@ jobs:
                   @JavascriptInterface
                   public void hideBannerAd() {
                       runOnUiThread(() -> {
-                          if (bannerAd != null) {
-                              ((ViewGroup) bannerAd.getParent()).removeView(bannerAd);
+                          if (bannerContainer != null) {
+                              ((ViewGroup) bannerContainer.getParent()).removeView(bannerContainer);
+                              bannerContainer = null;
                               bannerAd = null;
                           }
                       });
@@ -142,7 +145,7 @@ jobs:
                   rewardedAd = new InMobiInterstitial(MainActivity.this, 10000712637L, new InterstitialAdEventListener() {
                       @Override
                       public void onAdLoadFailed(InMobiInterstitial ad, InMobiAdRequestStatus status) {
-                          runOnUiThread(() -> Toast.makeText(MainActivity.this, "Reward Fail: " + status.getMessage(), Toast.LENGTH_LONG).show());
+                          // Silent fail
                       }
                       @Override
                       public void onAdDismissed(InMobiInterstitial inMobiInterstitial) {
@@ -156,7 +159,7 @@ jobs:
                   interstitialAd = new InMobiInterstitial(MainActivity.this, 10000712635L, new InterstitialAdEventListener() {
                       @Override
                       public void onAdLoadFailed(InMobiInterstitial ad, InMobiAdRequestStatus status) {
-                          runOnUiThread(() -> Toast.makeText(MainActivity.this, "Inter Fail: " + status.getMessage(), Toast.LENGTH_LONG).show());
+                          // Silent fail
                       }
                       @Override
                       public void onAdDismissed(InMobiInterstitial inMobiInterstitial) {
@@ -172,26 +175,39 @@ jobs:
                       bannerAd.setListener(new BannerAdEventListener() {
                           @Override
                           public void onAdLoadFailed(InMobiBanner ad, InMobiAdRequestStatus status) {
-                              runOnUiThread(() -> Toast.makeText(MainActivity.this, "Banner Fail: " + status.getMessage(), Toast.LENGTH_LONG).show());
+                              // Silent fail
                           }
                       });
                       
-                      // Convert DP to Pixels for exact layout sizing
                       float density = getResources().getDisplayMetrics().density;
                       int widthPx = (int) (320 * density + 0.5f);
                       int heightPx = (int) (50 * density + 0.5f);
                       
                       bannerAd.setBannerSize(320, 50);
                       
-                      FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-                              widthPx,
+                      // 1. Create a full-width container with a Solid Black Background
+                      bannerContainer = new FrameLayout(MainActivity.this);
+                      bannerContainer.setBackgroundColor(Color.parseColor("#000000")); // Pure Black Background
+                      
+                      // 2. Set container to take full width at the bottom
+                      FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
+                              FrameLayout.LayoutParams.MATCH_PARENT,
                               heightPx,
                               Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
                       );
                       
-                      // FIX: Targeting explicit FrameLayout instead of global window decor view
-                      ViewGroup rootView = findViewById(android.R.id.content);
-                      rootView.addView(bannerAd, layoutParams);
+                      // 3. Center the 320x50 Banner inside this black container
+                      FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(
+                              widthPx,
+                              heightPx,
+                              Gravity.CENTER
+                      );
+                      
+                      bannerContainer.addView(bannerAd, adParams);
+                      
+                      // 4. Attach the solid container to the DecorView
+                      ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
+                      decorView.addView(bannerContainer, containerParams);
                       bannerAd.load();
                   }
               }
