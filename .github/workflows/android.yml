@@ -33,18 +33,18 @@ jobs:
           npm run generate-icons
           npx cap sync android
 
-      - name: 2.5 Inject InMobi Code (With Error Toasts & Cleartext Bypass)
+      - name: 2.5 Inject InMobi Code (Banner Size Fix)
         run: |
           # 1. Add AD_ID Permission
           sed -i '/<application/i \    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>' android/app/src/main/AndroidManifest.xml
           
-          # 2. Allow Cleartext Traffic & Hardware Acceleration (Crucial for InMobi)
+          # 2. Allow Cleartext Traffic & Hardware Acceleration
           sed -i 's/<application/<application android:usesCleartextTraffic="true" android:hardwareAccelerated="true"/g' android/app/src/main/AndroidManifest.xml
           
           # 3. Add InMobi SDK Dependencies
           sed -i "s/dependencies {/dependencies {\n    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:11.3.0'\n    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'/g" android/app/build.gradle
           
-          # 4. Create MainActivity.java with Toasts
+          # 4. Create MainActivity.java
           cat << 'EOF' > android/app/src/main/java/com/earnx/app/MainActivity.java
           package com.earnx.app;
           
@@ -53,7 +53,7 @@ jobs:
           import android.view.ViewGroup;
           import android.widget.FrameLayout;
           import android.view.Gravity;
-          import android.widget.Toast; // ADDED FOR DEBUGGING
+          import android.widget.Toast;
           
           import com.getcapacitor.BridgeActivity;
           
@@ -129,7 +129,7 @@ jobs:
                                   loadRewardedAd();
                                   loadInterstitialAd();
                               } else {
-                                  Toast.makeText(MainActivity.this, "InMobi Init Error: " + error.getMessage(), Toast.LENGTH_LONG).show();
+                                  Toast.makeText(MainActivity.this, "Init Error: " + error.getMessage(), Toast.LENGTH_LONG).show();
                               }
                           });
                       }
@@ -140,10 +140,6 @@ jobs:
           
               private void loadRewardedAd() {
                   rewardedAd = new InMobiInterstitial(MainActivity.this, 10000712637L, new InterstitialAdEventListener() {
-                      @Override
-                      public void onAdLoadSucceeded(InMobiInterstitial ad, AdMetaInfo info) {
-                          // Silently load
-                      }
                       @Override
                       public void onAdLoadFailed(InMobiInterstitial ad, InMobiAdRequestStatus status) {
                           runOnUiThread(() -> Toast.makeText(MainActivity.this, "Reward Fail: " + status.getMessage(), Toast.LENGTH_LONG).show());
@@ -180,8 +176,11 @@ jobs:
                           }
                       });
                       
+                      // FIX: Declare explicit Banner Size (320x50 is standard for phones)
+                      bannerAd.setBannerSize(320, 50);
+                      
                       FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-                              FrameLayout.LayoutParams.MATCH_PARENT,
+                              FrameLayout.LayoutParams.WRAP_CONTENT,
                               FrameLayout.LayoutParams.WRAP_CONTENT,
                               Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
                       );
@@ -194,12 +193,9 @@ jobs:
 
       - name: 2.6 Fix Build Requirements (Java 17 & SDK 34)
         run: |
-          # Bump SDK versions
           sed -i "s/compileSdkVersion = 33/compileSdkVersion = 34/g" android/variables.gradle
           sed -i "s/targetSdkVersion = 33/targetSdkVersion = 34/g" android/variables.gradle
           sed -i "s/minSdkVersion = 22/minSdkVersion = 24/g" android/variables.gradle
-          
-          # Upgrade Java compatibility
           sed -i "s/VERSION_1_8/VERSION_17/g" android/app/build.gradle
 
       - name: 3. Build Unsigned APK
