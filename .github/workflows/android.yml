@@ -173,6 +173,11 @@ jobs:
           }
           EOF
 
+      - name: 2.6 Update Android SDK Version to 34 (Fix for InMobi)
+        run: |
+          sed -i "s/compileSdkVersion = 33/compileSdkVersion = 34/g" android/variables.gradle
+          sed -i "s/targetSdkVersion = 33/targetSdkVersion = 34/g" android/variables.gradle
+
       - name: 3. Build Unsigned APK
         run: |
           cd android
