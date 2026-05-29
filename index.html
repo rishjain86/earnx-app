@@ -49,7 +49,7 @@
             position: relative;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-bottom: 170px; 
+            padding-bottom: 170px; /* Increased padding to allow scrolling past the raised menu */
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         
@@ -88,21 +88,10 @@
             align-items: center; 
         }
         
-        .mt-1 { 
-            margin-top: 10px; 
-        } 
-        
-        .mt-2 { 
-            margin-top: 20px; 
-        }
-        
-        .mb-1 { 
-            margin-bottom: 10px; 
-        } 
-        
-        .mb-2 { 
-            margin-bottom: 20px; 
-        }
+        .mt-1 { margin-top: 10px; } 
+        .mt-2 { margin-top: 20px; }
+        .mb-1 { margin-bottom: 10px; } 
+        .mb-2 { margin-bottom: 20px; }
         
         .screen { 
             display: none; 
@@ -115,14 +104,8 @@
         }
         
         @keyframes fadeIn { 
-            from { 
-                opacity: 0; 
-                transform: translateY(10px); 
-            } 
-            to { 
-                opacity: 1; 
-                transform: translateY(0); 
-            } 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
         }
 
         .card { 
@@ -224,9 +207,10 @@
             font-size: 1.1rem;
         }
 
+        /* YAHAN FIX HAI: bottom 50px taaki Menu Native Banner ke upar aaye */
         .bottom-area-wrapper {
             position: fixed;
-            bottom: 50;
+            bottom: 50px; 
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
@@ -263,19 +247,6 @@
         
         .nav-item.active { 
             color: var(--primary); 
-        }
-
-        .banner-ad-space {
-            width: 100%;
-            height: 50px;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #475569;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            border-top: 1px solid var(--card-border);
         }
 
         .header { 
@@ -538,14 +509,8 @@
         }
         
         @keyframes pulse-splash { 
-            0% { 
-                transform: scale(0.95); 
-                opacity: 0.8; 
-            } 
-            100% { 
-                transform: scale(1.05); 
-                opacity: 1; 
-            } 
+            0% { transform: scale(0.95); opacity: 0.8; } 
+            100% { transform: scale(1.05); opacity: 1; } 
         }
         
         .app-logo { 
@@ -586,14 +551,8 @@
         }
         
         @keyframes popUp { 
-            from { 
-                transform: scale(0.5); 
-                opacity: 0; 
-            } 
-            to { 
-                transform: scale(1); 
-                opacity: 1; 
-            } 
+            from { transform: scale(0.5); opacity: 0; } 
+            to { transform: scale(1); opacity: 1; } 
         }
         
         .win-amount { 
@@ -615,16 +574,8 @@
         }
         
         @keyframes confettiDrop { 
-            from { 
-                top: -20px; 
-                opacity: 1; 
-                transform: rotate(0deg); 
-            } 
-            to { 
-                top: 100%; 
-                opacity: 0; 
-                transform: rotate(360deg); 
-            } 
+            from { top: -20px; opacity: 1; transform: rotate(0deg); } 
+            to { top: 100%; opacity: 0; transform: rotate(360deg); } 
         }
 
         .cards-container { 
@@ -716,18 +667,9 @@
         }
         
         @keyframes mixup-cards { 
-            0% { 
-                transform: translate(0, 0); 
-                opacity: 1; 
-            } 
-            50% { 
-                transform: translate(var(--tx), var(--ty)) rotate(180deg); 
-                opacity: 0.9; 
-            } 
-            100% { 
-                transform: translate(0, 0) rotate(360deg); 
-                opacity: 1; 
-            } 
+            0% { transform: translate(0, 0); opacity: 1; } 
+            50% { transform: translate(var(--tx), var(--ty)) rotate(180deg); opacity: 0.9; } 
+            100% { transform: translate(0, 0) rotate(360deg); opacity: 1; } 
         }
         
         .animating-grid { 
