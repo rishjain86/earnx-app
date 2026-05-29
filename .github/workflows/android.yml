@@ -33,7 +33,7 @@ jobs:
           npm run generate-icons
           npx cap sync android
 
-      - name: 2.5 Inject InMobi Code (Banner Size Fix)
+      - name: 2.5 Inject InMobi Code (Absolute Bottom Banner Fix)
         run: |
           # 1. Add AD_ID Permission
           sed -i '/<application/i \    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>' android/app/src/main/AndroidManifest.xml
@@ -44,7 +44,7 @@ jobs:
           # 3. Add InMobi SDK Dependencies
           sed -i "s/dependencies {/dependencies {\n    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:11.3.0'\n    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'/g" android/app/build.gradle
           
-          # 4. Create MainActivity.java
+          # 4. Create MainActivity.java with Layout Content Fix
           cat << 'EOF' > android/app/src/main/java/com/earnx/app/MainActivity.java
           package com.earnx.app;
           
@@ -176,15 +176,22 @@ jobs:
                           }
                       });
                       
-                      // FIX: Declare explicit Banner Size (320x50 is standard for phones)
+                      // Convert DP to Pixels for exact layout sizing
+                      float density = getResources().getDisplayMetrics().density;
+                      int widthPx = (int) (320 * density + 0.5f);
+                      int heightPx = (int) (50 * density + 0.5f);
+                      
                       bannerAd.setBannerSize(320, 50);
                       
                       FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-                              FrameLayout.LayoutParams.WRAP_CONTENT,
-                              FrameLayout.LayoutParams.WRAP_CONTENT,
+                              widthPx,
+                              heightPx,
                               Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
                       );
-                      addContentView(bannerAd, layoutParams);
+                      
+                      // FIX: Targeting explicit FrameLayout instead of global window decor view
+                      ViewGroup rootView = findViewById(android.R.id.content);
+                      rootView.addView(bannerAd, layoutParams);
                       bannerAd.load();
                   }
               }
