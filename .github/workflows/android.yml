@@ -33,66 +33,142 @@ jobs:
           npm run generate-icons
           npx cap sync android
 
-      - name: 2.5 Inject Start.io Code (Correct App ID)
+      - name: 2.5 Inject InMobi Code (Clean Native Bridge)
         run: |
-          sed -i "s/dependencies {/dependencies {\n    implementation 'com.startapp:inapp-sdk:5.1.0'/g" android/app/build.gradle
+          # 1. Add AD_ID Permission to AndroidManifest.xml
+          sed -i '/<application/i \    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>' android/app/src/main/AndroidManifest.xml
           
+          # 2. Add InMobi SDK and Google Ads Identifier Dependencies to build.gradle
+          sed -i "s/dependencies {/dependencies {\n    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:11.3.0'\n    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'/g" android/app/build.gradle
+          
+          # 3. Create MainActivity.java with InMobi setup and JS Interfaces
           cat << 'EOF' > android/app/src/main/java/com/earnx/app/MainActivity.java
           package com.earnx.app;
+          
           import android.os.Bundle;
           import android.webkit.JavascriptInterface;
+          import android.view.ViewGroup;
+          import android.widget.FrameLayout;
+          import android.view.Gravity;
+          
           import com.getcapacitor.BridgeActivity;
-          import com.startapp.sdk.adsbase.StartAppAd;
-          import com.startapp.sdk.adsbase.StartAppSDK;
-          import com.startapp.sdk.adsbase.adlisteners.AdEventListener;
-          import com.startapp.sdk.adsbase.Ad;
-
+          
+          import com.inmobi.sdk.InMobiSdk;
+          import com.inmobi.sdk.SdkInitializationListener;
+          import com.inmobi.ads.InMobiInterstitial;
+          import com.inmobi.ads.InMobiBanner;
+          import com.inmobi.ads.listeners.InterstitialAdEventListener;
+          import com.inmobi.ads.listeners.BannerAdEventListener;
+          import com.inmobi.ads.AdMetaInfo;
+          import com.inmobi.ads.InMobiAdRequestStatus;
+          import org.json.JSONObject;
+          
           public class MainActivity extends BridgeActivity {
-              private StartAppAd rewardedVideo;
-
-              public class StartIoJSInterface {
+              private InMobiInterstitial rewardedAd;
+              private InMobiInterstitial interstitialAd;
+              private InMobiBanner bannerAd;
+          
+              public class InMobiJSInterface {
                   @JavascriptInterface
                   public void showRewardedAd() {
-                      runOnUiThread(new Runnable() {
-                          @Override
-                          public void run() {
-                              if (rewardedVideo != null && rewardedVideo.isReady()) {
-                                  rewardedVideo.showAd();
-                                  loadNextAd();
-                              } else {
-                                  rewardedVideo = new StartAppAd(MainActivity.this);
-                                  rewardedVideo.loadAd(StartAppAd.AdMode.REWARDED_VIDEO, new AdEventListener() {
-                                      @Override
-                                      public void onReceiveAd(Ad ad) {
-                                          rewardedVideo.showAd();
-                                          loadNextAd();
-                                      }
-                                      @Override
-                                      public void onFailedToReceiveAd(Ad ad) { }
-                                  });
-                              }
+                      runOnUiThread(() -> {
+                          if (rewardedAd != null && rewardedAd.isReady()) {
+                              rewardedAd.show();
+                          } else {
+                              loadRewardedAd(); // Reload in case it failed previously
+                          }
+                      });
+                  }
+          
+                  @JavascriptInterface
+                  public void showInterstitialAd() {
+                      runOnUiThread(() -> {
+                          if (interstitialAd != null && interstitialAd.isReady()) {
+                              interstitialAd.show();
+                          } else {
+                              loadInterstitialAd();
+                          }
+                      });
+                  }
+                  
+                  @JavascriptInterface
+                  public void showBannerAd() {
+                      runOnUiThread(() -> setupBannerAd());
+                  }
+                  
+                  @JavascriptInterface
+                  public void hideBannerAd() {
+                      runOnUiThread(() -> {
+                          if (bannerAd != null) {
+                              ((ViewGroup) bannerAd.getParent()).removeView(bannerAd);
+                              bannerAd = null;
                           }
                       });
                   }
               }
-
+          
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
                   
-                  // Start.io Initialization with CORRECT APP ID
-                  StartAppSDK.init(this, "204808781", false);
-                  StartAppSDK.setTestAdsEnabled(false); 
-                  StartAppAd.disableSplash();
+                  // InMobi Initialization with Account ID
+                  JSONObject consentObject = new JSONObject();
+                  try {
+                      consentObject.put("gdpr", "0");
+                  } catch (Exception e) {}
                   
-                  loadNextAd();
+                  InMobiSdk.init(this, "7c5237d8955d463c827bd9a79eb3890e", consentObject, new SdkInitializationListener() {
+                      @Override
+                      public void onInitializationComplete(Error error) {
+                          if (error == null) {
+                              runOnUiThread(() -> {
+                                  // Preload ads once initialized
+                                  loadRewardedAd();
+                                  loadInterstitialAd();
+                              });
+                          }
+                      }
+                  });
                   
-                  bridge.getWebView().addJavascriptInterface(new StartIoJSInterface(), "StartIoBridge");
+                  bridge.getWebView().addJavascriptInterface(new InMobiJSInterface(), "InMobiBridge");
               }
-
-              private void loadNextAd() {
-                  rewardedVideo = new StartAppAd(MainActivity.this);
-                  rewardedVideo.loadAd(StartAppAd.AdMode.REWARDED_VIDEO);
+          
+              private void loadRewardedAd() {
+                  // Reward Placement ID
+                  rewardedAd = new InMobiInterstitial(MainActivity.this, 10000712637L, new InterstitialAdEventListener() {
+                      @Override
+                      public void onAdDismissed(InMobiInterstitial inMobiInterstitial) {
+                          loadRewardedAd(); // Pre-load next ad after user closes it
+                      }
+                  });
+                  rewardedAd.load();
+              }
+          
+              private void loadInterstitialAd() {
+                  // Interstitial Placement ID
+                  interstitialAd = new InMobiInterstitial(MainActivity.this, 10000712635L, new InterstitialAdEventListener() {
+                      @Override
+                      public void onAdDismissed(InMobiInterstitial inMobiInterstitial) {
+                          loadInterstitialAd(); // Pre-load next ad after user closes it
+                      }
+                  });
+                  interstitialAd.load();
+              }
+              
+              private void setupBannerAd() {
+                  if (bannerAd == null) {
+                      // Banner Placement ID
+                      bannerAd = new InMobiBanner(MainActivity.this, 10000712636L);
+                      bannerAd.setListener(new BannerAdEventListener() {});
+                      
+                      FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                              FrameLayout.LayoutParams.MATCH_PARENT,
+                              FrameLayout.LayoutParams.WRAP_CONTENT,
+                              Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
+                      );
+                      addContentView(bannerAd, layoutParams);
+                      bannerAd.load();
+                  }
               }
           }
           EOF
