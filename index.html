@@ -48,7 +48,8 @@
             position: relative;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-bottom: 130px; /* Space for Nav + Banner */
+            /* Extra padding taaki content Menu aur Banner dono ke peeche na chhupe */
+            padding-bottom: 140px; 
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         
@@ -206,9 +207,10 @@
             font-size: 1.1rem;
         }
 
+        /* FIX: Nav menu ko Native Banner ke height (50px) ke theek upar shift kiya */
         .bottom-area-wrapper {
             position: fixed;
-            bottom: 0; /* Nav at absolute bottom */
+            bottom: 50px; 
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
@@ -247,6 +249,7 @@
             color: var(--primary); 
         }
 
+        /* FIX: Ye khali spacer box bottom:0 par rakha hai taaki banner jab load ho raha ho toh safed na dikhe */
         .banner-ad-space {
             width: 100%;
             height: 50px;
@@ -259,7 +262,7 @@
             letter-spacing: 1px;
             border-top: 1px solid var(--card-border);
             position: fixed;
-            bottom: 60px; /* Banner space above the nav menu */
+            bottom: 0px; 
             left: 50%;
             transform: translateX(-50%);
             max-width: 480px;
