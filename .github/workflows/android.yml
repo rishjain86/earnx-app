@@ -196,30 +196,32 @@ jobs:
                       bannerContainer.setClickable(true);
                       
                       FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
-                              FrameLayout.LayoutParams.MATCH_PARENT,
-                              heightPx,
-                              Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
-                      );
-                      
-                      FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(
-                              widthPx,
-                              heightPx,
-                              Gravity.CENTER
-                      );
-                      
-                      bannerContainer.addView(bannerAd, adParams);
-                      
-                      ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
-                      decorView.addView(bannerContainer, containerParams);
-                      
-                      bannerAd.load();
+          FrameLayout.LayoutParams.MATCH_PARENT,
+          heightPx,
+          Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
+  );
+
+    containerParams.bottomMargin = (int)(70 * density);
+                          
+                          FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(
+                                  widthPx,
+                                  heightPx,
+                                  Gravity.CENTER
+                          );
+                          
+                          bannerContainer.addView(bannerAd, adParams);
+                          
+                          ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
+                          decorView.addView(bannerContainer, containerParams);
+                          
+                          bannerAd.load();
+                      }
                   }
               }
-          }
-          EOF
-
-      - name: 2.6 Fix Build Requirements (Java 17 & SDK 34)
-        run: |
+              EOF
+    
+          - name: 2.6 Fix Build Requirements (Java 17 & SDK 34)
+            run: |
           sed -i "s/compileSdkVersion = 33/compileSdkVersion = 34/g" android/variables.gradle
           sed -i "s/targetSdkVersion = 33/targetSdkVersion = 34/g" android/variables.gradle
           sed -i "s/minSdkVersion = 22/minSdkVersion = 24/g" android/variables.gradle
