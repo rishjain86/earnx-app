@@ -2194,18 +2194,23 @@ window.addEventListener("popstate", (e) => {
 }
 
 if (window.InMobiBridge) {
-    if (screenId === 'home') {
-        if (window.InMobiBridge.showBannerAd) {
-            window.InMobiBridge.showBannerAd();
-        }
-    } else {
+
+    if (screenId === 'login') {
+
         if (window.InMobiBridge.hideBannerAd) {
             window.InMobiBridge.hideBannerAd();
         }
+
+    } else {
+
+        if (window.InMobiBridge.showBannerAd) {
+            window.InMobiBridge.showBannerAd();
+        }
+
     }
 }
 
-if (screenId !== 'login' && screenId !== 'home') {
+        if (screenId !== 'login' && screenId !== 'home') {
     history.pushState({ screen: screenId }, null, window.location.href);
 }
 };
