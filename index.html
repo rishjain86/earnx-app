@@ -207,16 +207,16 @@
         }
 
         .bottom-area-wrapper {
-            position: fixed;
-            bottom: 50px; /* FIXED: Shifted up to sit above InMobi Banner */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 480px;
-            background: var(--bg-darker);
-            z-index: 1000;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
-        }
+    position: fixed;
+    bottom: 0; /* Isko 50px se hata kar 0 kar do */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: var(--bg-darker);
+    z-index: 1000;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
+}
 
         .bottom-nav { 
             position: relative; 
@@ -249,23 +249,23 @@
 
         /* FIXED: Solid background for banner ad space */
         .banner-ad-space {
-            width: 100%;
-            height: 50px;
-            background-color: #0f172a !important; /* solid bg-dark, not transparent */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #475569;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            border-top: 1px solid var(--card-border);
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            max-width: 480px;
-            z-index: 999;
-        }
+    width: 100%;
+    height: 50px;
+    background-color: #0f172a !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #475569;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    border-top: 1px solid var(--card-border);
+    position: fixed;
+    bottom: 65px; /* Isko 0 se badha kar 65px kar do (Nav bar ke upar) */
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 480px;
+    z-index: 999;
+}
         
         /* Override any potential transparency from ad container */
         .banner-ad-space > * {
