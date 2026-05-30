@@ -182,7 +182,7 @@ jobs:
                       Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
                       );
 
-                      containerParams.bottomMargin = (int) (70 * density);
+                      containerParams.bottomMargin = (int) (55 * density);
 
                       FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(
                       widthPx,
