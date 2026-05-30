@@ -1896,11 +1896,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 window.InMobiBridge.initializeAds();
             }
 
-            if (window.InMobiBridge.showBannerAd) {
-                window.InMobiBridge.showBannerAd();
-            } else {
-                console.log("showBannerAd function missing in bridge");
-            }
+            // Banner will be controlled by nav()
+console.log("InMobi initialized");
 
         } catch (e) {
             console.log("InMobi init/banner error:", e);
