@@ -2184,16 +2184,32 @@ if(window.InMobiBridge.showBannerAd) {
             window.generateMathProblem(); 
         }
         
-        if (screenId === 'scratch') { 
-            setTimeout(() => { 
-                window.initScratchCard(); 
-            }, 50); 
+        if (screenId === 'scratch') {
+    setTimeout(() => {
+        window.initScratchCard();
+    }, 50);
+}
+
+if (window.InMobiBridge) {
+
+    if (screenId === 'home') {
+
+        if (window.InMobiBridge.showBannerAd) {
+            window.InMobiBridge.showBannerAd();
         }
-        
-        if (screenId !== 'login' && screenId !== 'home') { 
-            history.pushState({ screen: screenId }, null, window.location.href); 
+
+    } else {
+
+        if (window.InMobiBridge.hideBannerAd) {
+            window.InMobiBridge.hideBannerAd();
         }
+
     }
+}
+
+if (screenId !== 'login' && screenId !== 'home') {
+    history.pushState({ screen: screenId }, null, window.location.href);
+}
 
     window.logout = function() {
         import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js").then(({ getAuth, signOut }) => { 
