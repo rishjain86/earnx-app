@@ -10,11 +10,14 @@ jobs:
 
       - name: Setup Node
         uses: actions/setup-node@v3
-        with: { node-version: '18' }
+        with:
+          node-version: '18'
 
       - name: Setup Java
         uses: actions/setup-java@v3
-        with: { distribution: 'zulu', java-version: '17' }
+        with:
+          distribution: 'zulu'
+          java-version: '17'
 
       - name: 1. Setup www folder
         run: |
@@ -37,17 +40,13 @@ jobs:
         run: |
           # Add AD_ID Permission
           sed -i '/<application/i \    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>' android/app/src/main/AndroidManifest.xml
-          
           # Allow Cleartext Traffic & Hardware Acceleration
           sed -i 's/<application/<application android:usesCleartextTraffic="true" android:hardwareAccelerated="true"/g' android/app/src/main/AndroidManifest.xml
-          
           # Add InMobi SDK Dependencies
           sed -i "s/dependencies {/dependencies {\n    implementation 'com.inmobi.monetization:inmobi-ads-kotlin:11.3.0'\n    implementation 'com.google.android.gms:play-services-ads-identifier:18.0.1'/g" android/app/build.gradle
-          
           # Create MainActivity.java
           cat << 'EOF' > android/app/src/main/java/com/earnx/app/MainActivity.java
           package com.earnx.app;
-          
           import android.os.Bundle;
           import android.webkit.JavascriptInterface;
           import android.view.ViewGroup;
@@ -56,9 +55,7 @@ jobs:
           import android.widget.Toast;
           import android.graphics.Color;
           import android.view.WindowManager;
-          
           import com.getcapacitor.BridgeActivity;
-          
           import com.inmobi.sdk.InMobiSdk;
           import com.inmobi.sdk.SdkInitializationListener;
           import com.inmobi.ads.InMobiInterstitial;
@@ -68,13 +65,11 @@ jobs:
           import com.inmobi.ads.AdMetaInfo;
           import com.inmobi.ads.InMobiAdRequestStatus;
           import org.json.JSONObject;
-          
           public class MainActivity extends BridgeActivity {
               private InMobiInterstitial rewardedAd;
               private InMobiInterstitial interstitialAd;
               private InMobiBanner bannerAd;
               private FrameLayout bannerContainer;
-          
               public class InMobiJSInterface {
                   @JavascriptInterface
                   public void showRewardedAd() {
@@ -87,7 +82,6 @@ jobs:
                           }
                       });
                   }
-          
                   @JavascriptInterface
                   public void showInterstitialAd() {
                       runOnUiThread(() -> {
@@ -98,12 +92,10 @@ jobs:
                           }
                       });
                   }
-                  
                   @JavascriptInterface
                   public void showBannerAd() {
                       runOnUiThread(() -> setupBannerAd());
                   }
-                  
                   @JavascriptInterface
                   public void hideBannerAd() {
                       runOnUiThread(() -> {
@@ -115,19 +107,15 @@ jobs:
                       });
                   }
               }
-          
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
-                  
                   // Prevent keyboard from displacing the banner
                   getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-                  
                   JSONObject consentObject = new JSONObject();
                   try {
                       consentObject.put("gdpr", "0");
                   } catch (Exception e) {}
-                  
                   InMobiSdk.init(this, "7c5237d8955d463c827bd9a79eb3890e", consentObject, new SdkInitializationListener() {
                       @Override
                       public void onInitializationComplete(Error error) {
@@ -141,10 +129,8 @@ jobs:
                           });
                       }
                   });
-                  
                   bridge.getWebView().addJavascriptInterface(new InMobiJSInterface(), "InMobiBridge");
               }
-          
               private void loadRewardedAd() {
                   rewardedAd = new InMobiInterstitial(MainActivity.this, 10000712637L, new InterstitialAdEventListener() {
                       @Override
@@ -158,7 +144,6 @@ jobs:
                   });
                   rewardedAd.load();
               }
-          
               private void loadInterstitialAd() {
                   interstitialAd = new InMobiInterstitial(MainActivity.this, 10000712635L, new InterstitialAdEventListener() {
                       @Override
@@ -172,7 +157,6 @@ jobs:
                   });
                   interstitialAd.load();
               }
-              
               private void setupBannerAd() {
                   if (bannerAd == null) {
                       bannerAd = new InMobiBanner(MainActivity.this, 10000712636L);
@@ -182,46 +166,43 @@ jobs:
                               // Silent fail
                           }
                       });
-                      
                       float density = getResources().getDisplayMetrics().density;
                       int widthPx = (int) (320 * density + 0.5f);
                       int heightPx = (int) (50 * density + 0.5f);
-                      
                       bannerAd.setBannerSize(320, 50);
-                      
                       bannerContainer = new FrameLayout(MainActivity.this);
                       // 100% Solid Native Black Background applied here
                       bannerContainer.setBackgroundColor(Color.BLACK);
                       // Prevents accidental clicks passing through the black space to the webview
                       bannerContainer.setClickable(true);
 
-FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
-        FrameLayout.LayoutParams.MATCH_PARENT,
-        heightPx,
-        Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
-);
+                      FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
+                      FrameLayout.LayoutParams.MATCH_PARENT,
+                      heightPx,
+                      Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
+                      );
 
-containerParams.bottomMargin = (int) (70 * density);
+                      containerParams.bottomMargin = (int) (70 * density);
 
-FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(
-        widthPx,
-        heightPx,
-        Gravity.CENTER
-);
+                      FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(
+                      widthPx,
+                      heightPx,
+                      Gravity.CENTER
+                      );
 
-bannerContainer.addView(bannerAd, adParams);
+                      bannerContainer.addView(bannerAd, adParams);
 
-ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
-decorView.addView(bannerContainer, containerParams);
+                      ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
+                      decorView.addView(bannerContainer, containerParams);
 
-bannerAd.load();
-                      }
+                      bannerAd.load();
                   }
               }
+          }
           EOF
-    
-          - name: 2.6 Fix Build Requirements (Java 17 & SDK 34)
-            run: |
+
+      - name: 2.6 Fix Build Requirements (Java 17 & SDK 34)
+        run: |
           sed -i "s/compileSdkVersion = 33/compileSdkVersion = 34/g" android/variables.gradle
           sed -i "s/targetSdkVersion = 33/targetSdkVersion = 34/g" android/variables.gradle
           sed -i "s/minSdkVersion = 22/minSdkVersion = 24/g" android/variables.gradle
@@ -245,4 +226,3 @@ bannerAd.load();
         with:
           name: EarnX-Signed-APK
           path: android/app/build/outputs/apk/release/app-release-signed.apk
-          
