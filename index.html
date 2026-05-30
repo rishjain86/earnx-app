@@ -2193,6 +2193,18 @@ window.addEventListener("popstate", (e) => {
     }, 50);
 }
 
+if (window.InMobiBridge) {
+    if (screenId === 'home') {
+        if (window.InMobiBridge.showBannerAd) {
+            window.InMobiBridge.showBannerAd();
+        }
+    } else {
+        if (window.InMobiBridge.hideBannerAd) {
+            window.InMobiBridge.hideBannerAd();
+        }
+    }
+}
+
 if (screenId !== 'login' && screenId !== 'home') {
     history.pushState({ screen: screenId }, null, window.location.href);
 }
