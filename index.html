@@ -1877,7 +1877,7 @@
         window.nav('login');
     }
 
-    // MAIN APP INITIALIZATION & SPLASH SCREEN LOGIC
+        // MAIN APP INITIALIZATION & SPLASH SCREEN LOGIC
     document.addEventListener("DOMContentLoaded", async () => {
         // App Start
         init(); 
@@ -1896,6 +1896,23 @@
         // Splash Screen Hide
         if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) { 
             window.Capacitor.Plugins.SplashScreen.hide(); 
+        }
+
+        // Initialize InMobi Native Plugin & Call Banner Ad
+        if (window.InMobiBridge) {
+            try {
+                // Initialize if your bridge requires it
+                if(window.InMobiBridge.initializeAds) {
+                    window.InMobiBridge.initializeAds();
+                }
+                
+                // FIXED: Banner Ad Trigger Command
+                if(window.InMobiBridge.showBannerAd) {
+                    window.InMobiBridge.showBannerAd();
+                } else {
+                    console.log("showBannerAd function missing in bridge");
+                }
+            } catch(e) { console.log("InMobi init/banner error:", e); }
         }
         
         setTimeout(function() { 
