@@ -2208,7 +2208,7 @@ if (window.InMobiBridge) {
 if (screenId !== 'login' && screenId !== 'home') {
     history.pushState({ screen: screenId }, null, window.location.href);
 }
-
+};
     window.logout = function() {
         import("https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js").then(({ getAuth, signOut }) => { 
             signOut(getAuth()); 
