@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+r<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -2188,23 +2188,6 @@ if(window.InMobiBridge.showBannerAd) {
     setTimeout(() => {
         window.initScratchCard();
     }, 50);
-}
-
-if (window.InMobiBridge) {
-
-    if (screenId === 'home') {
-
-        if (window.InMobiBridge.showBannerAd) {
-            window.InMobiBridge.showBannerAd();
-        }
-
-    } else {
-
-        if (window.InMobiBridge.hideBannerAd) {
-            window.InMobiBridge.hideBannerAd();
-        }
-
-    }
 }
 
 if (screenId !== 'login' && screenId !== 'home') {
