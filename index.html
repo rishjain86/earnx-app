@@ -48,7 +48,7 @@
             position: relative;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-bottom: 170px; /* <--- MODIFIED: 120px to 170px to avoid content overlapping behind the raised menu */
+            padding-bottom: 170px; /* FIXED: Space for menu + banner */
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         
@@ -208,7 +208,7 @@
 
         .bottom-area-wrapper {
             position: fixed;
-            bottom: 50px; /* <--- MODIFIED: 0 to 50px to lift the menu above the InMobi banner */
+            bottom: 50px; /* FIXED: Shifted up to sit above InMobi Banner */
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
@@ -1323,18 +1323,23 @@
     let loginHandled = false;
     let loginLoading = false;
 
-    setTimeout(() => {
-        if (window.Capacitor) {
-            const webSec = document.getElementById('web-login-section');
-            const appSec = document.getElementById('app-login-section');
-            if (webSec) { 
-                webSec.style.display = 'none'; 
-            }
-            if (appSec) { 
-                appSec.style.display = 'block'; 
-            }
+    // FIXED: Bulletproof Login Detector (No setTimeout fail issues)
+    function setupLoginScreen() {
+        const isApp = window.Capacitor || navigator.userAgent.includes('Capacitor') || navigator.userAgent.includes('Android');
+        const webSec = document.getElementById('web-login-section');
+        const appSec = document.getElementById('app-login-section');
+        
+        if (isApp) {
+            if (webSec) webSec.style.display = 'none';
+            if (appSec) appSec.style.display = 'block';
+        } else {
+            if (webSec) webSec.style.display = 'block';
+            if (appSec) appSec.style.display = 'none';
         }
-    }, 200);
+    }
+    
+    setupLoginScreen();
+    setTimeout(setupLoginScreen, 500);
 
     window.togglePassword = function() {
         const input = document.getElementById('password-input');
