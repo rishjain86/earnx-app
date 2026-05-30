@@ -1894,11 +1894,13 @@
                     window.InMobiBridge.initializeAds();
                 }
                 
-                if(window.InMobiBridge.showBannerAd) {
-                    window.InMobiBridge.showBannerAd();
-                } else {
-                    console.log("showBannerAd function missing in bridge");
-                }
+                /*
+if(window.InMobiBridge.showBannerAd) {
+    window.InMobiBridge.showBannerAd();
+} else {
+    console.log("showBannerAd function missing in bridge");
+}
+*/
             } catch(e) { console.log("InMobi init/banner error:", e); }
         }
         
