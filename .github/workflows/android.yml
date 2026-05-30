@@ -33,7 +33,7 @@ jobs:
           npm run generate-icons
           npx cap sync android
 
-      - name: 2.5 Inject InMobi Code (Solid Background Banner Fix)
+      - name: 2.5 Inject InMobi Code (Solid Black Banner Fix)
         run: |
           # Add AD_ID Permission
           sed -i '/<application/i \    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>' android/app/src/main/AndroidManifest.xml
@@ -54,7 +54,8 @@ jobs:
           import android.widget.FrameLayout;
           import android.view.Gravity;
           import android.widget.Toast;
-          import android.graphics.Color; // Added for Background Color
+          import android.graphics.Color;
+          import android.view.WindowManager;
           
           import com.getcapacitor.BridgeActivity;
           
@@ -72,7 +73,7 @@ jobs:
               private InMobiInterstitial rewardedAd;
               private InMobiInterstitial interstitialAd;
               private InMobiBanner bannerAd;
-              private FrameLayout bannerContainer; // New container for solid background
+              private FrameLayout bannerContainer;
           
               public class InMobiJSInterface {
                   @JavascriptInterface
@@ -118,6 +119,9 @@ jobs:
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
+                  
+                  // Prevent keyboard from displacing the banner
+                  getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
                   
                   JSONObject consentObject = new JSONObject();
                   try {
@@ -185,18 +189,18 @@ jobs:
                       
                       bannerAd.setBannerSize(320, 50);
                       
-                      // 1. Create a full-width container with a Solid Black Background
                       bannerContainer = new FrameLayout(MainActivity.this);
-                      bannerContainer.setBackgroundColor(Color.parseColor("#000000")); // Pure Black Background
+                      // 100% Solid Native Black Background applied here
+                      bannerContainer.setBackgroundColor(Color.BLACK);
+                      // Prevents accidental clicks passing through the black space to the webview
+                      bannerContainer.setClickable(true);
                       
-                      // 2. Set container to take full width at the bottom
                       FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
                               FrameLayout.LayoutParams.MATCH_PARENT,
                               heightPx,
                               Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
                       );
                       
-                      // 3. Center the 320x50 Banner inside this black container
                       FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(
                               widthPx,
                               heightPx,
@@ -205,9 +209,9 @@ jobs:
                       
                       bannerContainer.addView(bannerAd, adParams);
                       
-                      // 4. Attach the solid container to the DecorView
                       ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
                       decorView.addView(bannerContainer, containerParams);
+                      
                       bannerAd.load();
                   }
               }
@@ -239,3 +243,4 @@ jobs:
         with:
           name: EarnX-Signed-APK
           path: android/app/build/outputs/apk/release/app-release-signed.apk
+          
