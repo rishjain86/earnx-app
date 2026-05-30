@@ -48,8 +48,8 @@
             position: relative;
             overflow-y: auto;
             overflow-x: hidden;
-            /* Extra padding so that content is not hidden behind fixed elements */
-            padding-bottom: 150px; 
+            /* FIX: Ad aur Nav dono ki space cover karne ke liye 140px padding */
+            padding-bottom: 140px; 
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         
@@ -207,23 +207,24 @@
             font-size: 1.1rem;
         }
 
-        /* Navigation menu: placed exactly above the banner ad (no overlap) */
+        /* FIX: Nav Bar ko exactly InMobi ad (60px) ke upar utha diya hai */
         .bottom-area-wrapper {
             position: fixed;
-            bottom: 56px;        /* increased from 50px to create safe gap above banner */
+            bottom: 60px !important; 
             left: 50%;
             transform: translateX(-50%);
             width: 100%;
             max-width: 480px;
-            background: var(--bg-darker);
-            z-index: 1001;       /* higher than banner to keep clicks on nav */
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
+            background: var(--card-bg);
+            z-index: 1000;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+            border-top: 1px solid var(--primary);
         }
 
         .bottom-nav { 
             position: relative; 
             width: 100%; 
-            background: var(--card-bg); 
+            background: transparent; 
             display: flex; 
             justify-content: space-around; 
             padding: 10px 0; 
@@ -249,31 +250,17 @@
             color: var(--primary); 
         }
 
-        /* Banner ad container: fixed at very bottom, solid background, prevents overflow overlap */
+        /* FIX: Banner space ko sabse bottom (0px) me set kiya, yahi par Native ad aakar baithega */
         .banner-ad-space {
             width: 100%;
-            height: 50px;
-            background-color: #0f172a !important;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #475569;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            border-top: 1px solid var(--card-border);
+            height: 60px !important;
+            background-color: #000000 !important;
             position: fixed;
-            bottom: 0px; 
+            bottom: 0px !important;
             left: 50%;
             transform: translateX(-50%);
             max-width: 480px;
-            z-index: 1000;
-            overflow: hidden;    /* ensure any ad content exceeding height is clipped */
-        }
-        
-        /* Force any content inside banner to respect boundaries */
-        .banner-ad-space * {
-            max-height: 50px;
-            overflow: hidden;
+            z-index: 999;
         }
 
         .header { 
