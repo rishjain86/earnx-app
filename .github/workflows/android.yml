@@ -194,31 +194,31 @@ jobs:
                       bannerContainer.setBackgroundColor(Color.BLACK);
                       // Prevents accidental clicks passing through the black space to the webview
                       bannerContainer.setClickable(true);
-                      
-                      FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
-          FrameLayout.LayoutParams.MATCH_PARENT,
-          heightPx,
-          Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
-  );
 
-    containerParams.bottomMargin = (int)(70 * density);
-                          
-                          FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(
-                                  widthPx,
-                                  heightPx,
-                                  Gravity.CENTER
-                          );
-                          
-                          bannerContainer.addView(bannerAd, adParams);
-                          
-                          ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
-                          decorView.addView(bannerContainer, containerParams);
-                          
-                          bannerAd.load();
+FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
+        FrameLayout.LayoutParams.MATCH_PARENT,
+        heightPx,
+        Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL
+);
+
+containerParams.bottomMargin = (int) (70 * density);
+
+FrameLayout.LayoutParams adParams = new FrameLayout.LayoutParams(
+        widthPx,
+        heightPx,
+        Gravity.CENTER
+);
+
+bannerContainer.addView(bannerAd, adParams);
+
+ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
+decorView.addView(bannerContainer, containerParams);
+
+bannerAd.load();
                       }
                   }
               }
-              EOF
+          EOF
     
           - name: 2.6 Fix Build Requirements (Java 17 & SDK 34)
             run: |
