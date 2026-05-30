@@ -1867,76 +1867,82 @@ r<!DOCTYPE html>
     }
 
     // MAIN APP INITIALIZATION & SPLASH SCREEN LOGIC
-    document.addEventListener("DOMContentLoaded", async () => {
-        // App Start
-        init(); 
-        window.renderShuffleCards();
-        
-        // Screen Time Tracker
-        setInterval(() => {
-            if (!document.hidden && window.state && window.state.user) {
-                if (!window.state.user.screenTime) { 
-                    window.state.user.screenTime = 0; 
-                }
-                window.state.user.screenTime += 10;
+document.addEventListener("DOMContentLoaded", async () => {
+    // App Start
+    init();
+    window.renderShuffleCards();
+
+    // Screen Time Tracker
+    setInterval(() => {
+        if (!document.hidden && window.state && window.state.user) {
+            if (!window.state.user.screenTime) {
+                window.state.user.screenTime = 0;
             }
-        }, 10000);
-
-        // Splash Screen Hide
-        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen) { 
-            window.Capacitor.Plugins.SplashScreen.hide(); 
+            window.state.user.screenTime += 10;
         }
+    }, 10000);
 
-        // Initialize InMobi Native Plugin & Call Banner Ad
-        if (window.InMobiBridge) {
-            try {
-                if(window.InMobiBridge.initializeAds) {
-                    window.InMobiBridge.initializeAds();
-                }
-                
-                /*
-if(window.InMobiBridge.showBannerAd) {
-    window.InMobiBridge.showBannerAd();
-} else {
-    console.log("showBannerAd function missing in bridge");
-}
-*/
-            } catch(e) { console.log("InMobi init/banner error:", e); }
+    // Splash Screen Hide
+    if (window.Capacitor &&
+        window.Capacitor.Plugins &&
+        window.Capacitor.Plugins.SplashScreen) {
+        window.Capacitor.Plugins.SplashScreen.hide();
+    }
+
+    // Initialize InMobi Native Plugin & Call Banner Ad
+    if (window.InMobiBridge) {
+        try {
+            if (window.InMobiBridge.initializeAds) {
+                window.InMobiBridge.initializeAds();
+            }
+
+            if (window.InMobiBridge.showBannerAd) {
+                window.InMobiBridge.showBannerAd();
+            } else {
+                console.log("showBannerAd function missing in bridge");
+            }
+
+        } catch (e) {
+            console.log("InMobi init/banner error:", e);
         }
-        
-        setTimeout(function() { 
-            let splash = document.getElementById('custom-splash'); 
-            
-            if (splash) { 
-                splash.style.opacity = '0'; 
-                
-                setTimeout(() => { 
-                    splash.style.display = 'none'; 
-                }, 600); 
-            } 
-        }, 2500); 
-    });
+    }
 
-    // BACK BUTTON LOGIC
-    window.addEventListener("popstate", (e) => {
-        const homeScreen = document.getElementById('screen-home'); 
-        const loginScreen = document.getElementById('screen-login');
-        
-        if (homeScreen && homeScreen.classList.contains('active')) { 
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) { 
-                window.Capacitor.Plugins.App.exitApp(); 
-            } else { 
-                history.back(); 
-            } 
-        } else if (loginScreen && loginScreen.classList.contains('active')) { 
-            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) { 
-                window.Capacitor.Plugins.App.exitApp(); 
-            } 
-        } else { 
-            window.nav('home'); 
+    setTimeout(function() {
+        let splash = document.getElementById('custom-splash');
+
+        if (splash) {
+            splash.style.opacity = '0';
+
+            setTimeout(() => {
+                splash.style.display = 'none';
+            }, 600);
         }
-    });
+    }, 2500);
+});
 
+// BACK BUTTON LOGIC
+window.addEventListener("popstate", (e) => {
+    const homeScreen = document.getElementById('screen-home');
+    const loginScreen = document.getElementById('screen-login');
+
+    if (homeScreen && homeScreen.classList.contains('active')) {
+        if (window.Capacitor &&
+            window.Capacitor.Plugins &&
+            window.Capacitor.Plugins.App) {
+            window.Capacitor.Plugins.App.exitApp();
+        } else {
+            history.back();
+        }
+    } else if (loginScreen && loginScreen.classList.contains('active')) {
+        if (window.Capacitor &&
+            window.Capacitor.Plugins &&
+            window.Capacitor.Plugins.App) {
+            window.Capacitor.Plugins.App.exitApp();
+        }
+    } else {
+        window.nav('home');
+    }
+});
     window.launchCelebration = function() {
         const modal = document.getElementById('celebration-modal'); 
         modal.style.display = 'flex';
